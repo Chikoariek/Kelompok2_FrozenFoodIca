@@ -6,6 +6,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('Rakha', function () {
+Route::get('Rakha Azhar', function () {
     return view('welcome');
 });
