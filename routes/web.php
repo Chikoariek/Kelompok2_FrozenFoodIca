@@ -6,6 +6,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('Rakha Azhar', function () {
+Route::get('Miko', function () {
+    return view('welcome');
+});
+
+Route::get('Rakha', function () {
     return view('welcome');
 });
