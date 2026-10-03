@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role', // Role dari backend (admin / user)
+        'phone',
+        'address',
+        'avatar',
+        'is_admin',
     ];
 
     /**
@@ -43,6 +48,23 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin' || (bool) ($this->is_admin ?? false);
+    }
+
+    /**
+     * Accessor is_admin agar backward compatible dengan seluruh kode Blade & Frontend.
+     */
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->role === 'admin' || (bool) ($this->attributes['is_admin'] ?? false);
     }
 }
