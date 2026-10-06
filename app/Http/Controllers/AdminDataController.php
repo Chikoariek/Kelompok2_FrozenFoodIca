@@ -17,10 +17,9 @@ use Illuminate\Support\Facades\DB;
  */
 class AdminDataController extends Controller
 {
-    // ==========================================
-    // KATEGORI PRODUK
-    // ==========================================
+    // --- 1. Kategori Produk ---
 
+    // Mengambil daftar nama kategori untuk filter etalase
     public function getCategories()
     {
         $categories = Category::all()->pluck('name');
@@ -30,6 +29,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Menambah kategori baru ke database
     public function storeCategory(Request $request)
     {
         $validated = $request->validate([
@@ -47,6 +47,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Memperbarui nama kategori dan produk terkait
     public function updateCategory(Request $request)
     {
         $validated = $request->validate([
@@ -73,6 +74,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Menghapus kategori dari database
     public function destroyCategory(Request $request)
     {
         $validated = $request->validate([
@@ -87,6 +89,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Sinkronisasi seluruh daftar kategori secara massal
     public function syncCategories(Request $request)
     {
         $validated = $request->validate([
@@ -114,10 +117,9 @@ class AdminDataController extends Controller
         ]);
     }
 
-    // ==========================================
-    // DATA PRODUK
-    // ==========================================
+    // --- 2. Data Produk ---
 
+    // Mengambil seluruh data produk untuk katalog etalase & tabel admin
     public function getProducts()
     {
         $products = Product::all();
@@ -127,6 +129,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Menyimpan produk baru atau mengedit produk beserta gambar
     public function storeProduct(Request $request)
     {
         $validated = $request->validate([
@@ -189,6 +192,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Menyesuaikan jumlah stok fisik produk di freezer
     public function updateProductStock(Request $request, $id)
     {
         $validated = $request->validate([
@@ -215,6 +219,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Menghapus produk dari katalog
     public function destroyProduct($id)
     {
         Product::where('id', $id)->delete();
@@ -224,6 +229,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Sinkronisasi seluruh inventaris produk secara massal
     public function syncProducts(Request $request)
     {
         $validated = $request->validate([
@@ -257,10 +263,9 @@ class AdminDataController extends Controller
         ]);
     }
 
-    // ==========================================
-    // PROSES PESANAN (ORDERS)
-    // ==========================================
+    // --- 3. Proses Pesanan ---
 
+    // Mengambil riwayat daftar seluruh pesanan pelanggan
     public function getOrders()
     {
         $orders = Order::orderBy('created_at', 'desc')->get()->map(function ($order) {
@@ -289,6 +294,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Menyimpan pesanan baru dan otomatis mengurangi stok produk
     public function storeOrder(Request $request)
     {
         $id = $request->input('id') ?: ('ORD-ICA-' . rand(1000, 9999));
@@ -362,6 +368,7 @@ class AdminDataController extends Controller
         ]);
     }
 
+    // Memperbarui status proses pesanan (Diproses, Dikirim, Selesai)
     public function updateOrderStatus(Request $request, $id)
     {
         $validated = $request->validate([

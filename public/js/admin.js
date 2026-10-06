@@ -19,9 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-  // ==========================================
-  // 1. TOAST NOTIFICATION
-  // ==========================================
+  // --- 1. Notifikasi Pesan Popup (Toast) ---
   window.showToast = function (message, type = 'success') {
     let container = document.getElementById('toastContainer');
     if (!container) {
@@ -50,9 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 3200);
   };
 
-  // ==========================================
-  // 2. MOBILE SIDEBAR DRAWER & TOPBAR PROFILE
-  // ==========================================
+  // --- 2. Navigasi Sidebar Mobile & Dropdown Profil Admin ---
   const adminSidebar = document.getElementById('adminSidebar');
   const adminSidebarBackdrop = document.getElementById('adminSidebarBackdrop');
   const btnAdminMobileToggle = document.getElementById('btnAdminMobileToggle');
@@ -103,9 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ==========================================
-  // 3. TAB NAVIGATION & META TITLE/SUBTITLE
-  // ==========================================
+  // --- 3. Navigasi Tab Admin & Sinkronisasi Judul Halaman ---
   const sidebarBtns = document.querySelectorAll('.sidebar-nav-btn[data-tab]');
   const tabPanes = document.querySelectorAll('.tab-pane');
   const topbarTitle = document.getElementById('topbarTitle');
@@ -198,9 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
     switchTab(savedTab);
   }
 
-  // ==========================================
-  // 5. ADMIN PROFILE & PASSWORD DATABASE PERSISTENCE
-  // ==========================================
+  // --- 4. Kelola Data Profil Admin & Ganti Password ---
   const formAdminProfile = document.getElementById('formAdminProfile');
   const btnSubmitProfile = document.getElementById('btnSubmitProfile');
   const formAdminPassword = document.getElementById('formAdminPassword');
@@ -390,9 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
     reader.readAsDataURL(file);
   });
 
-  // ==========================================
-  // 6. ORDERS TAB LOGIC (STATUS PATCH & RECEIPT)
-  // ==========================================
+  // --- 5. Manajemen Pesanan, Status Transaksi & Cetak Nota (Tab Orders) ---
   const orderFilterBtns = document.querySelectorAll('.order-filter-btn');
   const orderSearchInput = document.getElementById('orderSearchInput');
   const orderRows = document.querySelectorAll('#ordersTableBody tr[data-order-row]');
@@ -638,9 +628,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ==========================================
-  // 7. INVENTORY TAB LOGIC (SEARCH, FILTER, STOCK STEPPERS, MODALS)
-  // ==========================================
+  // --- 6. Manajemen Inventaris Produk & Filter Pencarian (Tab Inventory) ---
   const inventorySearchInput = document.getElementById('inventorySearchInput');
   const prodFilterBtns = document.querySelectorAll('.prod-filter-btn');
   const inventoryRows = document.querySelectorAll('#inventoryTableBody tr[data-prod-row]');
@@ -747,9 +735,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ==========================================
-  // MODAL TAMBAH PRODUK & UPLOAD GAMBAR
-  // ==========================================
+  // --- 7. Modal Tambah Produk Baru & Pratinjau Gambar ---
   const modalAddProduct = document.getElementById('modalAddProduct');
   const formAddProduct = document.getElementById('formAddProduct');
   const addProdImageFile = document.getElementById('addProdImageFile');
@@ -860,9 +846,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ==========================================
-  // MODAL EDIT PRODUK & UPLOAD GAMBAR
-  // ==========================================
+  // --- 8. Modal Edit Produk & Pratinjau Gambar ---
   const modalEditProduct = document.getElementById('modalEditProduct');
   const formEditProduct = document.getElementById('formEditProduct');
   const editProdId = document.getElementById('editProdId');
@@ -1012,9 +996,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ==========================================
-  // 8. CATEGORIES TAB LOGIC (SEARCH, SYNC, MODALS, VIEW TOGGLE)
-  // ==========================================
+  // --- 9. Manajemen Master Data Kategori (Tab Categories) ---
   const categorySearchInput = document.getElementById('categorySearchInput');
   const btnCatViewList = document.getElementById('btnCatViewList');
   const btnCatViewGrid = document.getElementById('btnCatViewGrid');
@@ -1209,9 +1191,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ==========================================
-  // 9. CLOSE ALL MODALS ON CANCEL / CLOSE BUTTON
-  // ==========================================
+  // --- 10. Handler Penutup Semua Jendela Modal Dialog ---
   document.querySelectorAll('.btn-modal-close, .btn-modal-cancel').forEach((btn) => {
     btn.addEventListener('click', function () {
       document.querySelectorAll('.admin-modal-backdrop').forEach((m) => m.classList.remove('open'));

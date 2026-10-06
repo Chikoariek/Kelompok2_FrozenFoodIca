@@ -24,10 +24,7 @@
     <!-- Mobile Sidebar Drawer Backdrop -->
     <div id="adminSidebarBackdrop" class="admin-sidebar-backdrop"></div>
 
-    <!-- ==========================================
-         SIDEBAR NAVIGATION (#677D9E - Steel Blue)
-         100% Identik dengan AdminSidebar.jsx
-         ========================================== -->
+    <!-- 1. Sidebar Navigasi Menu Admin -->
     <aside id="adminSidebar" class="admin-sidebar">
         <!-- Logo & Close Button for Mobile -->
         <div class="sidebar-logo-header">
@@ -74,9 +71,7 @@
         </div>
     </aside>
 
-    <!-- ==========================================
-         MAIN CONTENT AREA
-         ========================================== -->
+    <!-- 2. Area Konten Utama Panel Admin -->
     <div class="admin-main-wrap">
         
         <!-- Global Top Bar Header (Sesuai AdminDashboardPage.jsx) -->
@@ -158,15 +153,10 @@
         <!-- Body Scroll Area dengan Scroll Restoration -->
         <main id="adminScrollBody" class="admin-scroll-body">
 
-            <!-- ==========================================
-                 TAB 1: DASHBOARD OVERVIEW
-                 100% Identik dengan AdminDashboardMain di AdminSidebar.jsx
-                 ========================================== -->
+            <!-- Tab 1: Dashboard Ringkasan & Statistik Toko -->
             <section id="tab-dashboard" class="tab-pane active">
                 @php
-                    // ========================================================
-                    // PERHITUNGAN DATA RIIL (DIAMBIL LANGSUNG DARI DATABASE)
-                    // ========================================================
+                    // Perhitungan data statistik ringkasan langsung dari database
                     
                     // 1. Total Produk Aktif di Etalase
                     $totalProducts = count($products);
@@ -404,10 +394,7 @@
             </section>
 
 
-            <!-- ==========================================
-                 TAB 2: PROFIL ADMIN
-                 100% Identik dengan AdminProfilePanel.jsx
-                 ========================================== -->
+            <!-- Tab 2: Profil & Pengaturan Akun Admin -->
             <section id="tab-profile" class="tab-pane">
                 <!-- Top Header Card (Konsisten dengan Pesanan, Produk & Kategori) -->
                 <div class="panel-top-header-card">
@@ -533,10 +520,7 @@
             </section>
 
 
-            <!-- ==========================================
-                 TAB 3: PROSES PESANAN
-                 100% Identik dengan AdminTable.jsx
-                 ========================================== -->
+            <!-- Tab 3: Manajemen & Proses Pesanan Pelanggan -->
             <section id="tab-orders" class="tab-pane">
                 <!-- Top Header Card -->
                 <div class="panel-top-header-card">
@@ -695,10 +679,7 @@
             </section>
 
 
-            <!-- ==========================================
-                 TAB 4: DATA PRODUK
-                 100% Identik dengan InventoryTable.jsx
-                 ========================================== -->
+            <!-- Tab 4: Inventaris Data Produk & Stok Freezer -->
             <section id="tab-inventory" class="tab-pane">
                 <!-- Top Header Card -->
                 <div class="panel-top-header-card">
@@ -836,10 +817,7 @@
             </section>
 
 
-            <!-- ==========================================
-                 TAB 5: KATEGORI PRODUK
-                 100% Identik dengan CategoryManagementPanel.jsx
-                 ========================================== -->
+            <!-- Tab 5: Master Data Kategori Produk -->
             <section id="tab-categories" class="tab-pane">
                 <!-- Top Header Card (Posisi Tombol & Elemen Konsisten dengan Data Produk) -->
                 <div class="panel-top-header-card">
@@ -984,9 +962,7 @@
         </main>
     </div>
 
-    <!-- ==========================================
-         MODALS (Tambah & Edit Produk, Kategori, Struk)
-         ========================================== -->
+    <!-- 3. Kumpulan Modal Aksi (Tambah/Edit Produk, Kategori & Struk) -->
 
     <!-- Modal Tambah Produk Baru -->
     <div id="modalAddProduct" class="admin-modal-backdrop">

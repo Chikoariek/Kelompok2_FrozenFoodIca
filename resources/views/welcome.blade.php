@@ -36,18 +36,14 @@
 
 <body>
 
-    <!-- ==========================================
-         1. TOP ANNOUNCEMENT BANNER
-         ========================================== -->
+    <!-- 1. Banner Info Pengantaran Kurir & Jam Operasional Toko -->
     <div class="top-announcement-bar">
         <span class="motor-delivery-icon" style="width: 1rem; height: 1rem; color: #6EE7B7;"></span>
         <span>Buka Setiap Hari (08.00 - 21.00 WITA) • Bisa diantar oleh kurir langsung ke rumah anda!</span>
         <span class="top-announcement-badge">Banjarbaru</span>
     </div>
 
-    <!-- ==========================================
-         2. STICKY / FLOATING NAVBAR
-         ========================================== -->
+    <!-- 2. Navbar Navigasi Utama & Menu Profil Pengguna -->
     <header class="navbar-header-sticky">
         <div id="navbarWrapper" class="navbar-outer-wrapper">
             <div class="navbar-inner-box">
@@ -365,9 +361,7 @@
     </header>
 
     <main style="flex: 1;">
-        <!-- ==========================================
-             3. HERO SECTION
-             ========================================== -->
+        <!-- 3. Hero Section (Banner Promosi & Ajakan Belanja) -->
         <section id="home" class="hero-section-wrap">
             <div class="max-w-7xl">
                 <div class="hero-cols-grid">
@@ -479,9 +473,7 @@
             </div>
         </section>
 
-        <!-- ==========================================
-             4. PRODUCT CATALOG SECTION
-             ========================================== -->
+        <!-- 4. Katalog Produk & Filter Kategori Makanan Beku -->
         <section id="katalog-section" class="catalog-section-wrap">
             <div class="max-w-7xl">
 
@@ -599,9 +591,7 @@
             </div>
         </section>
 
-        <!-- ==========================================
-             5. SMART RECOMMENDATIONS SECTION
-             ========================================== -->
+        <!-- 5. Rekomendasi Cerdas & Paket Hemat Keluarga -->
         <section id="rekomendasi-section" class="smart-rec-section-wrap">
             <div class="max-w-7xl">
 
@@ -805,9 +795,7 @@
             </div>
         </section>
 
-        <!-- ==========================================
-             6. QUALITY ASSURANCE (MENGAPA MEMILIH ICA?)
-             ========================================== -->
+        <!-- 6. Keunggulan Layanan & Kualitas Produk Ica -->
         <section class="why-us-section-wrap">
             <div class="max-w-7xl">
                 <div class="why-us-header">
@@ -856,9 +844,7 @@
             </div>
         </section>
 
-        <!-- ==========================================
-             7. CONTACT / OUTLET SECTION (WHATSAPP BANNER)
-             ========================================== -->
+        <!-- 7. Kontak Outlet & Pemesanan Cepat via WhatsApp -->
         <section id="kontak-section" class="contact-section-wrap">
             <div class="max-w-7xl">
                 <div class="contact-blue-box">
@@ -886,9 +872,7 @@
         </section>
     </main>
 
-    <!-- ==========================================
-         8. FOOTER COMPONENT
-         ========================================== -->
+    <!-- 8. Footer Informasi Alamat, Kontak & Hak Cipta -->
     <footer class="site-footer-white">
         <div class="max-w-7xl">
             <div class="footer-cols-three">
@@ -976,9 +960,7 @@
         </div>
     </footer>
 
-    <!-- ==========================================
-         9. PRODUCT DETAIL MODAL
-         ========================================== -->
+    <!-- 9. Modal Detail Informasi & Spesifikasi Produk -->
     <div id="productDetailModal" class="modal-product-backdrop">
         <div class="modal-product-card-wrap">
             <button id="detailModalClose"
@@ -1124,9 +1106,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         10. CART DRAWER (SLIDE-OVER FROM RIGHT)
-         ========================================== -->
+    <!-- 10. Keranjang Belanja (Drawer Samping / Slide-Over) -->
     <div id="cartDrawerOverlay" class="cart-drawer-backdrop"></div>
     <div id="cartDrawer" class="cart-drawer-slide-box">
 
@@ -1333,9 +1313,7 @@
 
     </div>
 
-    <!-- ==========================================
-         10.5. PAYMENT MODAL (PROSES PEMBAYARAN & VERIFIKASI)
-         ========================================== -->
+    <!-- 11. Modal Pembayaran (QRIS Instan & Transfer Bank) -->
     <div id="paymentModal" class="modal-product-backdrop">
         <div class="payment-modal-card">
 
@@ -1429,9 +1407,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         11. RECEIPT MODAL (NOTA STRUK DIGITAL)
-         ========================================== -->
+    <!-- 12. Modal Struk Pembelian (Thermal Receipt Preview) -->
     <div id="receiptModal" class="modal-product-backdrop">
         <div
             style="width: 100%; max-width: 400px; background-color: #FFFFFF; border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-xl); border: 1px solid rgba(166, 177, 195, 0.6); display: flex; flex-direction: column; gap: 1rem;">
@@ -1518,9 +1494,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         12. USER PROFILE MODAL (100% Identik dengan UserProfileModal.jsx)
-         ========================================== -->
+    <!-- 13. Modal Pengaturan Profil Pengguna & Akun -->
     <div id="userProfileModal" class="modal-product-backdrop" style="display: none;">
         <div class="user-profile-modal-card">
             <!-- Modal Header -->
