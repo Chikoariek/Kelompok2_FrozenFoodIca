@@ -130,12 +130,10 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function switchTab(tabId) {
-    
-    // === MODE UJIAN: KUNCI AGAR HANYA DIAM DI TEMPAT ===
-      if (tabId !== "dashboard") return;
-    
-    // === Hanya yang diatas yang perlu dihapus
-      if (!tabMeta[tabId]) return;
+    // Mode Ujian: Jika EXAM_MODE aktif di .env, kunci agar tetap di tab dashboard
+    if (window.__EXAM_MODE__ && tabId !== "dashboard") return;
+
+    if (!tabMeta[tabId]) return;
 
       sidebarBtns.forEach((btn) => {
           btn.classList.toggle(
@@ -1207,8 +1205,10 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-  // Cegah klik Lihat Toko saat mode ujian
-  document.querySelector('.dropdown-menu-item[href]')?.addEventListener('click', function(e) {
-    e.preventDefault();
-  });
+  // Mode Ujian: Cegah klik Lihat Toko hanya jika EXAM_MODE aktif di .env
+  if (window.__EXAM_MODE__) {
+    document.querySelector('.dropdown-menu-item[href]')?.addEventListener('click', function(e) {
+      e.preventDefault();
+    });
+  }
 
