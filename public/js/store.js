@@ -740,6 +740,14 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function addToCart(product, qty = 1) {
+    // Validasi Tamu: Wajib login sebelum dapat membeli produk
+    if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {
+      if (confirm('Silakan masuk ke akun Anda terlebih dahulu untuk mulai memesan produk di Ica Frozen Food.\n\nKlik "OK" untuk menuju halaman Login sekarang.')) {
+        window.location.href = window.__LOGIN_URL__ || '/login';
+      }
+      return;
+    }
+
     if (product.stock <= 0) {
       alert('Maaf, produk ini sedang habis!');
       return;
@@ -938,6 +946,14 @@ document.addEventListener('DOMContentLoaded', function () {
   // Step 1: User clicks "Lanjut ke Pembayaran" in Cart Drawer
   if (btnSubmitOrder) {
     btnSubmitOrder.addEventListener('click', () => {
+      // Validasi Tamu: Wajib login sebelum checkout
+      if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {
+        if (confirm('Silakan masuk ke akun Anda terlebih dahulu untuk menyelesaikan pemesanan produk.\n\nKlik "OK" untuk menuju halaman Login sekarang.')) {
+          window.location.href = window.__LOGIN_URL__ || '/login';
+        }
+        return;
+      }
+
       if (cart.length === 0) return;
 
       const name = custNameInput?.value.trim();
@@ -970,15 +986,15 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       const subtotal = getCartSubtotal();
-      const iceFee = isKurir ? 5000 : 0;
-      const total = subtotal + iceFee;
+      const shippingFee = isKurir ? 5000 : 0;
+      const total = subtotal + shippingFee;
 
       const orderPayload = {
         id: 'ORD-ICA-' + Math.floor(1000 + Math.random() * 9000),
         customer_name: name,
         customer_phone: phone,
-        address: isKurir ? address : 'Ambil di Outlet Loktabat Utara',
-        method: isKurir ? 'Kurir Toko (Diantar ke Rumah)' : 'Ambil di Toko / Self Pick-up',
+        address: isKurir ? address : 'Ambil di Toko Ica Frozen Food',
+        method: isKurir ? 'Via kurir' : 'Ambil di Toko',
         payment_method: paymentMethod,
         items: cart.map((it) => ({
           id: it.product.id,
@@ -987,7 +1003,8 @@ document.addEventListener('DOMContentLoaded', function () {
           qty: it.qty,
         })),
         subtotal: subtotal,
-        ice_fee: iceFee,
+        shipping_fee: shippingFee,
+        ice_fee: shippingFee,
         total: total,
         channel: 'Online Store',
       };
@@ -1008,34 +1025,8 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
 
-        <div class="qris-qr-code-wrapper">
-          <svg width="190" height="190" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="200" height="200" rx="8" fill="white"/>
-            
-            <!-- Position Detection Pattern: Top-Left -->
-            <rect x="15" y="15" width="46" height="46" rx="4" fill="#0F172A"/>
-            <rect x="23" y="23" width="30" height="30" rx="2" fill="white"/>
-            <rect x="29" y="29" width="18" height="18" rx="2" fill="#0F172A"/>
-
-            <!-- Position Detection Pattern: Top-Right -->
-            <rect x="139" y="15" width="46" height="46" rx="4" fill="#0F172A"/>
-            <rect x="147" y="23" width="30" height="30" rx="2" fill="white"/>
-            <rect x="153" y="29" width="18" height="18" rx="2" fill="#0F172A"/>
-
-            <!-- Position Detection Pattern: Bottom-Left -->
-            <rect x="15" y="139" width="46" height="46" rx="4" fill="#0F172A"/>
-            <rect x="23" y="147" width="30" height="30" rx="2" fill="white"/>
-            <rect x="29" y="153" width="18" height="18" rx="2" fill="#0F172A"/>
-
-            <!-- QR Pattern Modules (Dense authentic matrix) -->
-            <path d="M72 18h12v12H72zM94 18h14v8H94zM116 18h10v12h-10zM72 36h8v16h-8zM88 36h12v12H88zM108 36h18v8h-18zM72 58h28v8H72zM108 52h10v14h-10zM124 52h8v18h-8zM18 72h16v10H18zM42 72h12v12H42zM62 72h16v8H62zM86 72h12v18H86zM106 72h18v10h-18zM132 72h14v12h-14zM154 72h18v8h-18zM180 72h6v14h-6zM18 90h10v18H18zM36 90h18v8H36zM62 88h12v14H62zM80 96h18v12H80zM106 88h14v12h-14zM128 92h20v8h-20zM156 88h12v16h-12zM176 94h10v14h-10zM18 116h16v8H18zM42 110h12v16H42zM62 110h14v10H62zM84 116h14v12H84zM106 108h14v14h-14zM128 110h10v16h-10zM146 112h14v10h-14zM168 116h18v10h-18zM72 134h12v14H72zM92 134h18v8H92zM118 134h14v14h-14zM140 134h12v12h-12zM160 134h16v8h-16zM184 134h6v14h-6zM72 156h18v8H72zM98 150h12v18H98zM118 156h18v10h-18zM144 154h14v14h-14zM166 150h12v16h-12zM186 156h4v12h-4zM72 172h10v14H72zM90 176h18v8H90zM116 174h12v12h-12zM136 176h16v8h-16zM160 172h14v14h-14zM182 176h8v8h-8z" fill="#0F172A"/>
-
-            <!-- Center Logo Badge -->
-            <rect x="76" y="76" width="48" height="48" rx="10" fill="white" stroke="#E2E8F0" stroke-width="2"/>
-            <rect x="80" y="80" width="40" height="40" rx="8" fill="#677D9E"/>
-            <text x="100" y="104" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="900" fill="white" text-anchor="middle">ICA</text>
-            <text x="100" y="114" font-family="'Plus Jakarta Sans', sans-serif" font-size="6.5" font-weight="700" fill="#E2E8F0" text-anchor="middle">FROZEN</text>
-          </svg>
+        <div class="qris-qr-code-wrapper" style="text-align: center; padding: 0.75rem; background: #FFFFFF; border-radius: 16px; border: 1.5px solid #E2E8F0; margin: 0 auto; max-width: 250px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <img src="${baseUrl}/images/qris-ica-frozen-food.png" alt="QRIS Ica Frozen Food" style="width: 100%; height: auto; border-radius: 10px; display: block;" onerror="this.src='/images/qris-ica-frozen-food.png'">
         </div>
 
         <div style="margin-top: 0.75rem; text-align: center;">
@@ -1356,7 +1347,7 @@ ITEM:
 ${(o.items || []).map((it) => `${it.name} (${it.qty}x) = Rp ${(it.qty * it.price).toLocaleString('id-ID')}`).join('\n')}
 ----------------------------------------
 Subtotal      : Rp ${Number(o.subtotal).toLocaleString('id-ID')}
-Biaya Es/Kurir: Rp ${Number(o.ice_fee || 0).toLocaleString('id-ID')}
+Ongkos Kirim  : Rp ${Number(o.shipping_fee !== undefined ? o.shipping_fee : (o.ice_fee || 0)).toLocaleString('id-ID')}
 TOTAL AKHIR   : Rp ${Number(o.total).toLocaleString('id-ID')}
 ========================================
 Terima kasih atas kunjungan Anda!
@@ -1372,6 +1363,14 @@ Terima kasih atas kunjungan Anda!
   // 8. BUNDLES / SMART RECOMMENDATIONS
   // ==========================================
   window.addBundleToCart = function (bundleId) {
+    // Validasi Tamu: Wajib login sebelum mengambil paket hemat
+    if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {
+      if (confirm('Silakan masuk ke akun Anda terlebih dahulu untuk memesan paket hemat di Ica Frozen Food.\n\nKlik "OK" untuk menuju halaman Login sekarang.')) {
+        window.location.href = window.__LOGIN_URL__ || '/login';
+      }
+      return;
+    }
+
     const bundle = bundles.find((b) => b.id === bundleId);
     if (!bundle) return;
 

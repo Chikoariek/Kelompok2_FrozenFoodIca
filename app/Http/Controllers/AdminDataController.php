@@ -8,6 +8,13 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Controller Manajemen Data (API Endpoint)
+ * Menangani transaksi data asinkron (AJAX) antara frontend dan database:
+ * 1. Manajemen Kategori Produk (Ambil, Tambah, Edit, Hapus, Sinkronisasi)
+ * 2. Manajemen Data Produk (Inventaris, Pengurangan/Penambahan Stok Freezer)
+ * 3. Manajemen Pesanan (Pencatatan Order Checkout & Perubahan Status Transaksi)
+ */
 class AdminDataController extends Controller
 {
     // ==========================================
@@ -123,16 +130,43 @@ class AdminDataController extends Controller
     public function storeProduct(Request $request)
     {
         $validated = $request->validate([
+            'id'          => 'nullable|string',
             'name'        => 'required|string|max:255',
             'category'    => 'required|string',
             'price'       => 'required|numeric|min:0',
             'stock'       => 'required|integer|min:0',
             'weight'      => 'nullable|string',
             'description' => 'nullable|string',
-            'image'       => 'nullable|string',
+            'image'       => 'nullable',
+            'image_file'  => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
         ]);
 
         $id = $request->input('id') ?: ('PRD-' . time());
+        $existingProduct = Product::find($id);
+        $imagePath = $existingProduct ? $existingProduct->image : '/images/products/nugget.png';
+
+        // 1. Jika ada file gambar diunggah langsung lewat form (image_file atau image)
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $uploadDir = public_path('images/products');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadDir, $filename);
+            $imagePath = '/images/products/' . $filename;
+        } elseif ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $uploadDir = public_path('images/products');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadDir, $filename);
+            $imagePath = '/images/products/' . $filename;
+        } elseif ($request->filled('image')) {
+            $imagePath = $request->input('image');
+        }
 
         $product = Product::updateOrCreate(
             ['id' => $id],
@@ -143,10 +177,8 @@ class AdminDataController extends Controller
                 'stock'       => (int) $validated['stock'],
                 'weight'      => $validated['weight'] ?? '500g',
                 'description' => $validated['description'] ?? '',
-                'image'       => $validated['image'] ?? '/images/products/nugget.png',
+                'image'       => $imagePath,
                 'tags'        => $request->input('tags', ['Baru']),
-                'temperature' => $request->input('temperature', '-18°C'),
-                'shelfLife'   => $request->input('shelfLife', '6 Bulan'),
             ]
         );
 
@@ -212,8 +244,6 @@ class AdminDataController extends Controller
                         'description' => $prod['desc'] ?? ($prod['description'] ?? ''),
                         'image'       => $prod['image'] ?? '/images/products/nugget.png',
                         'tags'        => $prod['tags'] ?? [],
-                        'temperature' => $prod['temperature'] ?? '-18°C',
-                        'shelfLife'   => $prod['shelfLife'] ?? '6 Bulan',
                     ]
                 );
             }
@@ -245,7 +275,8 @@ class AdminDataController extends Controller
                 'status'        => $order->status,
                 'items'         => $order->items,
                 'subtotal'      => $order->subtotal,
-                'iceFee'        => $order->ice_fee,
+                'shippingFee'   => $order->shipping_fee ?? $order->ice_fee ?? 0,
+                'iceFee'        => $order->shipping_fee ?? $order->ice_fee ?? 0,
                 'total'         => $order->total,
                 'isPaid'        => (bool) $order->is_paid,
                 'channel'       => $order->channel,
@@ -270,8 +301,8 @@ class AdminDataController extends Controller
         $status = $request->input('status') ?: 'Diproses';
         $items = $request->input('items') ?: [];
         $subtotal = (int) ($request->input('subtotal') ?: 0);
-        $iceFee = (int) ($request->input('iceFee') ?: ($request->input('ice_fee') ?: 0));
-        $total = (int) ($request->input('total') ?: ($subtotal + $iceFee));
+        $shippingFee = (int) ($request->input('shipping_fee') ?: ($request->input('shippingFee') ?: ($request->input('iceFee') ?: ($request->input('ice_fee') ?: 0))));
+        $total = (int) ($request->input('total') ?: ($subtotal + $shippingFee));
         $isPaid = $request->has('isPaid') ? $request->boolean('isPaid') : ($request->has('is_paid') ? $request->boolean('is_paid') : false);
         $channel = $request->input('channel') ?: 'Online';
 
@@ -287,7 +318,7 @@ class AdminDataController extends Controller
                 'status'         => $status,
                 'items'          => $items,
                 'subtotal'       => $subtotal,
-                'ice_fee'        => $iceFee,
+                'shipping_fee'   => $shippingFee,
                 'total'          => $total,
                 'is_paid'        => $isPaid,
                 'channel'        => $channel,
@@ -322,7 +353,8 @@ class AdminDataController extends Controller
                 'status'        => $order->status,
                 'items'         => $order->items,
                 'subtotal'      => $order->subtotal,
-                'iceFee'        => $order->ice_fee,
+                'shippingFee'   => $order->shipping_fee ?? $order->ice_fee ?? 0,
+                'iceFee'        => $order->shipping_fee ?? $order->ice_fee ?? 0,
                 'total'         => $order->total,
                 'isPaid'        => (bool) $order->is_paid,
                 'channel'       => $order->channel,
@@ -364,7 +396,8 @@ class AdminDataController extends Controller
                 'status'        => $order->status,
                 'items'         => $order->items,
                 'subtotal'      => $order->subtotal,
-                'iceFee'        => $order->ice_fee,
+                'shippingFee'   => $order->shipping_fee ?? $order->ice_fee ?? 0,
+                'iceFee'        => $order->shipping_fee ?? $order->ice_fee ?? 0,
                 'total'         => $order->total,
                 'isPaid'        => (bool) $order->is_paid,
                 'channel'       => $order->channel,

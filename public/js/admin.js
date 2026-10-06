@@ -136,55 +136,55 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function switchTab(tabId) {
-    if (!tabMeta[tabId]) return;
+    
+    // === MODE UJIAN: KUNCI AGAR HANYA DIAM DI TEMPAT ===
+      if (tabId !== "dashboard") return;
+    
+    // === Hanya yang diatas yang perlu dihapus
+      if (!tabMeta[tabId]) return;
 
-    sidebarBtns.forEach((btn) => {
-      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
-    });
+      sidebarBtns.forEach((btn) => {
+          btn.classList.toggle(
+              "active",
+              btn.getAttribute("data-tab") === tabId,
+          );
+      });
 
-    tabPanes.forEach((pane) => {
-      pane.classList.toggle('active', pane.id === `tab-${tabId}`);
-    });
+      tabPanes.forEach((pane) => {
+          pane.classList.toggle("active", pane.id === `tab-${tabId}`);
+      });
 
-    if (topbarTitle) topbarTitle.textContent = tabMeta[tabId].title;
-    if (topbarSubtitle) topbarSubtitle.textContent = tabMeta[tabId].subtitle;
+      if (topbarTitle) topbarTitle.textContent = tabMeta[tabId].title;
+      if (topbarSubtitle) topbarSubtitle.textContent = tabMeta[tabId].subtitle;
 
-    // Simpan ke URL & sessionStorage
-    sessionStorage.setItem('ica_admin_active_tab', tabId);
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', tabId);
-      window.history.replaceState({}, '', url.toString());
-    } catch (e) {}
+      // Simpan ke URL & sessionStorage
+      sessionStorage.setItem("ica_admin_active_tab", tabId);
+      try {
+          const url = new URL(window.location.href);
+          url.searchParams.set("tab", tabId);
+          window.history.replaceState({}, "", url.toString());
+      } catch (e) {}
 
-    // Close mobile drawer if open
-    closeMobileSidebar();
+      // Close mobile drawer if open
+      closeMobileSidebar();
 
-    // Scroll to top smoothly
-    if (scrollBody) scrollBody.scrollTop = 0;
+      // Scroll to top smoothly
+      if (scrollBody) scrollBody.scrollTop = 0;
   }
 
   sidebarBtns.forEach((btn) => {
-    btn.addEventListener('click', function (e) {
+    btn.addEventListener('click', function () {
       const tab = this.getAttribute('data-tab');
-      if (tab && tab !== 'dashboard') {
-        e.preventDefault();
-        return;
-      }
       if (tab) switchTab(tab);
     });
   });
 
-  // Quick cross-tab links (Dinonaktifkan Sementara untuk Evaluasi Blok)
-  document.getElementById('btnOverviewSeeAllOrders')?.addEventListener('click', (e) => {
-    e.preventDefault();
-  });
-  document.getElementById('btnOverviewSeeInventory')?.addEventListener('click', (e) => {
-    e.preventDefault();
-  });
-  document.getElementById('btnSwitchToProfile')?.addEventListener('click', (e) => {
-    e.preventDefault();
+  // Quick cross-tab links
+  document.getElementById('btnOverviewSeeAllOrders')?.addEventListener('click', () => switchTab('orders'));
+  document.getElementById('btnOverviewSeeInventory')?.addEventListener('click', () => switchTab('inventory'));
+  document.getElementById('btnSwitchToProfile')?.addEventListener('click', () => {
     closeProfileDropdown();
+    switchTab('profile');
   });
 
   // Restore active tab dari query string atau session
@@ -610,7 +610,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const sub = order.subtotal || order.total || 0;
-    const ice = order.ice_fee || 0;
+    const ice = order.shipping_fee !== undefined ? order.shipping_fee : (order.shippingFee !== undefined ? order.shippingFee : (order.ice_fee || order.iceFee || 0));
     const grand = order.total || (sub + ice);
 
     if (receiptSubtotal) receiptSubtotal.textContent = `Rp ${sub.toLocaleString('id-ID')}`;
@@ -747,10 +747,63 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Modal Tambah Produk -> Simpan ke Database
+  // ==========================================
+  // MODAL TAMBAH PRODUK & UPLOAD GAMBAR
+  // ==========================================
   const modalAddProduct = document.getElementById('modalAddProduct');
   const formAddProduct = document.getElementById('formAddProduct');
+  const addProdImageFile = document.getElementById('addProdImageFile');
+  const addProdPreviewWrap = document.getElementById('addProdPreviewWrap');
+  const addProdPreviewImg = document.getElementById('addProdPreviewImg');
+  const addProdPreviewName = document.getElementById('addProdPreviewName');
+  const addProdDropzone = document.getElementById('addProdDropzone');
+  const btnChooseAddProdImg = document.getElementById('btnChooseAddProdImg');
+  const btnRemoveAddProdImg = document.getElementById('btnRemoveAddProdImg');
+
+  btnChooseAddProdImg?.addEventListener('click', () => {
+    addProdImageFile?.click();
+  });
+
+  addProdImageFile?.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('File yang dipilih harus berupa gambar (PNG, JPG, WEBP)!', 'error');
+      addProdImageFile.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Ukuran gambar maksimal 5MB!', 'error');
+      addProdImageFile.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+      if (addProdPreviewImg) addProdPreviewImg.src = evt.target.result;
+      if (addProdPreviewName) addProdPreviewName.textContent = file.name;
+      if (addProdPreviewWrap) addProdPreviewWrap.style.display = 'flex';
+      if (addProdDropzone) addProdDropzone.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  btnRemoveAddProdImg?.addEventListener('click', () => {
+    if (addProdImageFile) addProdImageFile.value = '';
+    if (addProdPreviewImg) addProdPreviewImg.src = '';
+    if (addProdPreviewWrap) addProdPreviewWrap.style.display = 'none';
+    if (addProdDropzone) addProdDropzone.style.display = 'flex';
+  });
+
   document.getElementById('btnOpenAddProductModal')?.addEventListener('click', () => {
+    // Reset form dan preview
+    formAddProduct?.reset();
+    if (addProdImageFile) addProdImageFile.value = '';
+    if (addProdPreviewImg) addProdPreviewImg.src = '';
+    if (addProdPreviewWrap) addProdPreviewWrap.style.display = 'none';
+    if (addProdDropzone) addProdDropzone.style.display = 'flex';
     modalAddProduct?.classList.add('open');
   });
 
@@ -769,23 +822,28 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('price', price);
+    formData.append('stock', stock);
+    formData.append('weight', weight);
+    formData.append('description', desc);
+
+    if (addProdImageFile && addProdImageFile.files[0]) {
+      formData.append('image_file', addProdImageFile.files[0]);
+    } else {
+      formData.append('image', image);
+    }
+
     try {
       const res = await fetch(`${apiUrl}/products`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-CSRF-TOKEN': csrfToken,
         },
-        body: JSON.stringify({
-          name,
-          category,
-          price,
-          stock,
-          weight,
-          image,
-          description: desc,
-        }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -802,7 +860,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Modal Edit Produk -> Simpan ke Database
+  // ==========================================
+  // MODAL EDIT PRODUK & UPLOAD GAMBAR
+  // ==========================================
   const modalEditProduct = document.getElementById('modalEditProduct');
   const formEditProduct = document.getElementById('formEditProduct');
   const editProdId = document.getElementById('editProdId');
@@ -813,6 +873,38 @@ document.addEventListener('DOMContentLoaded', function () {
   const editProdWeight = document.getElementById('editProdWeight');
   const editProdImage = document.getElementById('editProdImage');
   const editProdDesc = document.getElementById('editProdDesc');
+  const editProdImageFile = document.getElementById('editProdImageFile');
+  const editProdPreviewImg = document.getElementById('editProdPreviewImg');
+  const editProdPreviewName = document.getElementById('editProdPreviewName');
+  const btnChooseEditProdImg = document.getElementById('btnChooseEditProdImg');
+
+  btnChooseEditProdImg?.addEventListener('click', () => {
+    editProdImageFile?.click();
+  });
+
+  editProdImageFile?.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('File yang dipilih harus berupa gambar (PNG, JPG, WEBP)!', 'error');
+      editProdImageFile.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Ukuran gambar maksimal 5MB!', 'error');
+      editProdImageFile.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+      if (editProdPreviewImg) editProdPreviewImg.src = evt.target.result;
+      if (editProdPreviewName) editProdPreviewName.textContent = file.name + ' (Foto Baru)';
+    };
+    reader.readAsDataURL(file);
+  });
 
   document.addEventListener('click', function (e) {
     const btnEdit = e.target.closest('.btn-edit-product');
@@ -828,6 +920,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (editProdWeight) editProdWeight.value = prod.weight || '500 gr';
         if (editProdImage) editProdImage.value = prod.image || '';
         if (editProdDesc) editProdDesc.value = prod.description || '';
+
+        // Reset file input dan muat foto tersimpan
+        if (editProdImageFile) editProdImageFile.value = '';
+        if (editProdPreviewImg) editProdPreviewImg.src = prod.image || `${baseUrl}/images/products/nugget.png`;
+        if (editProdPreviewName) {
+          const fileName = prod.image ? (prod.image.split('/').pop() || 'Foto Produk') : 'Foto Default';
+          editProdPreviewName.textContent = fileName;
+        }
 
         modalEditProduct?.classList.add('open');
       }
@@ -845,24 +945,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const image = editProdImage?.value.trim();
     const desc = editProdDesc?.value.trim();
 
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('price', price);
+    formData.append('stock', stock);
+    formData.append('weight', weight);
+    formData.append('description', desc);
+
+    if (editProdImageFile && editProdImageFile.files[0]) {
+      formData.append('image_file', editProdImageFile.files[0]);
+    } else {
+      formData.append('image', image);
+    }
+
     try {
       const res = await fetch(`${apiUrl}/products`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-CSRF-TOKEN': csrfToken,
         },
-        body: JSON.stringify({
-          id,
-          name,
-          category,
-          price,
-          stock,
-          weight,
-          image,
-          description: desc,
-        }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -1121,3 +1226,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+  // Cegah klik Lihat Toko saat mode ujian
+  document.querySelector('.dropdown-menu-item[href]')?.addEventListener('click', function(e) {
+    e.preventDefault();
+  });
+

@@ -31,7 +31,8 @@
     <aside id="adminSidebar" class="admin-sidebar">
         <!-- Logo & Close Button for Mobile -->
         <div class="sidebar-logo-header">
-            <a href="{{ route('admin.dashboard') }}" style="display: flex; align-items: center; justify-content: center;">
+            <!-- Logo Toko (Klik untuk buka Halaman Utama / Homepage) -->
+            <a href="{{ route('home') }}" title="Buka Halaman Utama Toko (Homepage)" style="display: flex; align-items: center; justify-content: center;">
                 <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="sidebar-logo-img" onerror="this.style.display='none'">
             </a>
             <button id="btnAdminMobileClose" class="sidebar-mobile-close-btn" title="Tutup Menu">
@@ -39,39 +40,37 @@
             </button>
         </div>
 
-        <!-- 5 Menu Navigasi (Hanya Dashboard yang Aktif untuk Scope Ujian Blok) -->
+        <!-- 5 Menu Navigasi -->
         <nav class="sidebar-nav-menu">
             <button class="sidebar-nav-btn active" data-tab="dashboard">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
                 <span>Dashboard</span>
             </button>
-            <button class="sidebar-nav-btn" data-tab="profile" style="opacity: 0.45; cursor: not-allowed;" title="Fitur tahap pengembangan berikutnya">
+            <button class="sidebar-nav-btn" data-tab="profile">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span>Profil Admin</span>
             </button>
-            <button class="sidebar-nav-btn" data-tab="orders" style="opacity: 0.45; cursor: not-allowed;" title="Fitur tahap pengembangan berikutnya">
+            <button class="sidebar-nav-btn" data-tab="orders">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 <span>Proses Pesanan</span>
             </button>
-            <button class="sidebar-nav-btn" data-tab="inventory" style="opacity: 0.45; cursor: not-allowed;" title="Fitur tahap pengembangan berikutnya">
+            <button class="sidebar-nav-btn" data-tab="inventory">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
                 <span>Data Produk</span>
             </button>
-            <button class="sidebar-nav-btn" data-tab="categories" style="opacity: 0.45; cursor: not-allowed;" title="Fitur tahap pengembangan berikutnya">
+            <button class="sidebar-nav-btn" data-tab="categories">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
                 <span>Kategori Produk</span>
             </button>
         </nav>
 
-        <!-- Sidebar Footer & Logout -->
-        <div style="padding: 0 1.25rem 1.25rem; margin-top: auto;">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #EF4444; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;" title="Keluar dari akun admin">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    <span>Keluar (Logout)</span>
-                </button>
-            </form>
+        <!-- Sidebar Footer Status Toko (Tombol logout dipindahkan ke menu dropdown profil kanan atas) -->
+        <div class="sidebar-footer-info" style="padding: 1.25rem 1.25rem 0; margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.15);">
+            <div class="sidebar-footer-row" style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="sidebar-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;"></span>
+                <span class="sidebar-footer-title" style="font-size: 0.8125rem; font-weight: 800; color: #FFFFFF;">Toko Online Aktif</span>
+            </div>
+            <p class="sidebar-footer-sub" style="font-size: 0.6875rem; color: rgba(255, 255, 255, 0.65); margin: 0.35rem 0 0;">Sistem Ica Frozen Food v1.0</p>
         </div>
     </aside>
 
@@ -102,18 +101,55 @@
                     </span>
                 </div>
 
-                <!-- Admin Profile Badge (Info Saja - Non-Aktif untuk Scope Ujian Blok) -->
-                <div class="topbar-profile-trigger" style="cursor: default;" title="Akun Administrator">
-                    <div id="topbarAvatarBox" class="topbar-avatar-circle">
-                        @if($user && $user->avatar)
-                            <img id="topbarAvatarImg" src="{{ $user->avatar }}" alt="{{ $user->name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        @else
-                            <span id="topbarAvatarInitials">{{ strtoupper(substr($user->name ?? 'AD', 0, 2)) }}</span>
-                        @endif
-                    </div>
-                    <div class="topbar-profile-details">
-                        <p id="topbarAdminName" class="topbar-profile-name">{{ $user->name ?? 'Administrator' }}</p>
-                        <p class="topbar-profile-role">Administrator Toko</p>
+                <!-- Wadah Menu Profil Admin & Dropdown Melayang -->
+                <div class="topbar-profile-container" style="position: relative;">
+                    <!-- Tombol Trigger Pembuka Dropdown Profil -->
+                    <button id="btnAdminProfileTrigger" class="topbar-profile-trigger" type="button" title="Buka Menu Profil Administrator">
+                        <div id="topbarAvatarBox" class="topbar-avatar-circle">
+                            @if($user && $user->avatar)
+                                <img id="topbarAvatarImg" src="{{ $user->avatar }}" alt="{{ $user->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            @else
+                                <span id="topbarAvatarInitials">{{ strtoupper(substr($user->name ?? 'AD', 0, 2)) }}</span>
+                            @endif
+                        </div>
+                        <div class="topbar-profile-details">
+                            <p id="topbarAdminName" class="topbar-profile-name">{{ $user->name ?? 'Administrator' }}</p>
+                            <p class="topbar-profile-role">Administrator Toko</p>
+                        </div>
+                        <svg id="topbarChevron" class="topbar-chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+
+                    <!-- Dropdown Melayang (Floating Modal Menu) -->
+                    <div id="adminProfileDropdown" class="topbar-profile-dropdown">
+                        <div class="dropdown-user-card">
+                            <p class="dropdown-user-name">{{ $user->name ?? 'Administrator' }}</p>
+                            <p class="dropdown-user-email">{{ $user->email ?? 'admin@icafrozenfood.com' }}</p>
+                            <span class="dropdown-badge-pill">Administrator Toko</span>
+                        </div>
+                        <div class="profile-dropdown-menu">
+                            <!-- Link Pintas ke Homepage / Katalog Toko -->
+                            <a href="{{ route('home') }}" class="dropdown-menu-item" style="text-decoration: none; color: #0284C7; font-weight: 700;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                <span>Lihat Toko (Homepage)</span>
+                            </a>
+
+                            <!-- Link ke Tab Kelola Profil -->
+                            <button id="btnSwitchToProfile" class="dropdown-menu-item" type="button">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <span>Kelola Profil &amp; Password</span>
+                            </button>
+                            
+                            <div class="dropdown-divider"></div>
+                            
+                            <!-- Tombol Logout Resmi -->
+                            <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                                @csrf
+                                <button type="submit" class="dropdown-menu-item logout" title="Keluar dari sesi admin">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                    <span>Keluar (Logout)</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -128,15 +164,34 @@
                  ========================================== -->
             <section id="tab-dashboard" class="tab-pane active">
                 @php
+                    // ========================================================
+                    // PERHITUNGAN DATA RIIL (DIAMBIL LANGSUNG DARI DATABASE)
+                    // ========================================================
+                    
+                    // 1. Total Produk Aktif di Etalase
                     $totalProducts = count($products);
-                    $totalOrders   = count($orders);
-                    $activeCustomers = 864;
-                    $totalRevenue  = 0;
+                    $totalCategoriesCount = isset($categories) ? count($categories) : \App\Models\Category::count();
+
+                    // 2. Total Pesanan & Pesanan yang Membutuhkan Tindakan (Diproses / Menunggu)
+                    $totalOrders = count($orders);
+                    $pendingOrdersCount = 0;
+                    $totalRevenue = 0;
+
                     foreach($orders as $o) {
+                        // Pendapatan dihitung dari pesanan yang sudah lunas atau selesai
                         if($o->status === 'Selesai' || $o->is_paid) {
-                            $totalRevenue += $o->total;
+                            $totalRevenue += (int) $o->total;
+                        }
+                        if($o->status === 'Diproses' || $o->status === 'Menunggu') {
+                            $pendingOrdersCount++;
                         }
                     }
+
+                    // 3. Total Pelanggan Riil (Berdasarkan nama pelanggan unik dari riwayat pesanan)
+                    $uniqueCustomerNames = $orders->pluck('customer_name')->unique()->filter(function($val) {
+                        return !empty($val) && $val !== '-';
+                    });
+                    $uniqueCustomers = $uniqueCustomerNames->count();
                 @endphp
 
                 <!-- Welcome Banner with Polar Bear Illustration -->
@@ -152,9 +207,9 @@
                     </div>
                 </div>
 
-                <!-- 4 KPI Stat Cards (Total Produk, Total Pesanan, Total Pelanggan, Total Pendapatan) -->
+                <!-- 4 KPI Stat Cards Dinamis (Menampilkan data riil dari database) -->
                 <div class="admin-stats-grid">
-                    <!-- Total Produk -->
+                    <!-- Kartu 1: Total Produk Riil -->
                     <div class="admin-stat-card">
                         <div class="admin-stat-header">
                             <p class="admin-stat-label">Total Produk</p>
@@ -162,11 +217,13 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                             </div>
                         </div>
-                        <p class="admin-stat-value">{{ $totalProducts }}</p>
-                        <p class="admin-stat-subtext">+5% Produk baru</p>
+                        <div class="admin-stat-body">
+                            <p class="admin-stat-value">{{ $totalProducts }}</p>
+                            <p class="admin-stat-subtext">{{ $totalCategoriesCount }} Kategori di etalase</p>
+                        </div>
                     </div>
 
-                    <!-- Total Pesanan -->
+                    <!-- Kartu 2: Total Pesanan Riil -->
                     <div class="admin-stat-card">
                         <div class="admin-stat-header">
                             <p class="admin-stat-label">Total Pesanan</p>
@@ -174,11 +231,13 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
                             </div>
                         </div>
-                        <p class="admin-stat-value">{{ $totalOrders }}</p>
-                        <p class="admin-stat-subtext">+12% Dari kemarin</p>
+                        <div class="admin-stat-body">
+                            <p class="admin-stat-value">{{ $totalOrders }}</p>
+                            <p class="admin-stat-subtext">{{ $pendingOrdersCount }} Pesanan aktif</p>
+                        </div>
                     </div>
 
-                    <!-- Total Pelanggan -->
+                    <!-- Kartu 3: Total Pelanggan Riil (Berdasarkan data pesanan nyata) -->
                     <div class="admin-stat-card">
                         <div class="admin-stat-header">
                             <p class="admin-stat-label">Total Pelanggan</p>
@@ -186,11 +245,13 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             </div>
                         </div>
-                        <p class="admin-stat-value">{{ $activeCustomers }}</p>
-                        <p class="admin-stat-subtext">8% Pelanggan baru</p>
+                        <div class="admin-stat-body">
+                            <p class="admin-stat-value">{{ $uniqueCustomers }}</p>
+                            <p class="admin-stat-subtext">Pelanggan bertransaksi</p>
+                        </div>
                     </div>
 
-                    <!-- Total Pendapatan -->
+                    <!-- Kartu 4: Total Pendapatan Riil (Pesanan Lunas / Selesai) -->
                     <div class="admin-stat-card">
                         <div class="admin-stat-header">
                             <p class="admin-stat-label">Total Pendapatan</p>
@@ -198,8 +259,10 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
                             </div>
                         </div>
-                        <p class="admin-stat-value long-text">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
-                        <p class="admin-stat-subtext">+15% Dari kemarin</p>
+                        <div class="admin-stat-body">
+                            <p class="admin-stat-value long-text">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
+                            <p class="admin-stat-subtext">Pesanan lunas &amp; selesai</p>
+                        </div>
                     </div>
                 </div>
 
@@ -209,7 +272,7 @@
                     <div class="admin-card-box">
                         <div class="admin-card-header">
                             <h3 class="admin-card-title">PESANAN TERBARU</h3>
-                            <button id="btnOverviewSeeAllOrders" class="admin-card-action-link" title="Fitur tahap blok berikutnya" type="button" style="opacity: 0.45; cursor: not-allowed;">
+                            <button id="btnOverviewSeeAllOrders" class="admin-card-action-link" type="button">
                                 <span>Lihat semua pesanan →</span>
                             </button>
                         </div>
@@ -251,7 +314,7 @@
                                                 <span class="badge-status {{ $badgeClass }}">{{ $statusLabel }}</span>
                                             </td>
                                             <td>
-                                                <button class="btn-table-receipt btn-open-receipt" data-order-id="{{ $order->id }}" title="Fitur tahap blok berikutnya" type="button" style="opacity: 0.45; cursor: not-allowed;">
+                                                <button class="btn-table-receipt btn-open-receipt" data-order-id="{{ $order->id }}" type="button">
                                                     Lihat Struk
                                                 </button>
                                             </td>
@@ -275,37 +338,66 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
                                 <h3 class="admin-card-title">Produk Paling Laris</h3>
                             </div>
-                            <button id="btnOverviewSeeInventory" class="admin-card-action-link" title="Fitur tahap blok berikutnya" type="button" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">
+                            <button id="btnOverviewSeeInventory" class="admin-card-action-link" type="button">
                                 <span>Katalog →</span>
                             </button>
                         </div>
                         <div class="popular-products-list">
                             @php
-                                $popularItems = [
-                                    ['rank' => 1, 'name' => 'Chicken Nugget Crispy', 'stock' => '120 pcs terjual'],
-                                    ['rank' => 2, 'name' => 'Dimsum Ayam Udang Premium', 'stock' => '85 pcs terjual'],
-                                    ['rank' => 3, 'name' => 'Bakso Sapi Halus Super', 'stock' => '200 pcs terjual'],
-                                    ['rank' => 4, 'name' => 'Kentang French Fries Shoestring', 'stock' => '150 pcs terjual'],
-                                    ['rank' => 5, 'name' => 'Otak-Otak Ikan Tenggiri Asli', 'stock' => '100 pcs terjual'],
-                                ];
-                                if (count($products) > 0) {
-                                    foreach($products->take(5) as $idx => $prod) {
-                                        $popularItems[$idx]['name'] = $prod->name;
+                                $productSales = [];
+                                foreach ($orders as $ord) {
+                                    // Hanya hitung pesanan yang bukan berstatus 'Dibatalkan'
+                                    if ($ord->status === 'Dibatalkan') {
+                                        continue;
                                     }
+                                    $orderItems = is_array($ord->items) ? $ord->items : (json_decode($ord->items, true) ?: []);
+                                    if (is_array($orderItems)) {
+                                        foreach ($orderItems as $it) {
+                                            $name = $it['name'] ?? null;
+                                            $qty = (int) ($it['qty'] ?? 1);
+                                            if ($name) {
+                                                $productSales[$name] = ($productSales[$name] ?? 0) + $qty;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Urutkan dari produk dengan jumlah terjual terbanyak
+                                arsort($productSales);
+
+                                $popularItems = [];
+                                $rank = 1;
+                                foreach ($productSales as $pName => $totalSold) {
+                                    if ($totalSold > 0) {
+                                        $popularItems[] = [
+                                            'rank' => $rank++,
+                                            'name' => $pName,
+                                            'sold' => $totalSold,
+                                        ];
+                                    }
+                                    if (count($popularItems) >= 5) break;
                                 }
                             @endphp
 
-                            @foreach($popularItems as $item)
-                                <div class="popular-product-item">
-                                    <span class="popular-rank-badge {{ $item['rank'] === 1 ? 'rank-1' : '' }}">
-                                        {{ $item['rank'] }}
-                                    </span>
-                                    <div class="popular-product-info">
-                                        <p class="popular-product-name">{{ $item['name'] }}</p>
-                                        <p class="popular-product-stock">{{ $item['stock'] }}</p>
+                            @if(count($popularItems) > 0)
+                                @foreach($popularItems as $item)
+                                    <div class="popular-product-item">
+                                        <span class="popular-rank-badge {{ $item['rank'] === 1 ? 'rank-1' : '' }}">
+                                            {{ $item['rank'] }}
+                                        </span>
+                                        <div class="popular-product-info">
+                                            <p class="popular-product-name">{{ $item['name'] }}</p>
+                                            <p class="popular-product-stock">{{ $item['sold'] }} pcs terjual</p>
+                                        </div>
                                     </div>
+                                @endforeach
+                            @else
+                                <div style="padding: 2.25rem 1rem; text-align: center; color: #94A3B8;">
+                                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 0.5rem; opacity: 0.6;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                    <p style="font-size: 0.8125rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Belum Ada Produk Terjual</p>
+                                    <p style="font-size: 0.6875rem; color: #64748B; margin: 0;">Data produk terlaris akan otomatis terhitung saat ada pesanan masuk.</p>
                                 </div>
-                            @endforeach
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -932,8 +1024,31 @@
                         <input type="text" id="addProdWeight" value="500 gr" placeholder="500 gr">
                     </div>
                     <div class="form-group-item">
-                        <label for="addProdImage">URL Gambar Produk</label>
-                        <input type="text" id="addProdImage" value="{{ asset('images/products/nugget.png') }}" placeholder="/images/products/nugget.png">
+                        <label>Foto / Gambar Produk</label>
+                        <div class="product-image-uploader-box" id="addProdUploadBox">
+                            <!-- Preview Foto Terpilih -->
+                            <div class="product-image-preview-wrap" id="addProdPreviewWrap" style="display: none;">
+                                <img id="addProdPreviewImg" src="" alt="Preview Produk" class="product-image-preview-thumb">
+                                <div class="product-image-preview-info">
+                                    <p id="addProdPreviewName" class="product-image-file-name">foto-produk.jpg</p>
+                                    <button type="button" class="btn-remove-preview" id="btnRemoveAddProdImg">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                        <span>Hapus / Ganti Foto</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Area Dropzone / Tombol Upload File -->
+                            <div class="product-image-dropzone" id="addProdDropzone">
+                                <input type="file" id="addProdImageFile" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;">
+                                <button type="button" class="btn-choose-product-img" id="btnChooseAddProdImg">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                    <span>Pilih File Foto Gambar</span>
+                                </button>
+                                <p class="product-image-hint">Format PNG, JPG, JPEG, WEBP (Maksimal 5MB). Jika belum ada foto, sistem otomatis memakai gambar default.</p>
+                            </div>
+                            <input type="hidden" id="addProdImage" value="">
+                        </div>
                     </div>
                     <div class="form-group-item">
                         <label for="addProdDesc">Deskripsi Ringkas</label>
@@ -985,8 +1100,22 @@
                         <input type="text" id="editProdWeight">
                     </div>
                     <div class="form-group-item">
-                        <label for="editProdImage">URL Gambar Produk</label>
-                        <input type="text" id="editProdImage">
+                        <label>Foto / Gambar Produk</label>
+                        <div class="product-image-uploader-box" id="editProdUploadBox">
+                            <!-- Preview Foto Saat Ini / Foto Baru -->
+                            <div class="product-image-preview-wrap" id="editProdPreviewWrap">
+                                <img id="editProdPreviewImg" src="/images/products/nugget.png" alt="Preview Produk" class="product-image-preview-thumb">
+                                <div class="product-image-preview-info">
+                                    <p id="editProdPreviewName" class="product-image-file-name">Foto Produk Saat Ini</p>
+                                    <input type="file" id="editProdImageFile" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;">
+                                    <button type="button" class="btn-choose-product-img" id="btnChooseEditProdImg" style="align-self: flex-start; padding: 4px 10px; font-size: 11px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/></svg>
+                                        <span>Ganti Foto Produk</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="editProdImage" value="">
+                        </div>
                     </div>
                     <div class="form-group-item">
                         <label for="editProdDesc">Deskripsi Ringkas</label>
@@ -1087,7 +1216,7 @@
                     <span id="receiptSubtotal">Rp 0</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span>Biaya Es Pendingin:</span>
+                    <span>Ongkos Kirim:</span>
                     <span id="receiptIceFee">Rp 0</span>
                 </div>
                 <div class="receipt-total-row">

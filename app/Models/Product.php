@@ -22,8 +22,6 @@ class Product extends Model
         'description',
         'image',
         'tags',
-        'temperature',
-        'shelfLife',
     ];
 
     protected $casts = [

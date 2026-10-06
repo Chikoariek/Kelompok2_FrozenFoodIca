@@ -72,9 +72,9 @@
             </svg>
         </button>
 
-        <!-- Register Link (Dinonaktifkan Sementara untuk Evaluasi Blok) -->
-        <p class="login-register" style="color: #94A3B8;">
-            Belum punya akun? <span style="color: #94A3B8; cursor: not-allowed; text-decoration: none;" title="Registrasi mandiri dinonaktifkan untuk evaluasi blok">Daftar di sini</span>
+        <!-- Register Link -->
+        <p class="login-register">
+            Belum punya akun? <a href="{{ route('register') }}">Daftar di sini</a>
         </p>
     </form>
 

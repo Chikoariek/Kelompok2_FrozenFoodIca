@@ -11,42 +11,39 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ============================================================
-// PUBLIC ROUTES
+// 1. PUBLIC ROUTES (Dapat diakses siapapun tanpa login)
 // ============================================================
 
-// Mode Demo Ujian Blok: Langsung arahkan root URL ke halaman login
+// Halaman utama: Menampilkan katalog produk, etalase, dan keranjang belanja
 Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
 
 
 // ============================================================
-// USER ROUTES (Biasa) — Harus login & role:user
+// 2. USER ROUTES (Khusus Pelanggan yang Sudah Login, role: user)
 // ============================================================
 
 Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
+    // Pengguna biasa diarahkan langsung ke homepage dengan profil aktif di navbar
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return redirect()->route('home');
     })->name('dashboard');
 
-    // Customer order route
+    // Rute pemesanan customer diarahkan ke homepage
     Route::get('/order', function () {
-        return view('welcome', [
-            'user' => Auth::user(),
-            'isLoggedIn' => true,
-            'initialPage' => 'order',
-            'products' => \App\Models\Product::all(),
-            'categories' => \App\Models\Category::all(),
-        ]);
+        return redirect()->route('home');
     })->name('order');
 });
 
 
 // ============================================================
-// ADMIN ROUTES — Harus login & role:admin
+// 3. ADMIN ROUTES (Khusus Administrator Toko, role: admin)
+// Dilindungi ganda: Harus Login ('auth') & Harus Role Admin ('role:admin')
 // ============================================================
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(function () {
+    // Halaman utama dashboard admin: menyuplai data produk, kategori, dan pesanan terbaru
     Route::get('/dashboard', function () {
         $products = \App\Models\Product::all();
         $categories = \App\Models\Category::all();
@@ -59,19 +56,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
         ]);
     })->name('dashboard');
 
+    // Menangani redirect fallback untuk URL di bawah prefix /admin/
     Route::get('/{any}', function () {
         return redirect()->route('admin.dashboard');
     })->where('any', '.*')->name('any');
 });
 
-// Alias redirect /admin -> /admin/dashboard
+// Shortcut redirect otomatis dari URL /admin langsung ke /admin/dashboard
 Route::get('/admin', function () {
     return redirect()->route('admin.dashboard');
 });
 
 
 // ============================================================
-// PROFILE ROUTES (Breeze)
+// 4. PROFILE ROUTES (Laravel Breeze untuk edit data profil & password)
 // ============================================================
 
 Route::middleware('auth')->group(function () {
@@ -82,26 +80,27 @@ Route::middleware('auth')->group(function () {
 
 
 // ============================================================
-// DATA & API ROUTES (Database Persistence for Products, Categories, Orders)
+// 5. DATA & API ROUTES (Endpoint AJAX untuk sinkronisasi Database)
+// Menangani pembacaan dan pembaruan data secara asynchronous tanpa reload halaman
 // ============================================================
 
 Route::prefix('api')->group(function () {
-    // Public / Read
+    // Mengambil data kategori, produk, dan riwayat pesanan
     Route::get('/categories', [\App\Http\Controllers\AdminDataController::class, 'getCategories']);
     Route::get('/products', [\App\Http\Controllers\AdminDataController::class, 'getProducts']);
     Route::get('/orders', [\App\Http\Controllers\AdminDataController::class, 'getOrders']);
 
-    // Orders (Customer checkout & POS checkout)
+    // Proses pesanan: Checkout pelanggan baru & Perubahan status (Diproses/Dikirim/Selesai)
     Route::post('/orders', [\App\Http\Controllers\AdminDataController::class, 'storeOrder']);
     Route::patch('/orders/{id}/status', [\App\Http\Controllers\AdminDataController::class, 'updateOrderStatus']);
 
-    // Admin Only: Category CRUD & Bulk Sync
+    // Manajemen Kategori: Tambah, Ubah Nama, Hapus, dan Sinkronisasi Massal
     Route::post('/categories', [\App\Http\Controllers\AdminDataController::class, 'storeCategory']);
     Route::post('/categories/update', [\App\Http\Controllers\AdminDataController::class, 'updateCategory']);
     Route::post('/categories/delete', [\App\Http\Controllers\AdminDataController::class, 'destroyCategory']);
     Route::post('/categories/sync', [\App\Http\Controllers\AdminDataController::class, 'syncCategories']);
 
-    // Admin Only: Product CRUD & Bulk Sync
+    // Manajemen Produk: Tambah Produk Baru, Update Stok Freezer, Hapus, & Sinkronisasi
     Route::post('/products', [\App\Http\Controllers\AdminDataController::class, 'storeProduct']);
     Route::post('/products/{id}/stock', [\App\Http\Controllers\AdminDataController::class, 'updateProductStock']);
     Route::delete('/products/{id}', [\App\Http\Controllers\AdminDataController::class, 'destroyProduct']);

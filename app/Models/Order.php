@@ -23,6 +23,7 @@ class Order extends Model
         'status',
         'items',
         'subtotal',
+        'shipping_fee',
         'ice_fee',
         'total',
         'is_paid',
@@ -30,10 +31,21 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'items'   => 'array',
-        'subtotal'=> 'integer',
-        'ice_fee' => 'integer',
-        'total'   => 'integer',
-        'is_paid' => 'boolean',
+        'items'        => 'array',
+        'subtotal'     => 'integer',
+        'shipping_fee' => 'integer',
+        'ice_fee'      => 'integer',
+        'total'        => 'integer',
+        'is_paid'      => 'boolean',
     ];
+
+    public function getIceFeeAttribute()
+    {
+        return $this->attributes['shipping_fee'] ?? $this->attributes['ice_fee'] ?? 0;
+    }
+
+    public function setIceFeeAttribute($value)
+    {
+        $this->attributes['shipping_fee'] = (int) $value;
+    }
 }
