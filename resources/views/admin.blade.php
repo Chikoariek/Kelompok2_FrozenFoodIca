@@ -1230,7 +1230,7 @@
         window.__ADMIN_CATEGORIES__ = @json(isset($categories) ? (is_array($categories) ? $categories : $categories->pluck('name')) : \App\Models\Category::pluck('name'));
         window.__ADMIN_ORDERS__ = @json($orders ?? \App\Models\Order::orderBy('created_at', 'desc')->get());
         window.__ADMIN_USER__ = @json($user ?? \Illuminate\Support\Facades\Auth::user());
-        window.__EXAM_MODE__ = {{ env('EXAM_MODE', false) ? 'true' : 'false' }};
+        window.__EXAM_MODE__ = {{ env('EXAM_MODE', true) ? 'true' : 'false' }};
     </script>
 
     <!-- Pure Vanilla JS for Admin -->
