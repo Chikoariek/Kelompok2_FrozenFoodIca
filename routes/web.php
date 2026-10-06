@@ -4,9 +4,17 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// --- 1. Rute Publik (Mode Ujian: Redirect langsung ke Login) ---
+// --- 1. Rute Publik (Mode Ujian / Normal dikendalikan via EXAM_MODE di .env) ---
 Route::get('/', function () {
-    return redirect()->route('login');
+    if (env('EXAM_MODE', false)) {
+        return redirect()->route('login');
+    }
+    return view('welcome', [
+        'user' => Auth::user(),
+        'isLoggedIn' => Auth::check(),
+        'products' => \App\Models\Product::all(),
+        'categories' => \App\Models\Category::all(),
+    ]);
 })->name('home');
 
 // --- 2. Rute Pelanggan (Khusus role:user yang sudah login) ---
