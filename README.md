@@ -1,10 +1,10 @@
-# 🧊 Ica Frozen Food — Web E-Commerce & Point of Sale (POS)
+# Ica Frozen Food — Web E-Commerce & Point of Sale (POS)
 
 Sistem Web E-Commerce dan Kasir Pintar (Point of Sale) modern untuk **Ica Frozen Food** yang menyajikan produk makanan beku higienis, lezat, dan praktis bagi keluarga Indonesia.
 
 ---
 
-## 📌 Daftar Isi
+## Daftar Isi
 1. [Tentang Proyek](#-tentang-proyek)
 2. [Fitur Unggulan](#-fitur-unggulan)
 3. [Teknologi yang Digunakan (Tech Stack)](#-teknologi-yang-digunakan-tech-stack)
@@ -15,16 +15,16 @@ Sistem Web E-Commerce dan Kasir Pintar (Point of Sale) modern untuk **Ica Frozen
 
 ---
 
-## 📖 Tentang Proyek
+## Tentang Proyek
 Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan grosir **Ica Frozen Food**:
 - **Sisi Pelanggan (Customer Facing)**: Pengunjung dapat melihat katalog lengkap tanpa harus login. Autentikasi hanya diwajibkan saat pelanggan ingin melakukan checkout/order.
 - **Sisi Kasir & Admin (Merchant Facing)**: Panel kasir cepat (*POS Quick Checkout*), inventaris stok barang real-time, pencatatan transaksi struk nota otomatis, dan dashboard analisis penjualan.
 
 ---
 
-## ✨ Fitur Unggulan
+## Fitur Unggulan
 
-### 1. 🛒 Sisi Pelanggan (Customer Experience)
+### 1. Sisi Pelanggan (Customer Experience)
 - **Floating Navbar Dinamis**:
   - Navbar menempel di atas saat posisi awal dan bertransformasi halus (*smooth transition*) menjadi pil mengambang saat halaman digulir (*scrolled*).
   - Tampilan profil pengguna berbentuk lingkaran dengan 2 huruf inisial nama otomatis (contoh: "Budi Doremi" → `BD`).
@@ -38,7 +38,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 - **Manajemen Profil & Alamat Pelanggan**:
   - Pelanggan dapat mengubah data diri (Nama, Email, Nomor WhatsApp, dan Alamat Pengiriman lengkap) serta memperbarui kata sandi secara mandiri.
 
-### 2. 🛡️ Sisi Admin & Kasir (Merchant Dashboard & POS)
+### 2. Sisi Admin & Kasir (Merchant Dashboard & POS)
 - **Dashboard Analisis**:
   - Ringkasan omzet harian, total transaksi, unit produk terjual, dan status persediaan stok menipis.
 - **Kasir Cepat POS (*Point of Sale*)**:
@@ -48,7 +48,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 - **Profil Administrator**:
   - Halaman khusus admin untuk memperbarui profil, nomor telepon operasional toko, alamat outlet, dan kata sandi keamanan.
 
-### 3. 🔐 Autentikasi & Keamanan
+### 3. Autentikasi & Keamanan
 - **Halaman Login & Registrasi Responsif**:
   - Desain *split-screen* modern dengan showcase freezer di sisi kiri dan form interaktif di sisi kanan.
   - Ikon input sesuai warna tema brand (`#677D9E`).
@@ -57,7 +57,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 
 ---
 
-## 🛠️ Teknologi yang Digunakan (Tech Stack)
+## Teknologi yang Digunakan (Tech Stack)
 
 | Bagian | Teknologi | Keterangan |
 |---|---|---|
@@ -71,7 +71,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 
 ---
 
-## 🎨 Brand Palette Warna
+## Brand Palette Warna
 
 Aplikasi ini menggunakan palet warna khusus yang serasi dan profesional:
 - **Primary / Brand Blue**: `#677D9E`
@@ -82,7 +82,7 @@ Aplikasi ini menggunakan palet warna khusus yang serasi dan profesional:
 
 ---
 
-## 📁 Struktur Direktori & Arsitektur
+## Struktur Direktori & Arsitektur
 
 ```text
 Kelompok2_FrozenFoodIca/
@@ -134,7 +134,7 @@ Kelompok2_FrozenFoodIca/
 
 ---
 
-## 🔑 Akun Demo untuk Presentasi & Pengujian
+## Akun Demo untuk Presentasi & Pengujian
 
 Aplikasi telah dilengkapi seeder akun demo siap pakai:
 
@@ -189,7 +189,7 @@ Aplikasi dapat dibuka di browser:
 
 ---
 
-## 🔧 Panduan Pemeliharaan (Maintenance Guide)
+## Panduan Pemeliharaan (Maintenance Guide)
 
 ### Menambah atau Mengubah Data Produk
 - Data katalog awal disimpan pada [`resources/js/data/mockData.js`](file:///d:/laragon/www/Kelompok2_FrozenFoodIca/resources/js/data/mockData.js).
@@ -209,4 +209,4 @@ php artisan view:clear
 
 ---
 
-Dibuat dengan ❤️ oleh **Kelompok 2 - Ica Frozen Food**.
+Dibuat oleh **Kelompok 2 - Ica Frozen Food**.
