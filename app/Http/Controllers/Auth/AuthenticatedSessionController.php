@@ -56,7 +56,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        if (env('EXAM_MODE', false)) {
+        if (env('EXAM_MODE', true)) {
             return redirect()->route('login');
         }
 

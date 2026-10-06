@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 // --- 1. Rute Publik (Mode Ujian / Normal dikendalikan via EXAM_MODE di .env) ---
 Route::get('/', function () {
-    if (env('EXAM_MODE', false)) {
+    if (env('EXAM_MODE', true)) {
         return redirect()->route('login');
     }
     return view('welcome', [
