@@ -4,9 +4,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-  // ==========================================
-  // 1. STATE & DATA INITIALIZATION
-  // ==========================================
+  // --- 1. Inisialisasi Data & State Awal Toko ---
   const baseUrl = window.__BASE_URL__ || '';
   const apiUrl = window.__API_URL__ || (baseUrl + '/api');
   let currentUser = window.__CURRENT_USER__ || null;
@@ -74,9 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
     cart = [];
   }
 
-  // ==========================================
-  // 2. NAVBAR SCROLL HYSTERESIS & SECTION SCROLLSPY
-  // ==========================================
+  // --- 2. Efek Scroll Navbar & Scrollspy Menu Aktif ---
   const navbarWrapper = document.getElementById('navbarWrapper');
   const navBtns = document.querySelectorAll('.nav-item-btn');
   let isScrollTicking = false;
@@ -141,9 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ==========================================
-  // 2.1 USER DROPDOWN & MOBILE DRAWER MENU
-  // ==========================================
+  // --- 3. Dropdown Menu Pengguna & Drawer Mobile ---
   const btnUserMenu = document.getElementById('btnUserMenu');
   const userProfileDropdown = document.getElementById('userProfileDropdown');
   const btnMobileMenuToggle = document.getElementById('btnMobileMenuToggle');
@@ -192,9 +186,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ==========================================
-  // 2.2 USER PROFILE MODAL & DATABASE PERSISTENCE
-  // ==========================================
+  // --- 4. Modal Edit Profil & Sinkronisasi Database ---
   const userProfileModal = document.getElementById('userProfileModal');
   const btnOpenCustomerProfileModal = document.getElementById('btnOpenCustomerProfileModal');
   const btnMobileEditProfile = document.getElementById('btnMobileEditProfile');
@@ -417,9 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ==========================================
-  // 3. HERO SLIDER CAROUSEL
-  // ==========================================
+  // --- 5. Carousel Slider Banner Promosi (Hero Section) ---
   const heroSlideImg = document.getElementById('heroSlideImg');
   const heroSlideTitle = document.getElementById('heroSlideTitle');
   const heroSlidePrice = document.getElementById('heroSlidePrice');
@@ -500,9 +490,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ==========================================
-  // 4. SEARCH & CATALOG FILTER LOGIC
-  // ==========================================
+  // --- 6. Pencarian Produk & Filter Kategori Katalog ---
   const searchInput = document.getElementById('searchInput');
   const mobileSearchInput = document.getElementById('mobileSearchInput');
   const btnClearSearch = document.getElementById('btnClearSearch');
@@ -566,9 +554,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ==========================================
-  // 5. PRODUCT DETAIL MODAL
-  // ==========================================
+  // --- 7. Modal Detail Spesifikasi Produk ---
   const productDetailModal = document.getElementById('productDetailModal');
   const detailModalClose = document.getElementById('detailModalClose');
   const detailImage = document.getElementById('detailImage');
@@ -661,9 +647,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ==========================================
-  // 6. CART MANAGEMENT & DRAWER
-  // ==========================================
+  // --- 8. Manajemen Keranjang Belanja & Drawer Samping ---
   const cartDrawerOverlay = document.getElementById('cartDrawerOverlay');
   const cartDrawer = document.getElementById('cartDrawer');
   const btnOpenCart = document.getElementById('btnOpenCart');
@@ -939,9 +923,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ==========================================
-  // PAYMENT PROMPT & FLOW (POINT 2 & 3)
-  // ==========================================
+  // --- 9. Alur Checkout & Modal Pembayaran (QRIS, Transfer, Tunai) ---
 
   // Step 1: User clicks "Lanjut ke Pembayaran" in Cart Drawer
   if (btnSubmitOrder) {
@@ -1262,9 +1244,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ==========================================
-  // 7. RECEIPT MODAL
-  // ==========================================
+  // --- 10. Modal Nota Struk Digital Kasir ---
   const receiptModal = document.getElementById('receiptModal');
   const btnReceiptClose = document.getElementById('btnReceiptClose');
   const recNoOrder = document.getElementById('recNoOrder');
@@ -1359,9 +1339,7 @@ Terima kasih atas kunjungan Anda!
     });
   }
 
-  // ==========================================
-  // 8. BUNDLES / SMART RECOMMENDATIONS
-  // ==========================================
+  // --- 11. Paket Rekomendasi Hemat (Smart Bundles) ---
   window.addBundleToCart = function (bundleId) {
     // Validasi Tamu: Wajib login sebelum mengambil paket hemat
     if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {

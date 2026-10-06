@@ -7,42 +7,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// Model Pengguna (User): Mengelola akun pelanggan & administrator
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    // Kolom data profil akun yang dapat diisi
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role', // Role dari backend (admin / user)
+        'role', // Hak akses (admin / user)
         'phone',
         'address',
         'avatar',
         'is_admin',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    // Kolom rahasia yang disembunyikan saat data diubah ke JSON
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    // Format konversi tipe data keamanan & boolean
     protected function casts(): array
     {
         return [
@@ -52,9 +40,7 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Check if the user is an admin.
-     */
+    // Helper pengecekan hak akses apakah pengguna adalah administrator
     public function isAdmin(): bool
     {
         return $this->role === 'admin' || (bool) ($this->is_admin ?? false);
