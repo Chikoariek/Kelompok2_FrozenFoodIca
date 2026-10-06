@@ -46,11 +46,23 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => 'Email atau password yang Anda masukkan salah. Silakan periksa kembali.',
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Get custom validation messages.
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Silakan masukkan email Anda.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Silakan masukkan password Anda.',
+        ];
     }
 
     /**
@@ -69,10 +81,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'email' => "Terlalu banyak percobaan login yang gagal. Silakan tunggu {$seconds} detik lagi sebelum mencoba kembali.",
         ]);
     }
 

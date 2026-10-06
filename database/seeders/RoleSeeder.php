@@ -10,20 +10,29 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
+        // Bersihkan akun lama agar hanya tersisa akun admin dan user baru
+        User::whereNotIn('email', ['admin@example.com', 'user@example.com'])->delete();
+
         // Akun Admin
-        User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name'     => 'Administrator',
+                'password' => Hash::make('password123'),
+                'role'     => 'admin',
+                'is_admin' => true,
+            ]
+        );
 
         // Akun User Biasa
-        User::create([
-            'name' => 'Regular User',
-            'email' => 'user@example.com',
-            'password' => Hash::make('password123'),
-            'role' => 'user',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'user@example.com'],
+            [
+                'name'     => 'Regular User',
+                'password' => Hash::make('password123'),
+                'role'     => 'user',
+                'is_admin' => false,
+            ]
+        );
     }
 }

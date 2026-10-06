@@ -9,11 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-
+/**
+ * Controller Autentikasi Pengguna (Login & Logout)
+ * Menangani verifikasi kredensial serta pengalihan halaman berbasis multi-role (Admin vs User).
+ */
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Menampilkan antarmuka form login.
      */
     public function create(): View
     {
@@ -21,24 +24,29 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Memproses permintaan login masuk.
+     * Alur: Verifikasi kredensial -> Regenerasi session token -> Cek role -> Redirect ke dashboard tujuan.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // 1. Verifikasi email & password via Laravel Breeze
         $request->authenticate();
+
+        // 2. Cegah Session Fixation attack dengan regenerasi ID session
         $request->session()->regenerate();
-    
-        // Cek value role, arahkan sesuai otoritasnya
-        if ($request->user()->role === 'admin') {
+
+        // 3. Logika Multi-Role: Arahkan ke dashboard yang sesuai hak aksesnya
+        if ($request->user()->role === 'admin' || $request->user()->isAdmin()) {
             return redirect()->intended(route('admin.dashboard', absolute: false));
         }
-    
-        // Default untuk user biasa
-        return redirect()->intended(route('dashboard', absolute: false));
+
+        // Pengguna biasa diarahkan langsung ke homepage (dengan status login & profil aktif di navbar)
+        return redirect()->intended(route('home', absolute: false));
     }
 
     /**
-     * Destroy an authenticated session.
+     * Memproses logout (keluar sesi).
+     * Alur: Invalidate session web -> Hapus token sesi -> Redirect kembali ke halaman utama.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -48,6 +56,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }
