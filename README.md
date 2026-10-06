@@ -1,32 +1,32 @@
-# 🧊 Ica Frozen Food — Web E-Commerce & Point of Sale (POS)
+# Ica Frozen Food — Web E-Commerce & Point of Sale (POS)
 
 Sistem Web E-Commerce dan Manajemen Kasir Pintar (Point of Sale) modern untuk **Ica Frozen Food** yang menyajikan produk makanan beku higienis, lezat, dan praktis bagi keluarga Indonesia.
 
 ---
 
-## 📌 Daftar Isi
-1. [Tentang Proyek](#-tentang-proyek)
-2. [Fitur Unggulan](#-fitur-unggulan)
-3. [Arsitektur Skema Database Terbaru](#-arsitektur-skema-database-terbaru)
-4. [Teknologi yang Digunakan (Tech Stack)](#-teknologi-yang-digunakan-tech-stack)
-5. [Brand Palette & Estetika Desain](#-brand-palette--estetika-desain)
-6. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
-7. [Akun Demo untuk Presentasi & Pengujian](#-akun-demo-untuk-presentasi--pengujian)
-8. [Panduan Instalasi & Menjalankan Proyek](#-panduan-instalasi--menjalankan-proyek)
-9. [Pembagian Peran & Kontribusi Tim](#-pembagian-peran--kontribusi-tim)
+## Daftar Isi
+1. [Tentang Proyek](#tentang-proyek)
+2. [Fitur Unggulan](#fitur-unggulan)
+3. [Arsitektur Skema Database Terbaru](#arsitektur-skema-database-terbaru)
+4. [Teknologi yang Digunakan (Tech Stack)](#teknologi-yang-digunakan-tech-stack)
+5. [Brand Palette & Estetika Desain](#brand-palette--estetika-desain)
+6. [Struktur Direktori Proyek](#struktur-direktori-proyek)
+7. [Akun Demo untuk Presentasi & Pengujian](#akun-demo-untuk-presentasi--pengujian)
+8. [Panduan Instalasi & Menjalankan Proyek](#panduan-instalasi--menjalankan-proyek)
+9. [Pembagian Peran & Kontribusi Tim](#pembagian-peran--kontribusi-tim)
 
 ---
 
-## 📖 Tentang Proyek
+## Tentang Proyek
 Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan grosir **Ica Frozen Food** (Outlet Loktabat Utara, Banjarbaru):
 - **Sisi Pelanggan (Customer Facing)**: Pengunjung dapat menjelajahi katalog etalase freezer lengkap tanpa harus login. Autentikasi diwajibkan saat pelanggan ingin melakukan checkout pesanan.
 - **Sisi Admin & Kasir (Merchant Facing)**: Dashboard analitik penjualan riil, pemantauan status pesanan masuk (*Real-Time Order Tracking*), manajemen inventaris produk & kategori etalase, serta cetak struk thermal kasir digital.
 
 ---
 
-## ✨ Fitur Unggulan
+## Fitur Unggulan
 
-### 1. 🛒 Sisi Pelanggan (Storefront Experience)
+### 1. Sisi Pelanggan (Storefront Experience)
 - **Floating Header Dinamis**:
   - Navbar menempel di atas dan bertransformasi halus menjadi pil mengambang saat digulir.
   - Avatar profil pengguna dengan inisial otomatis atau foto kustom.
@@ -38,8 +38,8 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
   - Pilihan paket bundling hemat dengan harga spesial (*Paket Sarapan Keluarga, Dimsum Party Time, Shabu & Grill Weekend*).
 - **Keranjang Belanja (*Cart Drawer*)**:
   - Pilihan metode pengambilan:
-    - 🛵 **Via kurir**: Biaya pengantaran flat **Rp 5.000** ke alamat tujuan.
-    - 🏪 **Ambil di Toko**: Bebas biaya (**Gratis**).
+    - **Via kurir**: Biaya pengantaran flat **Rp 5.000** ke alamat tujuan.
+    - **Ambil di Toko**: Bebas biaya (**Gratis**).
 - **Sistem Pembayaran Terpadu**:
   - **QRIS Instan**: Memuat **QRIS resmi Ica Frozen Food** (*NMID: ID1020039281729*) yang mendukung seluruh aplikasi m-Banking dan E-Wallet.
   - **Transfer Bank BCA** (*Rekening: 782-019-2341*).
@@ -47,7 +47,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 - **Struk Digital & Salin Teks**:
   - Pratinjau nota thermal otomatis pasca transaksi, tombol cetak struk, dan tombol salin format teks WhatsApp ke kasir.
 
-### 2. 🛡️ Sisi Admin & Kasir (Merchant Dashboard)
+### 2. Sisi Admin & Kasir (Merchant Dashboard)
 - **4 Kartu KPI Analitik Riil (Terkoneksi Database)**:
   - **Total Produk**: Akumulasi produk aktif di etalase.
   - **Total Pesanan**: Jumlah transaksi pesanan aktif.
@@ -62,7 +62,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 - **Profil Administrator**:
   - Pembaruan data akun pengelola, email, dan kata sandi.
 
-### 3. 🔐 Autentikasi & Keamanan Multi-Role
+### 3. Autentikasi & Keamanan Multi-Role
 - **Laravel Breeze Scaffolding**:
   - Dilengkapi `RoleMiddleware` untuk memisahkan hak akses antara `admin` dan `user`.
   - Admin login langsung diarahkan ke `/admin/dashboard`, sedangkan pelanggan diarahkan ke etalase belanja.
@@ -71,7 +71,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 
 ---
 
-## 🗄️ Arsitektur Skema Database Terbaru
+## Arsitektur Skema Database Terbaru
 
 Skema database telah dioptimalkan dan mengikuti kaidah *Version-Controlled Migrations* Laravel:
 
@@ -89,7 +89,7 @@ Skema database telah dioptimalkan dan mengikuti kaidah *Version-Controlled Migra
 
 ---
 
-## 🛠️ Teknologi yang Digunakan (Tech Stack)
+## Teknologi yang Digunakan (Tech Stack)
 
 | Komponen | Teknologi | Keterangan |
 |---|---|---|
@@ -103,7 +103,7 @@ Skema database telah dioptimalkan dan mengikuti kaidah *Version-Controlled Migra
 
 ---
 
-## 🎨 Brand Palette & Estetika Desain
+## Brand Palette & Estetika Desain
 
 - **Soft Blue (Primary)**: `#677D9E`
 - **Dark Navy (Headings)**: `#2C3E50`
@@ -114,7 +114,7 @@ Skema database telah dioptimalkan dan mengikuti kaidah *Version-Controlled Migra
 
 ---
 
-## 📁 Struktur Direktori Proyek
+## Struktur Direktori Proyek
 
 ```text
 Kelompok2_FrozenFoodIca/
@@ -168,7 +168,7 @@ Kelompok2_FrozenFoodIca/
 
 ---
 
-## 🔑 Akun Demo untuk Presentasi & Pengujian
+## Akun Demo untuk Presentasi & Pengujian
 
 Aplikasi dilengkapi seeder akun demo siap pakai:
 
@@ -179,7 +179,7 @@ Aplikasi dilengkapi seeder akun demo siap pakai:
 
 ---
 
-## 🚀 Panduan Instalasi & Menjalankan Proyek
+## Panduan Instalasi & Menjalankan Proyek
 
 ### 1. Kebutuhan Sistem
 - PHP >= 8.2 (Ekstensi `pdo_mysql`, `mbstring`, `fileinfo` aktif)
@@ -218,7 +218,7 @@ Aplikasi dapat diakses melalui browser:
 
 ---
 
-## 👥 Pembagian Peran & Kontribusi Tim
+## Pembagian Peran & Kontribusi Tim
 
 Proyek ini dikembangkan secara kolaboratif melalui Git & GitHub:
 
@@ -232,4 +232,4 @@ Proyek ini dikembangkan secara kolaboratif melalui Git & GitHub:
 
 ---
 
-Dibuat dengan dedikasi dan kerja sama tim oleh **Kelompok 2 — Ica Frozen Food**.
+Dibuat oleh **Kelompok 2 - Ica Frozen Food**.
