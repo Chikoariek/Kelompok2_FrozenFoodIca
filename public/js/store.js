@@ -471,15 +471,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (heroSlideTitle) heroSlideTitle.textContent = p.name;
     if (heroSlidePrice) heroSlidePrice.textContent = 'Rp ' + Number(p.price).toLocaleString('id-ID');
 
-    const heroSlideBadgeText = document.getElementById('heroSlideBadgeText');
-    if (heroSlideBadgeText) {
-      if (p.totalSold > 0) {
-        heroSlideBadgeText.textContent = `Paling Laris #${index + 1} • Terjual ${p.totalSold}x`;
-      } else {
-        heroSlideBadgeText.textContent = `Pilihan Toko #${index + 1}`;
-      }
-    }
-
     if (heroSlideDotsWrap) {
       heroSlideDotsWrap.querySelectorAll('.slide-dot').forEach((dot, dIdx) => {
         dot.classList.toggle('active', dIdx === index);
