@@ -50,15 +50,58 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 3200);
   };
 
-  // Best seller products for Hero Slider
-  const heroProducts = products.length > 0
-    ? [
-        products.find((p) => p.name.includes('Dimsum')) || products[0],
-        products.find((p) => p.name.includes('Nugget')) || products[1],
-        products.find((p) => p.name.includes('Sosis')) || products[2],
-        products.find((p) => p.name.includes('Sukiyaki') || p.name.includes('Beef') || p.name.includes('Fish')) || products[3]
-      ].filter(Boolean)
-    : [];
+  // --- 5 Produk Paling Banyak Terjual (Sinkron dengan Panel Admin) ---
+  const orders = window.__ICA_ORDERS__ || [];
+  const productSales = {};
+
+  orders.forEach((ord) => {
+    // Abaikan pesanan yang berstatus Dibatalkan (identik dengan admin.blade.php)
+    if (ord.status === 'Dibatalkan') return;
+
+    let items = ord.items;
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items); } catch (e) { items = []; }
+    }
+    if (Array.isArray(items)) {
+      items.forEach((it) => {
+        const id = it.id || null;
+        const name = it.name || null;
+        const qty = parseInt(it.qty || 1, 10);
+        if (id) {
+          productSales[id] = (productSales[id] || 0) + qty;
+        } else if (name) {
+          productSales[name] = (productSales[name] || 0) + qty;
+        }
+      });
+    }
+  });
+
+  // Urutkan berdasarkan total terjual terbanyak (Top 5 Best Seller)
+  let bestSellerProducts = [];
+  const sortedSales = Object.entries(productSales).sort((a, b) => b[1] - a[1]);
+
+  sortedSales.forEach(([key, qty]) => {
+    if (qty > 0) {
+      const found = products.find((p) => p.id === key || p.name === key);
+      if (found && !bestSellerProducts.some((p) => p.id === found.id)) {
+        bestSellerProducts.push({ ...found, totalSold: qty });
+      }
+    }
+  });
+
+  // Batasi maksimal 5 produk terlaris
+  bestSellerProducts = bestSellerProducts.slice(0, 5);
+
+  // Jika produk terjual belum mencapai 5 (misal transaksi masih sedikit), lengkapi dari katalog produk aktif
+  if (bestSellerProducts.length < 5 && products.length > 0) {
+    products.forEach((p) => {
+      if (bestSellerProducts.length < 5 && !bestSellerProducts.some((bp) => bp.id === p.id)) {
+        bestSellerProducts.push({ ...p, totalSold: 0 });
+      }
+    });
+  }
+
+  const heroProducts = bestSellerProducts;
 
   let currentHeroSlide = 0;
   let heroTimer = null;
@@ -427,6 +470,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (heroSlideImg) heroSlideImg.src = p.image || 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=800&q=80';
     if (heroSlideTitle) heroSlideTitle.textContent = p.name;
     if (heroSlidePrice) heroSlidePrice.textContent = 'Rp ' + Number(p.price).toLocaleString('id-ID');
+
+    const heroSlideBadgeText = document.getElementById('heroSlideBadgeText');
+    if (heroSlideBadgeText) {
+      if (p.totalSold > 0) {
+        heroSlideBadgeText.textContent = `Paling Laris #${index + 1} • Terjual ${p.totalSold}x`;
+      } else {
+        heroSlideBadgeText.textContent = `Pilihan Toko #${index + 1}`;
+      }
+    }
 
     if (heroSlideDotsWrap) {
       heroSlideDotsWrap.querySelectorAll('.slide-dot').forEach((dot, dIdx) => {

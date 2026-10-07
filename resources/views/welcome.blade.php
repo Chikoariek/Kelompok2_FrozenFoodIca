@@ -1,6 +1,7 @@
 @php
     $products = $products ?? \App\Models\Product::all();
     $categories = $categories ?? \App\Models\Category::all();
+    $orders = $orders ?? \App\Models\Order::all();
     $user = $user ?? \Illuminate\Support\Facades\Auth::user();
     $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
 @endphp
@@ -433,6 +434,10 @@
                     <div class="hero-right-col">
                         <div id="heroShowcaseCard" class="hero-showcase-single-card">
                             <div class="hero-showcase-img-box">
+                                <div id="heroSlideBadge" class="hero-slide-badge">
+                                    <span style="font-size: 11px;">🔥</span>
+                                    <span id="heroSlideBadgeText">Produk Paling Laris #1</span>
+                                </div>
                                 <img id="heroSlideImg"
                                     src="https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=800&q=80"
                                     alt="Showcase Produk" class="hero-showcase-img">
@@ -1757,6 +1762,7 @@
         window.__IS_LOGGED_IN__ = @json($isLoggedIn);
         window.__LOGIN_URL__ = "{{ route('login') }}";
         window.__ICA_PRODUCTS__ = @json($products);
+        window.__ICA_ORDERS__ = @json($orders);
         window.__ICA_BUNDLES__ = [
             {
                 id: 'BND-01',

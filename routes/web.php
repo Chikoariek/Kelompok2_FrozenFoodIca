@@ -14,6 +14,7 @@ Route::get('/', function () {
         'isLoggedIn' => Auth::check(),
         'products' => \App\Models\Product::all(),
         'categories' => \App\Models\Category::all(),
+        'orders' => \App\Models\Order::all(),
     ]);
 })->name('home');
 
