@@ -137,9 +137,6 @@
         <p class="login-register">
             Sudah punya akun? <a href="{{ route('login') }}">Masuk di sini</a>
         </p>
-
-        <!-- Back to Store Link -->
-        <a href="/" class="login-back">← Kembali ke Homepage</a>
     </form>
 
     <script>
