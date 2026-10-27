@@ -18,6 +18,15 @@
 
     <!-- Pure Vanilla CSS for Admin -->
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}">
+
+    <!-- Pencegahan Cache / Tombol Back Browser Setelah Logout -->
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && window.performance.getEntriesByType && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) {
+                window.location.replace("{{ route('home') }}");
+            }
+        });
+    </script>
 </head>
 <body>
 

@@ -13,6 +13,15 @@
 
         <!-- Pure Vanilla CSS -->
         <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+        <!-- Pencegahan Cache / Tombol Back Browser Setelah Logout -->
+        <script>
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted || (window.performance && window.performance.getEntriesByType && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) {
+                    window.location.replace("{{ route('home') }}");
+                }
+            });
+        </script>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">

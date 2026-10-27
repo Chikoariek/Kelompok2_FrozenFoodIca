@@ -19,7 +19,7 @@ Route::get('/', function () {
 })->name('home');
 
 // --- 2. Rute Pelanggan (Khusus role:user yang sudah login) ---
-Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:user', 'prevent-back-history'])->group(function () {
     Route::get('/dashboard', function () {
         return redirect()->route('home');
     })->name('dashboard');
@@ -30,7 +30,7 @@ Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
 });
 
 // --- 3. Rute Khusus Administrator Toko (role:admin) ---
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin', 'prevent-back-history'])->prefix('admin')->as('admin.')->group(function () {
     // Tampilan utama dashboard admin (menampilkan produk, kategori, dan pesanan)
     Route::get('/dashboard', function () {
         $products = \App\Models\Product::all();
@@ -56,7 +56,7 @@ Route::get('/admin', function () {
 });
 
 // --- 4. Rute Profil Pengguna (Edit data profil & password) ---
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'prevent-back-history'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
