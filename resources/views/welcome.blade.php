@@ -21,8 +21,10 @@
         content="Ica Frozen Food - Pilihan makanan beku higienis, lezat, dan praktis untuk keluarga Indonesia. Dimsum, nugget, olahan seafood, dan daging slice pilihan.">
     <meta name="keywords" content="frozen food, makanan beku, nugget, dimsum, otak-otak, banjarbaru, ica frozen food">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/images/ica_logo.png">
+    <!-- Favicon (Brand Icon Toko di Tab Browser) -->
+    <link rel="icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/ica_logo.png') }}">
 
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -182,8 +184,8 @@
 
                                     <div class="dropdown-separator-line"></div>
 
-                                    <!-- Logout Form -->
-                                    <form method="POST" action="{{ route('logout') }}">
+                                    <!-- Logout Form (Otomatis bersihkan keranjang saat keluar akun) -->
+                                    <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');}catch(e){}">
                                         @csrf
                                         <button type="submit" class="user-dropdown-btn-item logout">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444"
@@ -340,7 +342,8 @@
                                         <span>Dashboard Admin &amp; Kasir POS</span>
                                     </a>
                                 @endif
-                                <form method="POST" action="{{ route('logout') }}">
+                                <!-- Logout Form Mobile (Otomatis bersihkan keranjang saat keluar akun) -->
+                                <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');}catch(e){}">
                                     @csrf
                                     <button type="submit" class="mobile-nav-link logout">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444"
@@ -373,9 +376,7 @@
                             Stok Makanan Beku <span>Higienis &amp; Praktis</span> untuk Keluarga
                         </h1>
                         <p class="hero-subhead">
-                            Solusi bekal praktis dan hidangan lezat siap saji dalam hitungan menit. Dimsum premium,
-                            nugget renyah, olahan seafood, hingga daging sukiyaki terjamin 100% Halal dengan pengemasan
-                            kedap udara (vacuum sealed).
+                            Nikmati aneka frozen food berkualitas yang praktis, lezat, dan halal untuk hidangan sehari-hari.
                         </p>
                         <div class="hero-cta-buttons-row">
                             <a href="#katalog-section" class="btn-cta-blue">
@@ -494,32 +495,61 @@
                         <p class="catalog-section-desc">Dikemas higienis dengan teknologi vacuum seal, siap santap kapan
                             saja</p>
                     </div>
-                    <div class="catalog-counter-text">
-                        Menampilkan <strong id="catalogCountText">{{ count($products) }}</strong> produk makanan beku
+                </div>
+
+                <!-- 1. Full-Width Category Filter Pills (Dengan Efek Fade Halus di Ujung) -->
+                <div class="category-scroll-container">
+                    <div id="categoryPillContainer" class="category-filter-scroll-row">
+                        <button class="btn-category-pill selected" data-cat="Semua" type="button">
+                            <span>Semua</span>
+                            <span class="pill-count-badge">{{ count($products) }}</span>
+                        </button>
+                        @foreach($categories as $c)
+                            @php
+                                $pCount = $products->where('category', $c->name)->count();
+                            @endphp
+                            <button class="btn-category-pill" data-cat="{{ $c->name }}" type="button">
+                                <span>{{ $c->name }}</span>
+                                <span class="pill-count-badge">{{ $pCount }}</span>
+                            </button>
+                        @endforeach
                     </div>
                 </div>
 
-                <!-- Category Filter Pills (Desain Bersih & Elegan: Teks Kategori + Badge Angka) -->
-                <div id="categoryPillContainer" class="category-filter-scroll-row">
-                    <button class="btn-category-pill selected" data-cat="Semua">
-                        <span>Semua</span>
-                        <span class="pill-count-badge">{{ count($products) }}</span>
-                    </button>
-                    @foreach($categories as $c)
-                        @php
-                            $pCount = $products->where('category', $c->name)->count();
-                        @endphp
-                        <button class="btn-category-pill" data-cat="{{ $c->name }}">
-                            <span>{{ $c->name }}</span>
-                            <span class="pill-count-badge">{{ $pCount }}</span>
-                        </button>
-                    @endforeach
+                <!-- 2. Action Bar (Counter di Kiri & Dropdown Sortir di Kanan) -->
+                <div class="catalog-action-bar">
+                    <div class="catalog-counter-text">
+                        Menampilkan <strong id="catalogCountText">{{ count($products) }}</strong> produk makanan beku
+                    </div>
+
+                    <div class="catalog-sort-box">
+                        <label for="catalogSortSelect" class="catalog-sort-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                                <line x1="4" y1="6" x2="20" y2="6" />
+                                <line x1="4" y1="12" x2="15" y2="12" />
+                                <line x1="4" y1="18" x2="9" y2="18" />
+                            </svg>
+                            <span>Urutkan:</span>
+                        </label>
+                        <select id="catalogSortSelect" class="catalog-sort-select">
+                            <option value="popular">Paling Laris (Rekomendasi)</option>
+                            <option value="price_asc">Harga: Rendah ke Tinggi</option>
+                            <option value="price_desc">Harga: Tinggi ke Rendah</option>
+                            <option value="name_asc">Nama: A ke Z</option>
+                            <option value="name_desc">Nama: Z ke A</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Products Cards Grid -->
                 <div id="catalogGrid" class="products-cards-grid">
                     @foreach($products as $prod)
-                        <div class="product-card-single">
+                        <div class="product-card-single"
+                            data-id="{{ $prod->id }}"
+                            data-name="{{ strtolower($prod->name) }}"
+                            data-category="{{ $prod->category }}"
+                            data-price="{{ (int)$prod->price }}"
+                            data-stock="{{ (int)$prod->stock }}">
                             <!-- Image Box -->
                             <div class="card-img-container" onclick="window.openDetailModal('{{ $prod->id }}')">
                                 <img src="{{ $prod->image ?: '/images/ica_logo.png' }}" alt="{{ $prod->name }}"
@@ -588,6 +618,44 @@
                             </div>
                         </div>
                     @endforeach
+                </div>
+
+                <!-- Empty State (Jika Pencarian / Filter Tidak Menemukan Produk) -->
+                <div id="catalogEmptyState" class="catalog-empty-box" style="display: none;">
+                    <div class="catalog-empty-icon-wrap">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#677D9E" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            <line x1="8" y1="11" x2="14" y2="11" />
+                        </svg>
+                    </div>
+                    <h3 class="catalog-empty-title">Produk Tidak Ditemukan</h3>
+                    <p class="catalog-empty-desc">
+                        Tidak ada produk makanan beku yang sesuai dengan kata kunci pencarian atau kategori ini.
+                    </p>
+                    <button id="btnResetCatalogFilter" class="btn-reset-filter" type="button">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                            <path d="M3 3v5h5" />
+                        </svg>
+                        <span>Reset Filter &amp; Tampilkan Semua</span>
+                    </button>
+                </div>
+
+                <!-- Load More & Progress Pagination (Batas 12 Produk per Tampilan) -->
+                <div id="catalogLoadMoreWrap" class="catalog-load-more-wrap">
+                    <button id="btnCatalogLoadMore" class="btn-catalog-load-more" type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                        <span>Muat Lebih Banyak Produk</span>
+                    </button>
+                    <div class="catalog-progress-bar-wrap">
+                        <div id="catalogProgressBar" class="catalog-progress-bar-fill"></div>
+                    </div>
+                    <p id="catalogProgressText" class="catalog-progress-info">
+                        Menampilkan <strong id="catalogShowingCount">12</strong> dari <strong id="catalogTotalCount">{{ count($products) }}</strong> produk
+                    </p>
                 </div>
             </div>
         </section>
@@ -887,7 +955,7 @@
                             <p class="footer-store-tag">Halal, Segar &amp; Higienis</p>
                         </div>
                     </div>
-                    <p style="font-size: 11px; color: #6B7280; line-height: 1.625;">
+                    <p style="font-size: 0.75rem; color: #6B7280; line-height: 1.625;">
                         Menyediakan aneka makanan beku praktis berkualitas tinggi: dimsum, nugget, sosis, olahan
                         seafood, hingga daging sukiyaki dengan pengemasan kedap udara (vacuum sealed).
                     </p>
@@ -903,7 +971,7 @@
                         </svg>
                         <span>Alamat Toko Kami</span>
                     </h4>
-                    <p style="font-weight: 500; color: #4B5563; line-height: 1.625;">
+                    <p style="font-size: 0.75rem; font-weight: 500; color: #4B5563; line-height: 1.625;">
                         Loktabat Utara, Banjarbaru Utara, Kalimantan Selatan
                     </p>
                     <a href="https://maps.app.goo.gl/KRidQNPjqjr8N3ut9" target="_blank" rel="noreferrer"
@@ -928,23 +996,23 @@
                         <span>Jam Operasional &amp; Kontak</span>
                     </h4>
                     <div style="display: flex; flex-direction: column; gap: 0.375rem;">
-                        <p style="display: flex; align-items: center; gap: 0.5rem;">
+                        <p style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #4B5563;">
                             <span
-                                style="width: 8px; height: 8px; border-radius: 9999px; background-color: #10B981;"></span>
+                                style="width: 8px; height: 8px; border-radius: 9999px; background-color: #10B981; flex-shrink: 0;"></span>
                             <span>Buka Setiap Hari (08.00 - 21.00 WITA)</span>
                         </p>
-                        <p style="display: flex; align-items: center; gap: 0.5rem;">
+                        <p style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
-                                stroke-width="2.5">
+                                stroke-width="2.5" style="flex-shrink: 0;">
                                 <path
                                     d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                             </svg>
                             <a href="https://wa.me/6287854513770" target="_blank" rel="noreferrer"
                                 style="font-weight: 600; color: #374151;">+0878-5451-3770 (WhatsApp Admin)</a>
                         </p>
-                        <p style="display: flex; align-items: center; gap: 0.5rem; font-size: 11px; color: #6B7280;">
+                        <p style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #6B7280; line-height: 1.5;">
                             <span class="motor-delivery-icon"
-                                style="width: 14px; height: 14px; color: var(--soft-blue);"></span>
+                                style="width: 14px; height: 14px; color: var(--soft-blue); flex-shrink: 0;"></span>
                             <span>Bisa diantar oleh kurir langsung ke rumah anda (Banjarbaru, Martapura &amp;
                                 Sekitarnya)</span>
                         </p>
@@ -955,8 +1023,7 @@
 
             <!-- Bottom Copyright -->
             <div class="footer-bottom-copy-row">
-                <p>&copy; {{ date('Y') }} Ica Frozen Food. Solusi Makanan Beku Praktis, Higienis &amp; Halal.</p>
-                <p>Banjarbaru, Kalimantan Selatan</p>
+                <p class="footer-copyright-text">&copy; {{ date('Y') }} Ica Frozen Food. Solusi Makanan Beku Praktis, Higienis &amp; Halal.</p>
             </div>
         </div>
     </footer>

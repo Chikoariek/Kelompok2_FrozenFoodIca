@@ -6,8 +6,10 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ $pageTitle ?? ($title ?? 'Masuk Akun') }} - Ica Frozen Food</title>
 
-        <!-- Favicon -->
-        <link rel="icon" type="image/png" href="/images/ica_logo.png">
+        <!-- Favicon (Brand Icon Toko di Tab Browser) -->
+        <link rel="icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/ica_logo.png') }}">
 
         <!-- Google Fonts: Plus Jakarta Sans -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
