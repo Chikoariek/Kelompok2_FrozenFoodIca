@@ -1482,20 +1482,112 @@ img {
   color: var(--navy);
 }
 
-/* Category Filter Pills (Matches CategoryFilter.jsx) */
+/* 1. Category Filter Scroll Container (Full Width with Smooth Edge Fade) */
+.category-scroll-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 0.875rem;
+}
+
 .category-filter-scroll-row {
   display: flex;
   align-items: center;
   gap: 0.625rem;
   overflow-x: auto;
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   padding-top: 0.25rem;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  width: 100%;
+  /* Default awal (posisi paling kiri): hanya kanan yang memudar */
+  mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent 100%);
+  transition: mask-image 0.2s ease, -webkit-mask-image 0.2s ease;
+}
+
+/* Sedang digeser ke tengah: kedua sisi (kiri & kanan) memudar lembut */
+.category-filter-scroll-row.is-scrolled {
+  mask-image: linear-gradient(to right, transparent 0%, black 2.5rem, black calc(100% - 2.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 2.5rem, black calc(100% - 2.5rem), transparent 100%);
+}
+
+/* Sudah mentok paling kanan: hanya sisi kiri yang memudar */
+.category-filter-scroll-row.is-at-end {
+  mask-image: linear-gradient(to right, transparent 0%, black 2.5rem, black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 2.5rem, black 100%);
 }
 
 .category-filter-scroll-row::-webkit-scrollbar {
   display: none;
+}
+
+/* 2. Catalog Action Bar (Sub-toolbar: Counter on Left, Sort on Right - Responsif Mobile) */
+.catalog-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(166, 177, 195, 0.25);
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 540px) {
+  .catalog-action-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+.catalog-sort-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.catalog-sort-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.catalog-sort-select {
+  padding: 0.45rem 2.25rem 0.45rem 0.875rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(166, 177, 195, 0.6);
+  background-color: #FFFFFF;
+  color: var(--navy);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232C3E50' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: var(--shadow-2xs);
+}
+
+.catalog-sort-select:hover {
+  border-color: var(--soft-blue);
+  box-shadow: 0 2px 8px rgba(103, 125, 158, 0.15);
+}
+
+.catalog-sort-select:focus {
+  border-color: var(--soft-blue);
+  box-shadow: 0 0 0 3px rgba(103, 125, 158, 0.2);
 }
 
 .btn-category-pill {
@@ -1816,6 +1908,142 @@ img {
 
 .btn-card-add-cart:active:not(:disabled) {
   transform: scale(0.95);
+}
+
+/* Catalog Empty State */
+.catalog-empty-box {
+  background-color: #FFFFFF;
+  border-radius: var(--radius-2xl);
+  border: 2px dashed rgba(166, 177, 195, 0.6);
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.catalog-empty-icon-wrap {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-full);
+  background-color: #F1F5F9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.catalog-empty-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 0.375rem;
+}
+
+.catalog-empty-desc {
+  font-size: 0.8125rem;
+  color: var(--text-gray-500);
+  max-width: 26rem;
+  margin: 0 auto 1.25rem auto;
+  line-height: 1.5;
+}
+
+.btn-reset-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: var(--soft-blue);
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-xl);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s ease;
+}
+
+.btn-reset-filter:hover {
+  background-color: #546885;
+  transform: translateY(-1px);
+}
+
+/* Catalog Load More & Progress Pagination */
+.catalog-load-more-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+}
+
+.btn-catalog-load-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.875rem;
+  background-color: #FFFFFF;
+  color: var(--navy);
+  border: 1.5px solid var(--soft-blue);
+  border-radius: var(--radius-2xl);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(103, 125, 158, 0.12);
+  transition: all 0.25s ease;
+}
+
+.btn-catalog-load-more:hover {
+  background-color: var(--soft-blue);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(103, 125, 158, 0.22);
+}
+
+.btn-catalog-load-more:active {
+  transform: translateY(0);
+}
+
+.catalog-progress-bar-wrap {
+  width: 14rem;
+  height: 6px;
+  background-color: #E5E7EB;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.catalog-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--soft-blue), #3B82F6);
+  border-radius: 9999px;
+  transition: width 0.35s ease;
+}
+
+.catalog-progress-info {
+  font-size: 0.75rem;
+  color: var(--text-gray-500);
+}
+
+.catalog-progress-info strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+@keyframes catalogCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-card-single.animate-in {
+  animation: catalogCardFadeIn 0.35s ease forwards;
 }
 
 /* 9. SMART RECOMMENDATIONS SECTION (Flowchart: Butuh Rekomendasi?) */
@@ -2359,8 +2587,8 @@ img {
 }
 
 .footer-cols-three {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid #F3F4F6;
@@ -2368,7 +2596,42 @@ img {
 
 @media (min-width: 768px) {
   .footer-cols-three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .footer-col-1 {
+    flex: 1 1 0;
+    max-width: 360px;
+  }
+
+  .footer-col-2 {
+    flex: 0 1 270px;
+  }
+
+  .footer-col-3 {
+    flex: 1 1 0;
+    max-width: 360px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .footer-cols-three {
+    gap: 3rem;
+  }
+
+  .footer-col-1 {
+    max-width: 380px;
+  }
+
+  .footer-col-2 {
+    flex: 0 1 290px;
+  }
+
+  .footer-col-3 {
+    max-width: 380px;
   }
 }
 
@@ -2415,18 +2678,18 @@ img {
 .footer-bottom-copy-row {
   padding-top: 1.5rem;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-size: 11px;
-  color: var(--text-gray-400);
+  justify-content: center;
+  text-align: center;
 }
 
-@media (min-width: 640px) {
-  .footer-bottom-copy-row {
-    flex-direction: row;
-  }
+.footer-copyright-text {
+  font-size: 0.8125rem;
+  color: var(--text-gray-500);
+  font-weight: 500;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0 auto;
 }
 
 /* 13. CART DRAWER & MODALS */

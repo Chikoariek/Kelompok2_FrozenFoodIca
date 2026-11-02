@@ -107,13 +107,32 @@ document.addEventListener('DOMContentLoaded', function () {
   let heroTimer = null;
   let isHeroHovered = false;
 
-  // Load Cart from LocalStorage
-  try {
-    const saved = localStorage.getItem('ica_cart');
-    if (saved) cart = JSON.parse(saved);
-  } catch (e) {
+  // --- PENTING: Pengelolaan Keranjang Belanja Berdasarkan Sesi Akun ---
+  // Jika pengunjung belum login (tamu) atau baru saja logout, kosongkan data keranjang
+  // agar notifikasi angka pada keranjang otomatis bersih/hilang dan tidak tertinggal data lama.
+  if (!window.__IS_LOGGED_IN__ || !currentUser) {
+    try {
+      localStorage.removeItem('ica_cart');
+    } catch (e) {}
     cart = [];
+  } else {
+    // Jika pengguna sedang login, muat data keranjang yang tersimpan di browser
+    try {
+      const saved = localStorage.getItem('ica_cart');
+      if (saved) cart = JSON.parse(saved);
+    } catch (e) {
+      cart = [];
+    }
   }
+
+  // Event Listener: Bersihkan data keranjang saat tombol logout ditekan
+  document.querySelectorAll('form[action*="logout"]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      try {
+        localStorage.removeItem('ica_cart');
+      } catch (e) {}
+    });
+  });
 
   // --- 2. Efek Scroll Navbar & Scrollspy Menu Aktif ---
   const navbarWrapper = document.getElementById('navbarWrapper');
@@ -533,37 +552,146 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // --- 6. Pencarian Produk & Filter Kategori Katalog ---
+  // --- 6. Pencarian Produk, Filter Kategori & Smart Pagination Katalog ---
+  const PAGE_SIZE = 12;
+  let displayedLimit = PAGE_SIZE;
+  let currentSort = 'popular';
+
   const searchInput = document.getElementById('searchInput');
   const mobileSearchInput = document.getElementById('mobileSearchInput');
   const btnClearSearch = document.getElementById('btnClearSearch');
   const catalogGrid = document.getElementById('catalogGrid');
   const catalogCountText = document.getElementById('catalogCountText');
   const categoryPillContainer = document.getElementById('categoryPillContainer');
+  const catalogSortSelect = document.getElementById('catalogSortSelect');
+  const catalogEmptyState = document.getElementById('catalogEmptyState');
+  const btnResetCatalogFilter = document.getElementById('btnResetCatalogFilter');
+  const catalogLoadMoreWrap = document.getElementById('catalogLoadMoreWrap');
+  const btnCatalogLoadMore = document.getElementById('btnCatalogLoadMore');
+  const catalogProgressBar = document.getElementById('catalogProgressBar');
+  const catalogProgressText = document.getElementById('catalogProgressText');
+  const catalogShowingCount = document.getElementById('catalogShowingCount');
+  const catalogTotalCount = document.getElementById('catalogTotalCount');
 
-  function filterCatalog() {
+  function filterCatalog(resetPage = false) {
+    if (resetPage) {
+      displayedLimit = PAGE_SIZE;
+    }
+
     const q = searchQuery.toLowerCase().trim();
-    const cards = catalogGrid?.querySelectorAll('.product-card-single');
-    let visibleCount = 0;
+    const allCards = Array.from(catalogGrid?.querySelectorAll('.product-card-single') || []);
+    const matchingCards = [];
 
-    cards?.forEach((card) => {
-      const title = card.querySelector('.card-title-heading')?.textContent.toLowerCase() || '';
-      const cat = card.querySelector('.badge-cat-tag')?.textContent.trim() || '';
+    // 1. Filter Kategori & Kata Kunci Pencarian
+    allCards.forEach((card) => {
+      const title = card.getAttribute('data-name') || card.querySelector('.card-title-heading')?.textContent.toLowerCase() || '';
+      const cat = card.getAttribute('data-category') || card.querySelector('.badge-cat-tag')?.textContent.trim() || '';
       const desc = card.querySelector('.card-desc-snippet')?.textContent.toLowerCase() || '';
 
       const matchCategory = selectedCategory === 'Semua' || cat === selectedCategory;
       const matchSearch = !q || title.includes(q) || cat.toLowerCase().includes(q) || desc.includes(q);
 
       if (matchCategory && matchSearch) {
-        card.style.display = 'flex';
-        visibleCount++;
+        matchingCards.push(card);
       } else {
         card.style.display = 'none';
+        card.classList.remove('animate-in');
       }
     });
 
+    // 2. Sortir Produk Sesuai Pilihan Pengguna
+    matchingCards.sort((a, b) => {
+      const priceA = parseFloat(a.getAttribute('data-price') || 0);
+      const priceB = parseFloat(b.getAttribute('data-price') || 0);
+      const nameA = a.getAttribute('data-name') || '';
+      const nameB = b.getAttribute('data-name') || '';
+
+      if (currentSort === 'price_asc') {
+        return priceA - priceB;
+      }
+      if (currentSort === 'price_desc') {
+        return priceB - priceA;
+      }
+      if (currentSort === 'name_asc') {
+        return nameA.localeCompare(nameB);
+      }
+      if (currentSort === 'name_desc') {
+        return nameB.localeCompare(nameA);
+      }
+
+      // 'popular': Utamakan produk dengan total penjualan tertinggi (dari productSales)
+      const idA = a.getAttribute('data-id') || '';
+      const idB = b.getAttribute('data-id') || '';
+      const salesA = productSales[idA] || 0;
+      const salesB = productSales[idB] || 0;
+      if (salesB !== salesA) {
+        return salesB - salesA;
+      }
+
+      // Jika penjualan sama, prioritaskan produk yang masih ada stok
+      const stockA = parseInt(a.getAttribute('data-stock') || 0, 10);
+      const stockB = parseInt(b.getAttribute('data-stock') || 0, 10);
+      return stockB - stockA;
+    });
+
+    const totalMatches = matchingCards.length;
+
+    // 3. Render Ulang Urutan & Batasi Tampilan (Batas displayedLimit)
+    matchingCards.forEach((card, idx) => {
+      if (catalogGrid) catalogGrid.appendChild(card); // Reorder node di DOM
+
+      if (idx < displayedLimit) {
+        if (card.style.display === 'none') {
+          card.classList.add('animate-in');
+        }
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+        card.classList.remove('animate-in');
+      }
+    });
+
+    // 4. Update Header Counter
     if (catalogCountText) {
-      catalogCountText.textContent = visibleCount;
+      catalogCountText.textContent = totalMatches;
+    }
+
+    // 5. Update Empty State (Jika 0 produk cocok)
+    if (catalogEmptyState) {
+      catalogEmptyState.style.display = totalMatches === 0 ? 'block' : 'none';
+    }
+
+    // 6. Update Load More & Progress Bar
+    if (catalogLoadMoreWrap) {
+      if (totalMatches === 0) {
+        catalogLoadMoreWrap.style.display = 'none';
+      } else {
+        catalogLoadMoreWrap.style.display = 'flex';
+        const currentlyShown = Math.min(displayedLimit, totalMatches);
+        if (catalogShowingCount) catalogShowingCount.textContent = currentlyShown;
+        if (catalogTotalCount) catalogTotalCount.textContent = totalMatches;
+
+        const percentage = Math.round((currentlyShown / totalMatches) * 100);
+        if (catalogProgressBar) catalogProgressBar.style.width = percentage + '%';
+
+        if (currentlyShown >= totalMatches) {
+          if (btnCatalogLoadMore) btnCatalogLoadMore.style.display = 'none';
+          if (catalogProgressText) {
+            catalogProgressText.innerHTML = `✓ Semua <strong>${totalMatches}</strong> produk dalam kategori ini telah ditampilkan`;
+          }
+        } else {
+          if (btnCatalogLoadMore) {
+            btnCatalogLoadMore.style.display = 'inline-flex';
+            const remaining = totalMatches - currentlyShown;
+            const nextBatch = Math.min(PAGE_SIZE, remaining);
+            const btnText = btnCatalogLoadMore.querySelector('span');
+            if (btnText) btnText.textContent = `Muat Lebih Banyak Produk (+${nextBatch})`;
+          }
+          if (catalogProgressText) {
+            catalogProgressText.innerHTML = `Menampilkan <strong>${currentlyShown}</strong> dari <strong>${totalMatches}</strong> produk`;
+          }
+        }
+      }
     }
   }
 
@@ -572,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (searchInput) searchInput.value = val;
     if (mobileSearchInput) mobileSearchInput.value = val;
     if (btnClearSearch) btnClearSearch.style.display = val ? 'flex' : 'none';
-    filterCatalog();
+    filterCatalog(true); // Reset ke batch pertama saat mencari
   }
 
   if (searchInput) {
@@ -585,17 +713,75 @@ document.addEventListener('DOMContentLoaded', function () {
     btnClearSearch.addEventListener('click', () => handleSearchInput(''));
   }
 
-  // Category Pills
+  // Category Pills Filter & Dynamic Scroll Edge Mask
   if (categoryPillContainer) {
     categoryPillContainer.querySelectorAll('.btn-category-pill').forEach((pill) => {
       pill.addEventListener('click', function () {
         categoryPillContainer.querySelectorAll('.btn-category-pill').forEach((p) => p.classList.remove('selected'));
         this.classList.add('selected');
         selectedCategory = this.getAttribute('data-cat') || 'Semua';
-        filterCatalog();
+        filterCatalog(true); // Reset ke batch pertama saat ganti kategori
       });
     });
+
+    // Deteksi posisi geser agar efek blur/samar adaptif di kiri dan kanan
+    function updateCategoryScrollMask() {
+      const scrollLeft = categoryPillContainer.scrollLeft;
+      const maxScroll = categoryPillContainer.scrollWidth - categoryPillContainer.clientWidth;
+      const isScrolled = scrollLeft > 8;
+      const isAtEnd = maxScroll > 0 && scrollLeft >= (maxScroll - 8);
+
+      categoryPillContainer.classList.toggle('is-scrolled', isScrolled && !isAtEnd);
+      categoryPillContainer.classList.toggle('is-at-end', isAtEnd);
+    }
+
+    categoryPillContainer.addEventListener('scroll', updateCategoryScrollMask, { passive: true });
+    window.addEventListener('resize', updateCategoryScrollMask, { passive: true });
+    updateCategoryScrollMask();
   }
+
+  // Sort Dropdown Change
+  if (catalogSortSelect) {
+    catalogSortSelect.addEventListener('change', function () {
+      currentSort = this.value;
+      filterCatalog(false); // Urutkan ulang produk yang sedang aktif
+    });
+  }
+
+  // Button Load More Click
+  if (btnCatalogLoadMore) {
+    btnCatalogLoadMore.addEventListener('click', function () {
+      displayedLimit += PAGE_SIZE;
+      filterCatalog(false);
+    });
+  }
+
+  // Reset Filter Button on Empty State
+  if (btnResetCatalogFilter) {
+    btnResetCatalogFilter.addEventListener('click', function () {
+      searchQuery = '';
+      if (searchInput) searchInput.value = '';
+      if (mobileSearchInput) mobileSearchInput.value = '';
+      if (btnClearSearch) btnClearSearch.style.display = 'none';
+
+      selectedCategory = 'Semua';
+      if (categoryPillContainer) {
+        categoryPillContainer.querySelectorAll('.btn-category-pill').forEach((p) => {
+          p.classList.toggle('selected', p.getAttribute('data-cat') === 'Semua');
+        });
+      }
+
+      if (catalogSortSelect) {
+        catalogSortSelect.value = 'popular';
+        currentSort = 'popular';
+      }
+
+      filterCatalog(true);
+    });
+  }
+
+  // Inisialisasi awal katalog saat halaman dimuat
+  filterCatalog(true);
 
   // --- 7. Modal Detail Spesifikasi Produk ---
   const productDetailModal = document.getElementById('productDetailModal');
