@@ -31,4 +31,19 @@ class ProfileUpdateRequest extends FormRequest
             'avatar' => ['nullable', 'string'],
         ];
     }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email ini sudah terdaftar.',
+        ];
+    }
 }

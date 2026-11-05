@@ -1,9 +1,9 @@
 @php
-    $products = $products ?? \App\Models\Product::all();
-    $categories = $categories ?? \App\Models\Category::all();
-    $orders = $orders ?? \App\Models\Order::all();
-    $user = $user ?? \Illuminate\Support\Facades\Auth::user();
-    $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
+$products = $products ?? \App\Models\Product::all();
+$categories = $categories ?? \App\Models\Category::all();
+$orders = $orders ?? \App\Models\Order::all();
+$user = $user ?? \Illuminate\Support\Facades\Auth::user();
+$isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -21,17 +21,17 @@
         content="Ica Frozen Food - Pilihan makanan beku higienis, lezat, dan praktis untuk keluarga Indonesia. Dimsum, nugget, olahan seafood, dan daging slice pilihan.">
     <meta name="keywords" content="frozen food, makanan beku, nugget, dimsum, otak-otak, banjarbaru, ica frozen food">
 
-    <!-- Favicon (Brand Icon Toko di Tab Browser) -->
-    <link rel="icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/ica_logo.png') }}">
+    <!-- Favicon (Brand Icon Toko di Tab Browser - Persegi 1:1 Presisi & Proporsional) -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v={{ filemtime(public_path('favicon.ico')) }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v={{ filemtime(public_path('images/favicon-32x32.png')) }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v={{ filemtime(public_path('images/favicon-16x16.png')) }}">
+    <link rel="apple-touch-icon" href="/images/favicon.png?v={{ filemtime(public_path('images/favicon.png')) }}">
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Google Fonts: Plus Jakarta Sans (Preload & Optimized Weights) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Pure Vanilla CSS Stylesheet -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
@@ -42,8 +42,8 @@
     <!-- 1. Banner Info Pengantaran Kurir & Jam Operasional Toko -->
     <div class="top-announcement-bar">
         <span class="motor-delivery-icon" style="width: 1rem; height: 1rem; color: #6EE7B7;"></span>
-        <span>Buka Setiap Hari (08.00 - 21.00 WITA) • Bisa diantar oleh kurir langsung ke rumah anda!</span>
-        <span class="top-announcement-badge">Banjarbaru</span>
+        <span>Pesan Sekarang, Melayani pengantaran via kurir area Banjarbaru & sekitarnya!</span>
+        <span class="top-announcement-badge">Buka 08.00 – 21.00 WITA</span>
     </div>
 
     <!-- 2. Navbar Navigasi Utama & Menu Profil Pengguna -->
@@ -95,8 +95,8 @@
                     <!-- Right Action Icons: Cart & Login -->
                     <div class="navbar-right-actions">
 
-                        <!-- Cart Button -->
-                        <button id="btnOpenCart" class="btn-open-cart-box" title="Buka Keranjang Belanja">
+                        <!-- Cart Button (Hanya Icon & Badge Jumlah Item) -->
+                        <button id="btnOpenCart" class="btn-open-cart-box" title="Buka Keranjang Belanja" aria-label="Buka Keranjang Belanja">
                             <div class="cart-icon-pos">
                                 <svg class="cart-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -106,10 +106,6 @@
                                         d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
                                 </svg>
                                 <span id="cartCountBadge" class="cart-bounce-badge" style="display: none;">0</span>
-                            </div>
-                            <div class="cart-text-details">
-                                <span class="cart-label-text">Keranjang</span>
-                                <span id="cartSubtotalText" class="cart-amount-text">Rp 0</span>
                             </div>
                         </button>
 
@@ -159,17 +155,7 @@
                                         @endif
                                     </div>
 
-                                    <!-- Edit Profil & Alamat Button -->
-                                    <button id="btnOpenCustomerProfileModal" class="user-dropdown-btn-item" type="button">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#677D9E"
-                                            stroke-width="2">
-                                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                                            <circle cx="12" cy="7" r="4" />
-                                        </svg>
-                                        <span>Edit Profil &amp; Alamat</span>
-                                    </button>
-
-                                    <!-- Admin Link -->
+                                    <!-- Navigasi Akun Sesuai Peran -->
                                     @if($user->is_admin)
                                         <a href="{{ route('admin.dashboard') }}" class="user-dropdown-btn-item admin-highlight">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669"
@@ -180,6 +166,24 @@
                                             </svg>
                                             <span>Dashboard Admin</span>
                                         </a>
+                                        <a href="{{ route('admin.dashboard') }}?tab=profile" class="user-dropdown-btn-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#677D9E"
+                                                stroke-width="2">
+                                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                                <circle cx="12" cy="7" r="4" />
+                                            </svg>
+                                            <span>Kelola Profil &amp; Password</span>
+                                        </a>
+                                    @else
+                                        <!-- Edit Profil & Alamat Button untuk Pelanggan -->
+                                        <button id="btnOpenCustomerProfileModal" class="user-dropdown-btn-item" type="button">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#677D9E"
+                                                stroke-width="2">
+                                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                                <circle cx="12" cy="7" r="4" />
+                                            </svg>
+                                            <span>Edit Profil &amp; Alamat</span>
+                                        </button>
                                     @endif
 
                                     <div class="dropdown-separator-line"></div>
@@ -323,14 +327,6 @@
                                 <span
                                     style="font-size: 10px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 0.5rem; margin-bottom: 0.25rem;">Akun
                                     Pengguna</span>
-                                <button id="btnMobileEditProfile" class="mobile-nav-link" type="button">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                                        <circle cx="12" cy="7" r="4" />
-                                    </svg>
-                                    <span>Edit Profil &amp; Alamat</span>
-                                </button>
                                 @if($user->is_admin)
                                     <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link admin-highlight">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669"
@@ -341,6 +337,23 @@
                                         </svg>
                                         <span>Dashboard Admin &amp; Kasir POS</span>
                                     </a>
+                                    <a href="{{ route('admin.dashboard') }}?tab=profile" class="mobile-nav-link">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                            <circle cx="12" cy="7" r="4" />
+                                        </svg>
+                                        <span>Kelola Profil &amp; Password</span>
+                                    </a>
+                                @else
+                                    <button id="btnMobileEditProfile" class="mobile-nav-link" type="button">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                            <circle cx="12" cy="7" r="4" />
+                                        </svg>
+                                        <span>Edit Profil &amp; Alamat</span>
+                                    </button>
                                 @endif
                                 <!-- Logout Form Mobile (Otomatis bersihkan keranjang saat keluar akun) -->
                                 <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');}catch(e){}">
@@ -373,14 +386,14 @@
                     <!-- Left: Headlines & CTAs -->
                     <div class="hero-left-col">
                         <h1 class="hero-headline">
-                            Stok Makanan Beku <span>Higienis &amp; Praktis</span> untuk Keluarga
+                            Solusi Masak Praktis, <span>Kualitas Terbaik</span> untuk yang Tersayang
                         </h1>
                         <p class="hero-subhead">
-                            Nikmati aneka frozen food berkualitas yang praktis, lezat, dan halal untuk hidangan sehari-hari.
+                            Aneka hidangan beku lezat, halal, dan bebas bahan pengawet berbahaya. Tinggal goreng atau kukus, siap dinikmati.
                         </p>
                         <div class="hero-cta-buttons-row">
                             <a href="#katalog-section" class="btn-cta-blue">
-                                <span>Belanja Sekarang</span>
+                                <span>Mulai Belanja</span>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5">
                                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -397,8 +410,8 @@
                                     <span class="motor-delivery-icon" style="width: 22px; height: 14px;"></span>
                                 </div>
                                 <div>
-                                    <h4>Kurir Motor</h4>
-                                    <p>Langsung ke Rumah</p>
+                                    <h4>Via Kurir</h4>
+                                    <p>Antar ke Rumah</p>
                                 </div>
                             </div>
                             <div class="hero-pill-item">
@@ -412,7 +425,7 @@
                                 </div>
                                 <div>
                                     <h4>100% Halal</h4>
-                                    <p>Higienis &amp; Bersih</p>
+                                    <p>Aman Dikonsumsi</p>
                                 </div>
                             </div>
                             <div class="hero-pill-item">
@@ -425,7 +438,7 @@
                                 </div>
                                 <div>
                                     <h4>Tanpa Pengawet</h4>
-                                    <p>Beku Alami IQF</p>
+                                    <p>Kualitas Terjamin</p>
                                 </div>
                             </div>
                         </div>
@@ -489,7 +502,7 @@
                                 <line x1="12" y1="2" x2="12" y2="22" />
                                 <path d="m20 16-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4" />
                             </svg>
-                            <span>Katalog Freezer Segar</span>
+                            <span>Katalog Kami</span>
                         </div>
                         <h2 class="catalog-section-title">Pilihan Makanan Beku Berkualitas</h2>
                         <p class="catalog-section-desc">Dikemas higienis dengan teknologi vacuum seal, siap santap kapan
@@ -497,22 +510,55 @@
                     </div>
                 </div>
 
-                <!-- 1. Full-Width Category Filter Pills (Dengan Efek Fade Halus di Ujung) -->
-                <div class="category-scroll-container">
-                    <div id="categoryPillContainer" class="category-filter-scroll-row">
-                        <button class="btn-category-pill selected" data-cat="Semua" type="button">
-                            <span>Semua</span>
-                            <span class="pill-count-badge">{{ count($products) }}</span>
+                <!-- 1. Category Navigation (Pills dengan Mode Ringkas & Mode Tersebar/Dijabarkan) -->
+                <div class="category-nav-section" id="categoryNavSection">
+                    <!-- Header saat Kategori Dijabarkan (Expand Mode) -->
+                    <div class="category-nav-header-row" id="categoryNavHeaderRow" style="display: none;">
+                        <div class="category-nav-title-wrap">
+                            <svg class="cat-header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                                <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                                <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                                <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                            </svg>
+                            <span class="category-nav-heading">Semua Kategori Produk</span>
+                            <span class="category-nav-subbadge">{{ count($categories) + 1 }} Kategori</span>
+                        </div>
+                        <button type="button" class="btn-toggle-categories-top" id="btnToggleCategoriesTop" aria-expanded="true" title="Kembali ke tampilan awal">
+                            <span class="btn-toggle-top-text">Sembunyikan</span>
+                            <svg class="cat-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
                         </button>
-                        @foreach($categories as $c)
-                            @php
-                                $pCount = $products->where('category', $c->name)->count();
-                            @endphp
-                            <button class="btn-category-pill" data-cat="{{ $c->name }}" type="button">
-                                <span>{{ $c->name }}</span>
-                                <span class="pill-count-badge">{{ $pCount }}</span>
+                    </div>
+
+                    <!-- Baris Utama Kategori -->
+                    <div class="category-nav-bar" id="categoryNavBar">
+                        <div id="categoryPillContainer" class="category-filter-scroll-row">
+                            <button class="btn-category-pill selected" data-cat="Semua" type="button">
+                                <span>Semua</span>
+                                <span class="pill-count-badge">{{ count($products) }}</span>
                             </button>
-                        @endforeach
+                            @foreach($categories as $c)
+                                @php
+    $pCount = $products->where('category', $c->name)->count();
+                                @endphp
+                                <button class="btn-category-pill" data-cat="{{ $c->name }}" type="button">
+                                    <span>{{ $c->name }}</span>
+                                    <span class="pill-count-badge">{{ $pCount }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+
+                        <!-- Tombol Buka / Tutup Seluruh Kategori (Sisi Kanan Baris Awal - Hanya Icon Tanpa Background) -->
+                        <div class="category-toggle-wrap" id="categoryToggleWrap">
+                            <button type="button" class="btn-toggle-categories" id="btnToggleCategories" aria-expanded="false" aria-label="Tampilkan semua kategori" title="Tampilkan semua kategori">
+                                <svg class="cat-grid-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                                    <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                                    <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                                    <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -531,13 +577,41 @@
                             </svg>
                             <span>Urutkan:</span>
                         </label>
-                        <select id="catalogSortSelect" class="catalog-sort-select">
-                            <option value="popular">Paling Laris (Rekomendasi)</option>
-                            <option value="price_asc">Harga: Rendah ke Tinggi</option>
-                            <option value="price_desc">Harga: Tinggi ke Rendah</option>
-                            <option value="name_asc">Nama: A ke Z</option>
-                            <option value="name_desc">Nama: Z ke A</option>
-                        </select>
+                        <div class="custom-sort-dropdown" id="customSortDropdown">
+                            <button type="button" class="custom-sort-trigger" id="customSortTrigger" aria-expanded="false" aria-haspopup="listbox">
+                                <span id="customSortCurrentText">Paling Laris (Rekomendasi)</span>
+                                <svg class="sort-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <ul class="custom-sort-menu" id="customSortMenu" role="listbox">
+                                <li class="custom-sort-item active" data-value="popular" role="option" aria-selected="true">
+                                    <span>Paling Laris (Rekomendasi)</span>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </li>
+                                <li class="custom-sort-item" data-value="price_asc" role="option" aria-selected="false">
+                                    <span>Harga: Rendah ke Tinggi</span>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </li>
+                                <li class="custom-sort-item" data-value="price_desc" role="option" aria-selected="false">
+                                    <span>Harga: Tinggi ke Rendah</span>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </li>
+                                <li class="custom-sort-item" data-value="name_asc" role="option" aria-selected="false">
+                                    <span>Nama: A ke Z</span>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </li>
+                                <li class="custom-sort-item" data-value="name_desc" role="option" aria-selected="false">
+                                    <span>Nama: Z ke A</span>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </li>
+                            </ul>
+                            <select id="catalogSortSelect" class="catalog-sort-select visually-hidden" aria-hidden="true" style="display: none;">
+                                <option value="popular">Paling Laris (Rekomendasi)</option>
+                                <option value="price_asc">Harga: Rendah ke Tinggi</option>
+                                <option value="price_desc">Harga: Tinggi ke Rendah</option>
+                                <option value="name_asc">Nama: A ke Z</option>
+                                <option value="name_desc">Nama: Z ke A</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -548,8 +622,8 @@
                             data-id="{{ $prod->id }}"
                             data-name="{{ strtolower($prod->name) }}"
                             data-category="{{ $prod->category }}"
-                            data-price="{{ (int)$prod->price }}"
-                            data-stock="{{ (int)$prod->stock }}">
+                            data-price="{{ (int) $prod->price }}"
+                            data-stock="{{ (int) $prod->stock }}">
                             <!-- Image Box -->
                             <div class="card-img-container" onclick="window.openDetailModal('{{ $prod->id }}')">
                                 <img src="{{ $prod->image ?: '/images/ica_logo.png' }}" alt="{{ $prod->name }}"
@@ -571,14 +645,6 @@
                                         </span>
                                     @endif
                                 </div>
-                                <button class="card-quick-eye-btn" title="Lihat Detail Produk"
-                                    onclick="event.stopPropagation(); window.openDetailModal('{{ $prod->id }}')">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                        <circle cx="12" cy="12" r="3" />
-                                    </svg>
-                                </button>
                             </div>
 
                             <!-- Details Body -->
@@ -638,7 +704,7 @@
                             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                             <path d="M3 3v5h5" />
                         </svg>
-                        <span>Reset Filter &amp; Tampilkan Semua</span>
+                        <span>Lihat Semua Produk</span>
                     </button>
                 </div>
 
@@ -868,23 +934,20 @@
         <section class="why-us-section-wrap">
             <div class="max-w-7xl">
                 <div class="why-us-header">
-                    <h2 class="why-us-title">Mengapa Memilih Ica Frozen Food?</h2>
-                    <p class="why-us-subtitle">Standar pengolahan higienis tanpa bahan pengawet kimia berbahaya</p>
+                    <h2 class="why-us-title">Kenapa Belanja di Ica Frozen Food?</h2>
+                    <p class="why-us-subtitle">Pilihan sehat dan higienis untuk stok dapur rumah Anda, tanpa bahan pengawet berbahaya</p>
                 </div>
                 <div class="why-us-grid">
                     <div class="why-us-card">
                         <div class="why-us-icon-box" style="background-color: var(--soft-blue);">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="m15 9-6 6" />
-                                <path d="M9 9h.01" />
-                                <path d="M15 15h.01" />
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+                                <path d="M7 7h.01" />
                             </svg>
                         </div>
-                        <h3 class="why-us-card-title">Harga Murah &amp; Terjangkau</h3>
-                        <p class="why-us-card-desc">Pilihan makanan beku berkualitas tinggi dengan harga ramah kantong,
-                            hemat untuk konsumsi harian keluarga.</p>
+                        <h3 class="why-us-card-title">Harga Hemat & Pas di Kantong</h3>
+                        <p class="why-us-card-desc">Pilihan frozen food bermutu tinggi dengan harga terjangkau, bikin belanja bulanan keluarga tetap hemat.</p>
                     </div>
 
                     <div class="why-us-card">
@@ -896,9 +959,8 @@
                                 <path d="m9 12 2 2 4-4" />
                             </svg>
                         </div>
-                        <h3 class="why-us-card-title">100% Halal, Segar &amp; Higienis</h3>
-                        <p class="why-us-card-desc">Menyediakan aneka produk makanan beku berkualitas tinggi, terjamin
-                            kehalalannya, serta dikemas secara higienis dan terjaga kesegarannya.</p>
+                        <h3 class="why-us-card-title">100% Halal & Mutu Terjamin</h3>
+                        <p class="why-us-card-desc">Semua produk higienis, bersertifikasi halal, dan disimpan dalam suhu optimal agar kualitasnya tetap terjaga.</p>
                     </div>
 
                     <div class="why-us-card">
@@ -906,8 +968,7 @@
                             <span class="motor-delivery-icon" style="width: 26px; height: 17px; color: #FFFFFF;"></span>
                         </div>
                         <h3 class="why-us-card-title">Bisa Diantar Via Kurir</h3>
-                        <p class="why-us-card-desc">Pesanan siap diantar langsung oleh kurir ke rumah Anda di wilayah
-                            Banjarbaru, Martapura, dan sekitarnya.</p>
+                        <p class="why-us-card-desc">Pengiriman cepat dan aman untuk area Banjarbaru, Martapura, dan sekitarnya. Barang sampai tetap beku segar.</p>
                     </div>
                 </div>
             </div>
@@ -956,8 +1017,8 @@
                         </div>
                     </div>
                     <p style="font-size: 0.75rem; color: #6B7280; line-height: 1.625;">
-                        Menyediakan aneka makanan beku praktis berkualitas tinggi: dimsum, nugget, sosis, olahan
-                        seafood, hingga daging sukiyaki dengan pengemasan kedap udara (vacuum sealed).
+                        Sahabat setia dapur keluarga. Menyediakan aneka makanan beku lezat, praktis, halal, dan bebas pengawet untuk hidangan
+                        hangat setiap hari.
                     </p>
                 </div>
 
@@ -1013,8 +1074,8 @@
                         <p style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #6B7280; line-height: 1.5;">
                             <span class="motor-delivery-icon"
                                 style="width: 14px; height: 14px; color: var(--soft-blue); flex-shrink: 0;"></span>
-                            <span>Bisa diantar oleh kurir langsung ke rumah anda (Banjarbaru, Martapura &amp;
-                                Sekitarnya)</span>
+                            <span>Siap melayani pemesanan langsung ke toko maupun antar via kurir ke rumah Anda.</span>
+                        <!-- Melayani pengantaran via kurir area Banjarbaru & sekitarnya! -->
                         </p>
                     </div>
                 </div>
@@ -1031,10 +1092,8 @@
     <!-- 9. Modal Detail Informasi & Spesifikasi Produk -->
     <div id="productDetailModal" class="modal-product-backdrop">
         <div class="modal-product-card-wrap">
-            <button id="detailModalClose"
-                style="position: absolute; top: 1rem; right: 1rem; z-index: 10; padding: 0.5rem; border-radius: 9999px; background: rgba(255,255,255,0.9); color: #6B7280; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); cursor: pointer;"
-                title="Tutup">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <button id="detailModalClose" class="modal-close-round-btn" title="Tutup" type="button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1052,18 +1111,6 @@
                     <span id="detailStockBadge"
                         style="display: none; background-color: var(--red); color: #FFFFFF; font-size: 10px; font-weight: 800; padding: 0.125rem 0.625rem; border-radius: 9999px;">Stok
                         Habis</span>
-                </div>
-                <div
-                    style="position: absolute; bottom: 0.75rem; left: 0.75rem; right: 0.75rem; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); padding: 0.375rem 0.75rem; border-radius: 12px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.75rem;">
-                    <span style="display: flex; align-items: center; gap: 0.25rem; font-weight: 600; color: #047857;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 13 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-                            <path d="m9 12 2 2 4-4" />
-                        </svg>
-                        100% Halal
-                    </span>
                 </div>
             </div>
 
@@ -1088,10 +1135,9 @@
                         produk...</p>
 
                     <!-- Spec Badges -->
-                    <div
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #F3F4F6;">
+                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #F3F4F6;">
                         <div
-                            style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background-color: rgba(241, 240, 232, 0.7); border-radius: 12px; font-size: 0.75rem; color: var(--navy);">
+                            style="display: inline-flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.875rem; background-color: rgba(241, 240, 232, 0.7); border-radius: 12px; font-size: 0.75rem; color: var(--navy);">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
                                 stroke-width="2">
                                 <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1" />
@@ -1099,20 +1145,8 @@
                                 <line x1="23" y1="13" x2="16" y2="13" />
                             </svg>
                             <div>
-                                <p style="font-size: 10px; color: #6B7280;">Berat Bersih</p>
+                                <p style="font-size: 10px; color: #6B7280;">Berat / Porsi Kemasan</p>
                                 <p id="detailWeight" style="font-weight: 700;">500g</p>
-                            </div>
-                        </div>
-                        <div
-                            style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background-color: rgba(241, 240, 232, 0.7); border-radius: 12px; font-size: 0.75rem; color: var(--navy);">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                            <div>
-                                <p style="font-size: 10px; color: #6B7280;">Masa Simpan</p>
-                                <p id="detailShelfLife" style="font-weight: 700;">6 Bulan</p>
                             </div>
                         </div>
                     </div>
@@ -1477,92 +1511,77 @@
 
     <!-- 12. Modal Struk Pembelian (Thermal Receipt Preview) -->
     <div id="receiptModal" class="modal-product-backdrop">
-        <div
-            style="width: 100%; max-width: 400px; background-color: #FFFFFF; border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-xl); border: 1px solid rgba(166, 177, 195, 0.6); display: flex; flex-direction: column; gap: 1rem;">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F3F4F6; padding-bottom: 0.75rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="padding: 6px; border-radius: 8px; background-color: #ECFDF5; color: #059669;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                    </span>
-                    <div>
-                        <h3 style="font-weight: 800; font-size: 0.875rem; color: var(--navy);">Struk Pembelian</h3>
-                        <p style="font-size: 11px; color: #6B7280;">Thermal Receipt Preview</p>
-                    </div>
-                </div>
-                <button id="btnReceiptClose" style="color: #9CA3AF; cursor: pointer;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
+        <div class="receipt-paper-box" style="margin: auto; width: 100%; max-width: 400px;">
+            <div class="receipt-header-center">
+                <h2 style="font-size: 1rem; font-weight: 900; margin: 0; color: #111827;">ICA FROZEN FOOD</h2>
+                <p style="font-size: 10px; margin: 2px 0; color: #4B5563;">Makanan Beku Higienis &amp; Halal</p>
+                <p style="font-size: 10px; margin: 0; color: #4B5563;">Loktabat Utara, Banjarbaru Utara, Kalimantan Selatan</p>
+                <p style="font-size: 10px; margin: 0; color: #4B5563;">WhatsApp: 0878-5451-3770</p>
             </div>
 
-            <!-- Receipt Paper -->
-            <div
-                style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1rem; font-family: monospace; font-size: 11px; color: #1F2937; line-height: 1.5;">
-                <div
-                    style="text-align: center; border-bottom: 1px dashed #D1D5DB; padding-bottom: 8px; margin-bottom: 8px;">
-                    <div style="font-weight: 900; font-size: 13px; letter-spacing: 1px;">ICA FROZEN FOOD</div>
-                    <div>Makanan Beku Higienis &amp; Halal</div>
-                    <div>Loktabat Utara, Banjarbaru • WA: 0878-5451-3770</div>
+            <div style="font-size: 11px; margin-bottom: 0.5rem; line-height: 1.4;">
+                <div>No. Nota: <strong id="recNoOrder">-</strong></div>
+                <div>Tanggal : <span id="recDate">-</span></div>
+                <div>Customer: <strong id="recCustomer">-</strong></div>
+                <div>Metode  : <span id="recMethod">-</span></div>
+                <div>Bayar   : <span id="recPayment">-</span></div>
+            </div>
+
+            <div class="receipt-divider-dash"></div>
+
+            <table class="receipt-items-table">
+                <thead>
+                    <tr style="border-bottom: 1px dashed #9CA3AF;">
+                        <th style="text-align: left;">Item</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="recItemsList">
+                    <!-- Dynamic -->
+                </tbody>
+            </table>
+
+            <div class="receipt-divider-dash"></div>
+
+            <div style="font-size: 11px; line-height: 1.5;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Subtotal:</span>
+                    <span id="recSubtotal">Rp 0</span>
                 </div>
-                <div style="border-bottom: 1px dashed #D1D5DB; padding-bottom: 6px; margin-bottom: 6px;">
-                    <div>No. Order : <span id="recNoOrder" style="font-weight: 700;">-</span></div>
-                    <div>Waktu : <span id="recDate">-</span></div>
-                    <div>Pemesan : <span id="recCustomer">-</span></div>
-                    <div>Metode : <span id="recMethod">-</span></div>
-                    <div>Bayar : <span id="recPayment">-</span></div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Ongkos Kirim:</span>
+                    <span id="recIceFee">Rp 0</span>
                 </div>
-                <div id="recItemsList"
-                    style="border-bottom: 1px dashed #D1D5DB; padding-bottom: 6px; margin-bottom: 6px;"></div>
-                <div style="border-bottom: 1px dashed #D1D5DB; padding-bottom: 6px; margin-bottom: 6px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Subtotal:</span>
-                        <span id="recSubtotal">Rp 0</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Ongkos Kirim:</span>
-                        <span id="recIceFee">Rp 0</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 12px;">
-                        <span>TOTAL AKHIR:</span>
-                        <span id="recTotal">Rp 0</span>
-                    </div>
+                <div class="receipt-total-row">
+                    <span>TOTAL BAYAR:</span>
+                    <span id="recTotal">Rp 0</span>
                 </div>
-                <div style="text-align: center; color: #6B7280; font-size: 10px; padding-top: 4px;">
-                    <div>* Simpan segera di freezer agar tetap segar *</div>
-                    <div>Terima kasih atas pesanan Anda!</div>
+                <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                    <span>Status Bayar:</span>
+                    <strong style="color: #059669;">LUNAS (CASH/TRANSFER)</strong>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div style="display: flex; gap: 0.5rem;">
-                <button id="btnPrintReceipt"
-                    style="flex: 1; padding: 0.625rem; background-color: #F3F4F6; color: var(--navy); border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 6 2 18 2 18 9" />
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                        <rect width="12" height="8" x="6" y="14" />
-                    </svg>
+            <div class="receipt-divider-dash"></div>
+
+            <div style="text-align: center; font-size: 10px; color: #4B5563; margin-top: 0.75rem;">
+                <p style="margin: 0;">Terima kasih telah berbelanja di Ica Frozen Food!</p>
+                <p style="margin: 2px 0 0;">* Simpan segera di freezer agar tetap segar *</p>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button type="button" id="btnReceiptClose" style="flex: 1; padding: 0.625rem; border-radius: 10px; border: 1px solid #D1D5DB; background: #FFFFFF; color: #374151; font-size: 0.75rem; font-weight: 700; cursor: pointer;">Tutup</button>
+                <button type="button" id="btnPrintReceipt" style="flex: 1; padding: 0.625rem; border-radius: 10px; border: none; background: var(--soft-blue); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                     <span>Cetak Struk</span>
-                </button>
-                <button id="btnCopyReceipt"
-                    style="flex: 1; padding: 0.625rem; background-color: var(--soft-blue); color: #FFFFFF; border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                    </svg>
-                    <span>Salin Teks</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 13. Modal Pengaturan Profil Pengguna & Akun -->
+    @if($user && !$user->is_admin)
+    <!-- 13. Modal Pengaturan Profil Pengguna & Akun (Khusus Pelanggan) -->
     <div id="userProfileModal" class="modal-product-backdrop" style="display: none;">
         <div class="user-profile-modal-card">
             <!-- Modal Header -->
@@ -1737,12 +1756,19 @@
                                 <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
-                            <button type="button" class="btn-pwd-eye" data-target="custCurrentPassword"
-                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); cursor: pointer;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
+                            <button type="button" class="btn-pwd-eye" data-target="custCurrentPassword" aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
+                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                                     <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-off-icon" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                    <line x1="2" x2="22" y1="2" y2="22" />
                                 </svg>
                             </button>
                         </div>
@@ -1762,12 +1788,19 @@
                                 <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
-                            <button type="button" class="btn-pwd-eye" data-target="custNewPassword"
-                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); cursor: pointer;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
+                            <button type="button" class="btn-pwd-eye" data-target="custNewPassword" aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
+                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                                     <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-off-icon" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                    <line x1="2" x2="22" y1="2" y2="22" />
                                 </svg>
                             </button>
                         </div>
@@ -1787,12 +1820,19 @@
                                 <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
-                            <button type="button" class="btn-pwd-eye" data-target="custConfirmPassword"
-                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); cursor: pointer;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
+                            <button type="button" class="btn-pwd-eye" data-target="custConfirmPassword" aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
+                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                                     <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-off-icon" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                    <line x1="2" x2="22" y1="2" y2="22" />
                                 </svg>
                             </button>
                         </div>
@@ -1816,6 +1856,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Data Injection -->
     <script>

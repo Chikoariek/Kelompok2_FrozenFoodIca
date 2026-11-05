@@ -21,6 +21,9 @@
     <!-- Pure Vanilla CSS for Admin -->
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}">
 
+    <!-- Chart.js CDN for Visual Sales Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- Pencegahan Cache / Tombol Back Browser Setelah Logout -->
     <script>
         window.addEventListener('pageshow', function (event) {
@@ -48,7 +51,7 @@
             </button>
         </div>
 
-        <!-- 5 Menu Navigasi -->
+        <!-- 6 Menu Navigasi -->
         <nav class="sidebar-nav-menu">
             <button class="sidebar-nav-btn active" data-tab="dashboard">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
@@ -69,6 +72,10 @@
             <button class="sidebar-nav-btn" data-tab="categories">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
                 <span>Kategori Produk</span>
+            </button>
+            <button class="sidebar-nav-btn" data-tab="reports">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="4" height="12" x="2" y="9" rx="1"/><rect width="4" height="18" x="10" y="3" rx="1"/><rect width="4" height="8" x="18" y="13" rx="1"/></svg>
+                <span>Laporan Penjualan</span>
             </button>
         </nav>
 
@@ -289,7 +296,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($orders->take(7) as $order)
+                                    @forelse($orders->take(5) as $order)
                                         @php
                                              $badgeClass = 'menunggu';
                                              $statusLabel = 'Menunggu';
@@ -546,7 +553,15 @@
                         </p>
                     </div>
                     <div class="panel-header-actions">
-                        <span style="padding: 0.5rem 1rem; border-radius: 12px; background: #F3F4F6; color: var(--navy); font-size: 0.75rem; font-weight: 700; border: 1px solid #E5E7EB; display: flex; align-items: center; gap: 0.5rem;">
+                        <a href="{{ route('admin.export.orders') }}" id="btnExportOrdersExcel" class="btn-excel-green" title="Download Rekap Transaksi Penjualan Excel/CSV">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg>
+                            <span>Export Laporan Penjualan</span>
+                        </a>
+                        <button id="btnOpenOfflineOrderModal" class="btn-primary-blue" type="button" title="Tambah Pesanan Kasir Walk-in / Offline">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <span>Tambah Pesanan</span>
+                        </button>
+                        <span class="order-total-header-badge">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             <span>Total: <strong id="orderCountBadge">{{ count($orders) }} Pesanan</strong></span>
                         </span>
@@ -607,8 +622,29 @@
                                         <!-- Customer -->
                                         <td>
                                             <p class="order-cust-name">{{ $order->customer_name }}</p>
-                                            <p class="order-cust-phone">{{ $order->customer_phone ?? '-' }}</p>
-                                            <span class="order-channel-badge">{{ $order->channel ?? 'Online' }}</span>
+                                            @php
+                                                $rawPhone = $order->customer_phone ?? '';
+                                                $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+                                                if (str_starts_with($cleanPhone, '08')) {
+                                                    $cleanPhone = '628' . substr($cleanPhone, 2);
+                                                } elseif (str_starts_with($cleanPhone, '8')) {
+                                                    $cleanPhone = '62' . $cleanPhone;
+                                                }
+                                                $isValidPhone = (strlen($cleanPhone) >= 10 && str_starts_with($cleanPhone, '628'));
+                                                $waGreeting = "Halo kak " . ($order->customer_name ?: 'Pelanggan') . ", kami dari Ica Frozen Food mengonfirmasi pesanan #" . $order->id . " (" . ($order->status ?? 'Diproses') . "). Apakah ada yang perlu kami bantu?";
+                                                $waLink = "https://wa.me/{$cleanPhone}?text=" . rawurlencode($waGreeting);
+                                            @endphp
+                                            <div class="order-cust-sub-row">
+                                                @if($isValidPhone)
+                                                    <a href="{{ $waLink }}" target="_blank" rel="noopener noreferrer" class="order-cust-phone-wa" title="Hubungi via WhatsApp ({{ $order->customer_phone }})">
+                                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="#25D366" style="flex-shrink: 0;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                                        <span>{{ $order->customer_phone }}</span>
+                                                    </a>
+                                                @else
+                                                    <span class="order-cust-phone">{{ $order->customer_phone ?? '-' }}</span>
+                                                @endif
+                                                <span class="order-channel-badge">{{ $order->channel ?? 'Online' }}</span>
+                                            </div>
                                         </td>
 
                                         <!-- Method -->
@@ -705,12 +741,16 @@
                         </p>
                     </div>
 
-                    <!-- Action Buttons: Simpan Perubahan & Tambah Produk (Posisi Konsisten) -->
+                    <!-- Action Buttons: Import Excel, Export Excel & Tambah Produk Baru -->
                     <div class="panel-header-actions">
-                        <button id="btnSyncProducts" class="btn-primary-green" title="Simpan Seluruh Data Produk ke Server" type="button">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
-                            <span>Simpan Perubahan</span>
+                        <button id="btnOpenImportProductModal" class="btn-import-teal" title="Import Data Excel / CSV dari Kasir Pintar" type="button">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span>Import Excel</span>
                         </button>
+                        <a href="{{ route('admin.export.products') }}" id="btnExportProductsExcel" class="btn-excel-green" title="Export Backup Stok ke Excel/CSV">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Export Excel</span>
+                        </a>
                         <button id="btnOpenAddProductModal" class="btn-primary-blue" title="Tambah Data Produk Baru" type="button">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             <span>Tambah Produk Baru</span>
@@ -967,6 +1007,169 @@
                             Belum ada kategori yang dibuat.
                         </div>
                     @endforelse
+                </div>
+            </section>
+
+            <!-- Tab 6: Laporan Penjualan & Analisis Finansial Toko -->
+            <section id="tab-reports" class="tab-pane">
+                <!-- Top Header Card -->
+                <div class="panel-top-header-card">
+                    <div>
+                        <div class="panel-header-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            <span>Analisis &amp; Rekapitulasi</span>
+                        </div>
+                        <h2 class="panel-header-title">Laporan Penjualan &amp; Analisis Toko</h2>
+                        <p class="panel-header-desc">
+                            Pantau visual grafik tren omzet pendapatan, performa transaksi harian, dan analisis metode pembayaran pelanggan.
+                        </p>
+                    </div>
+
+                    <!-- Tombol Ekspor Spreadsheet -->
+                    <div class="panel-header-actions">
+                        <a href="{{ route('admin.export.orders') }}" class="btn-excel-green" title="Download Rekap Transaksi Penjualan Excel/CSV">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg>
+                            <span>Export Laporan Penjualan</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Filter Toolbar: Pemilihan Rentang Waktu (7 Hari, 30 Hari, Bulan Ini, Semua) -->
+                <div class="admin-toolbar-card">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-right: 0.25rem;">Periode Analisis:</span>
+                        <div class="toolbar-filters-group">
+                            <button type="button" class="filter-btn-pill active report-range-btn" data-range="7">7 Hari Terakhir</button>
+                            <button type="button" class="filter-btn-pill report-range-btn" data-range="30">30 Hari Terakhir</button>
+                            <button type="button" class="filter-btn-pill report-range-btn" data-range="month">Bulan Ini</button>
+                            <button type="button" class="filter-btn-pill report-range-btn" data-range="all">Semua Waktu</button>
+                        </div>
+                    </div>
+                    <div id="reportActiveRangeText" style="font-size: 0.75rem; font-weight: 700; color: #64748B; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0.45rem 0.85rem; border-radius: var(--radius-md);">
+                        Rentang: Memuat data...
+                    </div>
+                </div>
+
+                <!-- 3 KPI Cards Finansial Khusus Periode Terpilih -->
+                <div class="admin-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+                    <!-- Kartu 1: Omzet Penjualan Periode -->
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-header">
+                            <p class="admin-stat-label">Total Omzet (Pendapatan)</p>
+                            <div class="admin-stat-icon-wrap" style="color: #059669; background: #ECFDF5;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                            </div>
+                        </div>
+                        <div class="admin-stat-body">
+                            <p id="reportTotalRevenue" class="admin-stat-value long-text" style="color: #059669;">Rp 0</p>
+                            <p id="reportRevenueSubtext" class="admin-stat-subtext">Dari transaksi lunas/selesai</p>
+                        </div>
+                    </div>
+
+                    <!-- Kartu 2: Total Transaksi Berhasil -->
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-header">
+                            <p class="admin-stat-label">Transaksi Berhasil</p>
+                            <div class="admin-stat-icon-wrap" style="color: var(--soft-blue); background: #EFF6FF;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="m9 12 2 2 4-4"/></svg>
+                            </div>
+                        </div>
+                        <div class="admin-stat-body">
+                            <p id="reportTotalOrders" class="admin-stat-value">0 Pesanan</p>
+                            <p id="reportOrdersSubtext" class="admin-stat-subtext">Tingkat keberhasilan transaksi</p>
+                        </div>
+                    </div>
+
+                    <!-- Kartu 3: Rata-Rata Nilai Belanja (AOV) -->
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-header">
+                            <p class="admin-stat-label">Rata-Rata Belanja (AOV)</p>
+                            <div class="admin-stat-icon-wrap" style="color: #7C3AED; background: #F5F3FF;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                            </div>
+                        </div>
+                        <div class="admin-stat-body">
+                            <p id="reportAverageOrderValue" class="admin-stat-value long-text">Rp 0</p>
+                            <p class="admin-stat-subtext">Rata-rata omzet per transaksi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Card: Grafik Visual Tren Omzet Penjualan (Chart.js) -->
+                <div class="admin-card-box" style="margin-bottom: 1.5rem;">
+                    <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(103, 125, 158, 0.12); display: flex; align-items: center; justify-content: center; color: var(--soft-blue);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="admin-card-title" style="margin: 0; font-size: 0.9375rem;">Grafik Tren Omzet Pendapatan Harian</h3>
+                                <p style="font-size: 0.6875rem; color: #64748B; margin: 2px 0 0;">Visualisasi fluktuasi nilai pendapatan untuk melihat pola hari teramai pesanan</p>
+                            </div>
+                        </div>
+                        <div id="reportChartStatusBadge" style="font-size: 0.75rem; font-weight: 700; color: var(--navy); background: #F1F5F9; border: 1px solid #CBD5E1; padding: 4px 12px; border-radius: 8px;">
+                            Memuat grafik...
+                        </div>
+                    </div>
+                    <div style="padding: 1.25rem; position: relative; min-height: 320px;">
+                        <canvas id="salesTrendsChart" style="max-height: 320px; width: 100%;"></canvas>
+                    </div>
+                </div>
+
+                <!-- 2 Analytical Widget Cards (Side-by-side Grid) -->
+                <div class="admin-overview-grid" style="margin-bottom: 1.5rem;">
+                    <!-- Widget 1: Metode Pembayaran Pelanggan -->
+                    <div class="admin-card-box">
+                        <div class="admin-card-header">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                                <h3 class="admin-card-title">Metode Pembayaran Terpopuler</h3>
+                            </div>
+                            <span id="reportPaymentTotalCount" style="font-size: 0.6875rem; font-weight: 700; color: #64748B;">0 Transaksi</span>
+                        </div>
+                        <div id="reportPaymentMethodsList" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Dinamis di-render via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Widget 2: Kontribusi Kategori Produk Terlaris -->
+                    <div class="admin-card-box">
+                        <div class="admin-card-header">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
+                                <h3 class="admin-card-title">Kontribusi Kategori Terlaris</h3>
+                            </div>
+                            <span id="reportCategoryTotalItems" style="font-size: 0.6875rem; font-weight: 700; color: #64748B;">0 Pcs Terjual</span>
+                        </div>
+                        <div id="reportCategoriesList" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Dinamis di-render via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Riwayat Transaksi Penjualan Terkini Periode Terpilih -->
+                <div class="admin-card-box">
+                    <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 class="admin-card-title">RINCIAN TRANSAKSI PERIODE TERPILIH</h3>
+                        <span id="reportTableCountBadge" style="font-size: 0.725rem; font-weight: 700; color: #64748B;">0 Pesanan</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>No. Transaksi</th>
+                                    <th>Tanggal &amp; Waktu</th>
+                                    <th>Nama Pelanggan</th>
+                                    <th>Metode Bayar</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Total Omzet</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTransactionsTableBody">
+                                <!-- Dinamis via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -1233,7 +1436,215 @@
         </div>
     </div>
 
-    <!-- Initial Data for Vanilla JS with Base and API URL -->
+    <!-- Modal Impor Data Produk dari Excel / CSV (Kasir Pintar) -->
+    <div id="modalImportExcel" class="admin-modal-backdrop">
+        <div class="admin-modal-box" style="max-width: 540px;">
+            <div class="modal-header-row">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #DCFCE7; color: #166534; display: flex; align-items: center; justify-content: center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="modal-title" style="font-size: 1.05rem;">Impor Data Produk (Kasir Pintar)</h3>
+                        <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Sinkronisasi etalase &amp; stok freezer dari file spreadsheet.</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-modal-close btn-close-import-modal" title="Tutup Modal">&times;</button>
+            </div>
+
+            <!-- Petunjuk Format Kasir Pintar -->
+            <div class="import-format-banner">
+                <div class="import-format-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span>Kompatibel dengan Format Kasir Pintar Pro &amp; Excel</span>
+                </div>
+                <p class="import-format-desc">
+                    Sistem mengenali kolom: <em>Kode Barang/SKU, Nama Produk, Kategori, Harga Jual, Stok</em>, dan <em>Berat</em>. Kategori baru akan otomatis ditambahkan ke toko.
+                </p>
+                <a href="{{ route('admin.export.template') }}" class="import-template-pill-link">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Unduh Contoh Template CSV</span>
+                </a>
+            </div>
+
+            <form id="formImportExcel" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body-pad" style="padding-top: 0;">
+                    <!-- Area Upload Dropzone -->
+                    <div id="importDropzone" class="import-dropzone">
+                        <input type="file" id="importFileInput" name="file" accept=".xlsx,.xls,.csv" style="display: none;" required>
+                        <div class="import-dropzone-icon-circle">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                        <h4 class="import-dropzone-title">Pilih file Excel (.xlsx) atau CSV dari Kasir Pintar</h4>
+                        <p class="import-dropzone-subtitle">Klik area ini atau seret file Anda ke sini (Maks. 10MB)</p>
+                        <span class="import-dropzone-limit-badge">Format Didukung: .xlsx, .xls, .csv</span>
+                    </div>
+
+                    <!-- Box Preview File Terpilih -->
+                    <div id="importFilePreview" class="import-file-selected-box" style="display: none;">
+                        <div class="import-file-info-col">
+                            <div class="import-excel-file-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <div style="min-width: 0;">
+                                <p id="importFileName" class="import-file-name-text">file_kasir_pintar.xlsx</p>
+                                <div class="import-file-meta-row">
+                                    <span id="importFileSize" class="import-file-size-text">0 KB</span>
+                                    <span class="import-file-ready-pill">Siap Diimpor</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="btnRemoveImportFile" class="btn-remove-import-file" title="Ganti File">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <span>Batal</span>
+                        </button>
+                    </div>
+
+                    <div class="import-sync-option-row">
+                        <label class="import-sync-label">
+                            <input type="checkbox" name="update_existing" value="1" checked>
+                            <span>Perbarui harga &amp; stok jika produk/SKU sudah ada di database</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer-row">
+                    <button type="button" class="btn-modal-cancel btn-close-import-modal">Batal</button>
+                    <button type="submit" id="btnSubmitImport" class="btn-primary-blue" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span>Mulai Impor Produk</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Transaksi Kasir Toko (Modern POS - Point of Sale) -->
+    <div id="modalOfflineOrder" class="admin-modal-backdrop">
+        <div class="admin-modal-box pos-modal-wide">
+            <!-- POS Modal Top Bar -->
+            <div class="pos-topbar-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div class="pos-icon-badge">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="pos-title">Mesin Kasir Toko (POS Walk-in)</h3>
+                        <p class="pos-sub">Pencatatan cepat transaksi langsung di gerai &amp; pemotongan stok freezer otomatis</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-modal-close" onclick="document.getElementById('modalOfflineOrder').classList.remove('open')">&times;</button>
+            </div>
+
+            <!-- POS Body Split (Kiri: Katalog Cepat, Kanan: Keranjang Kasir & Bayar) -->
+            <div class="pos-main-split">
+                <!-- Sisi Kiri: Katalog Cepat Freezer -->
+                <div class="pos-catalog-col">
+                    <!-- Search Bar Kasir -->
+                    <div class="pos-search-wrap">
+                        <svg class="pos-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="posSearchInput" class="pos-search-input" placeholder="Cari nama produk freezer atau SKU (misal: nugget, siomay, P01)...">
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="pos-cat-filter-row" id="posCategoryFilterRow">
+                        <button type="button" class="pos-cat-pill active" data-cat="all">Semua ({{ count($products) }})</button>
+                        @foreach($categories as $cat)
+                            <button type="button" class="pos-cat-pill" data-cat="{{ $cat->name }}">{{ $cat->name }}</button>
+                        @endforeach
+                    </div>
+
+                    <!-- Product Grid Cards -->
+                    <div class="pos-product-cards-grid" id="posProductCardsGrid">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Sisi Kanan: Keranjang Kasir & Perhitungan Uang Kembalian -->
+                <div class="pos-cart-col">
+                    <div class="pos-cart-header">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                            <span style="font-weight: 800; font-size: 0.875rem; color: var(--navy);">Keranjang Belanja</span>
+                            <span id="posCartItemCountBadge" class="pos-cart-count-pill">0 Item</span>
+                        </div>
+                        <button type="button" id="btnClearPosCart" class="pos-btn-clear-cart">Kosongkan</button>
+                    </div>
+
+                    <!-- Customer Info Inputs -->
+                    <div class="pos-cust-inputs-row">
+                        <div style="flex: 1.2;">
+                            <label class="pos-input-lbl">Nama Pelanggan Walk-in</label>
+                            <input type="text" id="posCustName" class="pos-text-input" value="Pelanggan Toko (Walk-in)" placeholder="Nama pelanggan...">
+                        </div>
+                        <div style="flex: 1;">
+                            <label class="pos-input-lbl">No. WhatsApp / HP</label>
+                            <input type="text" id="posCustPhone" class="pos-text-input" placeholder="08xxxxxxxxxx (Opsional)">
+                        </div>
+                    </div>
+
+                    <!-- Cart Item Rows List -->
+                    <div class="pos-cart-items-scroll" id="posCartItemsList">
+                        <div class="pos-cart-empty-state">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                            <p style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 0.35rem 0 0.15rem;">Keranjang Kasir Kosong</p>
+                            <p style="font-size: 0.6875rem; color: #94A3B8; margin: 0;">Klik produk freezer di sebelah kiri untuk menambahkan ke pesanan.</p>
+                        </div>
+                    </div>
+
+                    <!-- Total & Checkout Form -->
+                    <div class="pos-checkout-panel">
+                        <div class="pos-summary-row" style="margin-bottom: 0.6rem;">
+                            <span style="font-size: 0.8125rem; font-weight: 700; color: #64748B;">Total Tagihan Kasir:</span>
+                            <span id="posTotalBill" style="font-size: 1.25rem; font-weight: 900; color: var(--navy);">Rp 0</span>
+                        </div>
+
+                        <!-- Payment Method Toggle -->
+                        <div style="margin-bottom: 0.6rem;">
+                            <label class="pos-input-lbl">Metode Pembayaran:</label>
+                            <div class="pos-payment-method-tabs" id="posPaymentTabs">
+                                <button type="button" class="pos-pay-tab active" data-method="Tunai (Cash)">Tunai (Cash)</button>
+                                <button type="button" class="pos-pay-tab" data-method="QRIS Instan">QRIS Instan</button>
+                                <button type="button" class="pos-pay-tab" data-method="Transfer BCA">Transfer BCA</button>
+                                <button type="button" class="pos-pay-tab" data-method="Kartu Debit">Kartu Debit</button>
+                            </div>
+                        </div>
+
+                        <!-- Cash Payment Calculator (Hanya muncul bila metode Tunai) -->
+                        <div id="posCashBox" class="pos-cash-calc-box">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div style="flex: 1;">
+                                    <label class="pos-input-lbl" style="font-size: 10px;">Uang Diterima (Rp):</label>
+                                    <input type="number" id="posCashReceived" class="pos-cash-input" placeholder="0">
+                                </div>
+                                <div style="flex: 1; text-align: right;">
+                                    <span class="pos-input-lbl" style="font-size: 10px; display: block;">Kembalian:</span>
+                                    <strong id="posCashChange" style="font-size: 0.95rem; color: #059669;">Rp 0</strong>
+                                </div>
+                            </div>
+                            <!-- Quick Cash Pills -->
+                            <div class="pos-quick-cash-row">
+                                <button type="button" class="pos-btn-quick-cash" data-val="exact">Uang Pas</button>
+                                <button type="button" class="pos-btn-quick-cash" data-val="50000">50.000</button>
+                                <button type="button" class="pos-btn-quick-cash" data-val="100000">100.000</button>
+                                <button type="button" class="pos-btn-quick-cash" data-val="200000">200.000</button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                            <button type="button" class="btn-modal-cancel" style="padding: 0.65rem 1rem;" onclick="document.getElementById('modalOfflineOrder').classList.remove('open')">Batal</button>
+                            <button type="button" id="btnSubmitPosOrder" class="btn-primary-blue pos-btn-finish" style="flex: 1; justify-content: center; padding: 0.65rem 1rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>Selesaikan &amp; Cetak Struk</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         window.__BASE_URL__ = "{{ url('/') }}";
         window.__API_URL__ = "{{ url('api') }}";

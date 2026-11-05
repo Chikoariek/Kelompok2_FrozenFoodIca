@@ -277,6 +277,18 @@ document.addEventListener('DOMContentLoaded', function () {
   function closeCustomerProfileModal() {
     if (userProfileModal) {
       userProfileModal.style.display = 'none';
+      if (formCustomerPassword) {
+        formCustomerPassword.reset();
+        formCustomerPassword.querySelectorAll('.btn-pwd-eye').forEach(btn => {
+          const targetId = btn.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          if (input) input.type = 'password';
+          const eyeOpen = btn.querySelector('.eye-open-icon');
+          const eyeOff = btn.querySelector('.eye-off-icon');
+          if (eyeOpen) eyeOpen.style.display = 'block';
+          if (eyeOff) eyeOff.style.display = 'none';
+        });
+      }
     }
   }
 
@@ -310,17 +322,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Password visibility eye toggles
   document.querySelectorAll('.btn-pwd-eye').forEach((btn) => {
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
       const targetInputId = this.getAttribute('data-target');
       const input = document.getElementById(targetInputId);
-      if (input) {
-        const isPwd = input.type === 'password';
-        input.type = isPwd ? 'text' : 'password';
+      if (!input) return;
+
+      const isPwd = input.type === 'password';
+      input.type = isPwd ? 'text' : 'password';
+
+      const eyeOpen = this.querySelector('.eye-open-icon');
+      const eyeOff = this.querySelector('.eye-off-icon');
+
+      if (eyeOpen && eyeOff) {
+        eyeOpen.style.display = isPwd ? 'none' : 'block';
+        eyeOff.style.display = isPwd ? 'block' : 'none';
       }
     });
   });
 
-  // Submit Profile Form via AJAX to Database
+  // Submit Profile Form via AJAX
   const formCustomerProfile = document.getElementById('formCustomerProfile');
   const btnSubmitCustProfile = document.getElementById('btnSubmitCustProfile');
 
@@ -338,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (btnSubmitCustProfile) {
       btnSubmitCustProfile.disabled = true;
-      btnSubmitCustProfile.innerHTML = `<span>Menyimpan ke Database...</span>`;
+      btnSubmitCustProfile.innerHTML = `<span>Menyimpan...</span>`;
     }
 
     try {
@@ -360,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast('Data profil berhasil disimpan ke database!');
+        showToast('Profil berhasil disimpan!');
 
         // Update UI dynamically
         const initials = (name.substring(0, 2) || 'U').toUpperCase();
@@ -391,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showToast(errorMsg, 'error');
       }
     } catch (err) {
-      showToast('Gagal terhubung ke database server.', 'error');
+      showToast('Gagal terhubung ke server.', 'error');
     } finally {
       if (btnSubmitCustProfile) {
         btnSubmitCustProfile.disabled = false;
@@ -430,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (btnSubmitCustPassword) {
       btnSubmitCustPassword.disabled = true;
-      btnSubmitCustPassword.innerHTML = `<span>Menyimpan ke Database...</span>`;
+      btnSubmitCustPassword.innerHTML = `<span>Memperbarui...</span>`;
     }
 
     try {
@@ -451,15 +472,45 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast('Kata sandi berhasil diperbarui di database!');
+        showToast('Kata sandi berhasil diperbarui!');
         formCustomerPassword.reset();
+        formCustomerPassword.querySelectorAll('.btn-pwd-eye').forEach(btn => {
+          const targetId = btn.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          if (input) input.type = 'password';
+          const eyeOpen = btn.querySelector('.eye-open-icon');
+          const eyeOff = btn.querySelector('.eye-off-icon');
+          if (eyeOpen) eyeOpen.style.display = 'block';
+          if (eyeOff) eyeOff.style.display = 'none';
+        });
         closeCustomerProfileModal();
       } else {
-        const errorMsg = data.errors ? Object.values(data.errors).flat().join(', ') : (data.message || 'Kata sandi saat ini salah');
+        let errorMsg = 'Kata sandi saat ini tidak cocok atau salah.';
+        if (data.errors && data.errors.current_password) {
+          const firstErr = data.errors.current_password[0];
+          errorMsg = firstErr.includes('validation.current_password') || firstErr.toLowerCase().includes('current password')
+            ? 'Kata sandi saat ini tidak cocok atau salah.'
+            : firstErr;
+        } else if (data.errors && data.errors.password) {
+          errorMsg = data.errors.password[0];
+        } else if (data.errors) {
+          errorMsg = Object.values(data.errors).flat().join(', ');
+        } else if (data.message) {
+          errorMsg = data.message;
+        }
+
+        if (errorMsg.includes('validation.current_password')) {
+          errorMsg = 'Kata sandi saat ini tidak cocok atau salah.';
+        } else if (errorMsg.includes('validation.confirmed')) {
+          errorMsg = 'Konfirmasi kata sandi baru tidak cocok.';
+        } else if (errorMsg.includes('validation.min')) {
+          errorMsg = 'Kata sandi baru minimal 8 karakter.';
+        }
+
         showToast(errorMsg, 'error');
       }
     } catch (err) {
-      showToast('Gagal terhubung ke database server.', 'error');
+      showToast('Gagal terhubung ke server.', 'error');
     } finally {
       if (btnSubmitCustPassword) {
         btnSubmitCustPassword.disabled = false;
@@ -658,7 +709,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 5. Update Empty State (Jika 0 produk cocok)
     if (catalogEmptyState) {
-      catalogEmptyState.style.display = totalMatches === 0 ? 'block' : 'none';
+      if (totalMatches === 0) {
+        catalogEmptyState.style.display = 'block';
+        const emptyTitle = catalogEmptyState.querySelector('.catalog-empty-title');
+        const emptyDesc = catalogEmptyState.querySelector('.catalog-empty-desc');
+        if (searchQuery.trim().length > 0) {
+          if (emptyTitle) emptyTitle.textContent = 'Produk Tidak Ditemukan';
+          if (emptyDesc) emptyDesc.innerHTML = `Tidak ada produk makanan beku yang sesuai dengan kata kunci "<strong>${searchQuery}</strong>".`;
+        } else {
+          if (emptyTitle) emptyTitle.textContent = 'Kategori Belum Memiliki Produk';
+          if (emptyDesc) emptyDesc.innerHTML = `Stok produk untuk kategori <strong>${selectedCategory}</strong> sedang dipersiapkan.`;
+        }
+      } else {
+        catalogEmptyState.style.display = 'none';
+      }
     }
 
     // 6. Update Load More & Progress Bar
@@ -695,25 +759,118 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function handleSearchInput(val) {
+  let searchScrollTimer = null;
+  function handleSearchInput(val, immediateScroll = false) {
     searchQuery = val;
     if (searchInput) searchInput.value = val;
     if (mobileSearchInput) mobileSearchInput.value = val;
     if (btnClearSearch) btnClearSearch.style.display = val ? 'flex' : 'none';
     filterCatalog(true); // Reset ke batch pertama saat mencari
+
+    // Gulir otomatis ke bagian katalog saat pengguna sedang mencari produk
+    if (val.trim().length > 0) {
+      clearTimeout(searchScrollTimer);
+      const doScroll = () => {
+        const catalogSec = document.getElementById('katalog-section');
+        if (catalogSec) {
+          const rect = catalogSec.getBoundingClientRect();
+          // Hanya gulir jika katalog belum berada di posisi nyaman pandangan mata
+          if (rect.top < -50 || rect.top > 250) {
+            const topPos = window.pageYOffset + rect.top - 85;
+            window.scrollTo({ top: topPos, behavior: 'smooth' });
+          }
+        }
+      };
+
+      if (immediateScroll) {
+        doScroll();
+      } else {
+        searchScrollTimer = setTimeout(doScroll, 400);
+      }
+    }
   }
 
   if (searchInput) {
     searchInput.addEventListener('input', (e) => handleSearchInput(e.target.value));
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSearchInput(e.target.value, true);
+      }
+    });
   }
   if (mobileSearchInput) {
     mobileSearchInput.addEventListener('input', (e) => handleSearchInput(e.target.value));
+    mobileSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSearchInput(e.target.value, true);
+      }
+    });
   }
   if (btnClearSearch) {
     btnClearSearch.addEventListener('click', () => handleSearchInput(''));
   }
 
-  // Category Pills Filter & Dynamic Scroll Edge Mask
+  // Category Navigation: Mode Ringkas (1 Baris Scroll) vs Mode Tersebar/Dijabarkan (Expand)
+  const categoryNavSection = document.getElementById('categoryNavSection');
+  const categoryNavHeaderRow = document.getElementById('categoryNavHeaderRow');
+  const categoryToggleWrap = document.getElementById('categoryToggleWrap');
+  const btnToggleCategories = document.getElementById('btnToggleCategories');
+  const btnToggleCategoriesTop = document.getElementById('btnToggleCategoriesTop');
+
+  function setCategoriesExpanded(expanded) {
+    if (!categoryNavSection) return;
+    categoryNavSection.classList.toggle('is-expanded', expanded);
+    if (categoryNavHeaderRow) {
+      categoryNavHeaderRow.style.display = expanded ? 'flex' : 'none';
+    }
+    if (categoryToggleWrap) {
+      categoryToggleWrap.style.display = expanded ? 'none' : 'block';
+    }
+    if (btnToggleCategories) {
+      btnToggleCategories.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+    if (btnToggleCategoriesTop) {
+      btnToggleCategoriesTop.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+
+    // Jika ditutup kembali (collapsed), auto-center pill kategori yang sedang aktif
+    if (!expanded && categoryPillContainer) {
+      updateCategoryScrollMask();
+      const activePill = categoryPillContainer.querySelector('.btn-category-pill.selected');
+      if (activePill) {
+        setTimeout(() => {
+          activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }, 60);
+      }
+    }
+  }
+
+  if (btnToggleCategories) {
+    btnToggleCategories.addEventListener('click', () => setCategoriesExpanded(true));
+  }
+  if (btnToggleCategoriesTop) {
+    btnToggleCategoriesTop.addEventListener('click', () => setCategoriesExpanded(false));
+  }
+
+  // Deteksi posisi geser agar efek blur/samar adaptif di kiri dan kanan saat mode 1 baris
+  function updateCategoryScrollMask() {
+    if (!categoryPillContainer) return;
+    if (categoryNavSection && categoryNavSection.classList.contains('is-expanded')) {
+      categoryPillContainer.classList.remove('is-scrolled', 'is-at-end');
+      return;
+    }
+    const scrollLeft = categoryPillContainer.scrollLeft;
+    const maxScroll = categoryPillContainer.scrollWidth - categoryPillContainer.clientWidth;
+    const isScrolled = scrollLeft > 8;
+    const isAtEnd = maxScroll > 0 && scrollLeft >= (maxScroll - 8);
+
+    categoryPillContainer.classList.toggle('is-scrolled', isScrolled && !isAtEnd);
+    categoryPillContainer.classList.toggle('is-at-end', isAtEnd);
+  }
+
+  // Pilih kategori via pill
   if (categoryPillContainer) {
     categoryPillContainer.querySelectorAll('.btn-category-pill').forEach((pill) => {
       pill.addEventListener('click', function () {
@@ -721,29 +878,85 @@ document.addEventListener('DOMContentLoaded', function () {
         this.classList.add('selected');
         selectedCategory = this.getAttribute('data-cat') || 'Semua';
         filterCatalog(true); // Reset ke batch pertama saat ganti kategori
+
+        // Jika dalam mode 1 baris, auto-center pill yang diklik
+        if (!categoryNavSection || !categoryNavSection.classList.contains('is-expanded')) {
+          this.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
       });
     });
 
-    // Deteksi posisi geser agar efek blur/samar adaptif di kiri dan kanan
-    function updateCategoryScrollMask() {
-      const scrollLeft = categoryPillContainer.scrollLeft;
-      const maxScroll = categoryPillContainer.scrollWidth - categoryPillContainer.clientWidth;
-      const isScrolled = scrollLeft > 8;
-      const isAtEnd = maxScroll > 0 && scrollLeft >= (maxScroll - 8);
-
-      categoryPillContainer.classList.toggle('is-scrolled', isScrolled && !isAtEnd);
-      categoryPillContainer.classList.toggle('is-at-end', isAtEnd);
-    }
+    // Geser horizontal dengan roda mouse (Mouse Wheel Horizontal Scroll)
+    categoryPillContainer.addEventListener('wheel', (e) => {
+      if (categoryNavSection && categoryNavSection.classList.contains('is-expanded')) return;
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        categoryPillContainer.scrollBy({ left: e.deltaY * 1.5, behavior: 'smooth' });
+      }
+    }, { passive: false });
 
     categoryPillContainer.addEventListener('scroll', updateCategoryScrollMask, { passive: true });
     window.addEventListener('resize', updateCategoryScrollMask, { passive: true });
     updateCategoryScrollMask();
   }
 
-  // Sort Dropdown Change
+  // Custom Styled Sort Dropdown Component
+  const customSortDropdown = document.getElementById('customSortDropdown');
+  const customSortTrigger = document.getElementById('customSortTrigger');
+  const customSortMenu = document.getElementById('customSortMenu');
+  const customSortCurrentText = document.getElementById('customSortCurrentText');
+
+  if (customSortTrigger && customSortMenu) {
+    customSortTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = customSortMenu.classList.contains('show');
+      customSortMenu.classList.toggle('show', !isOpen);
+      customSortTrigger.classList.toggle('active', !isOpen);
+      customSortTrigger.setAttribute('aria-expanded', !isOpen);
+    });
+
+    customSortMenu.querySelectorAll('.custom-sort-item').forEach((item) => {
+      item.addEventListener('click', function () {
+        const val = this.getAttribute('data-value');
+        const text = this.querySelector('span')?.textContent || '';
+
+        customSortMenu.querySelectorAll('.custom-sort-item').forEach((it) => {
+          it.classList.remove('active');
+          it.setAttribute('aria-selected', 'false');
+        });
+        this.classList.add('active');
+        this.setAttribute('aria-selected', 'true');
+
+        if (customSortCurrentText) customSortCurrentText.textContent = text;
+        if (catalogSortSelect) {
+          catalogSortSelect.value = val;
+        }
+        currentSort = val;
+        filterCatalog(false);
+
+        customSortMenu.classList.remove('show');
+        customSortTrigger.classList.remove('active');
+        customSortTrigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (customSortDropdown && !customSortDropdown.contains(e.target)) {
+        customSortMenu.classList.remove('show');
+        customSortTrigger.classList.remove('active');
+        customSortTrigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Native Sort Dropdown Fallback Change
   if (catalogSortSelect) {
     catalogSortSelect.addEventListener('change', function () {
       currentSort = this.value;
+      if (customSortCurrentText) {
+        const selectedOpt = this.options[this.selectedIndex];
+        if (selectedOpt) customSortCurrentText.textContent = selectedOpt.textContent;
+      }
       filterCatalog(false); // Urutkan ulang produk yang sedang aktif
     });
   }
@@ -756,7 +969,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Reset Filter Button on Empty State
+  // Reset Filter Button on Empty State ("Lihat Semua Produk")
   if (btnResetCatalogFilter) {
     btnResetCatalogFilter.addEventListener('click', function () {
       searchQuery = '';
@@ -769,12 +982,25 @@ document.addEventListener('DOMContentLoaded', function () {
         categoryPillContainer.querySelectorAll('.btn-category-pill').forEach((p) => {
           p.classList.toggle('selected', p.getAttribute('data-cat') === 'Semua');
         });
+        const semuaPill = categoryPillContainer.querySelector('.btn-category-pill[data-cat="Semua"]');
+        if (semuaPill && (!categoryNavSection || !categoryNavSection.classList.contains('is-expanded'))) {
+          semuaPill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
       }
 
       if (catalogSortSelect) {
         catalogSortSelect.value = 'popular';
-        currentSort = 'popular';
       }
+      if (customSortCurrentText) {
+        customSortCurrentText.textContent = 'Paling Laris (Rekomendasi)';
+      }
+      if (customSortMenu) {
+        customSortMenu.querySelectorAll('.custom-sort-item').forEach((it) => {
+          it.classList.toggle('active', it.getAttribute('data-value') === 'popular');
+          it.setAttribute('aria-selected', it.getAttribute('data-value') === 'popular');
+        });
+      }
+      currentSort = 'popular';
 
       filterCatalog(true);
     });
@@ -794,7 +1020,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const detailPrice = document.getElementById('detailPrice');
   const detailDesc = document.getElementById('detailDesc');
   const detailWeight = document.getElementById('detailWeight');
-  const detailShelfLife = document.getElementById('detailShelfLife');
   const detailStockBadge = document.getElementById('detailStockBadge');
   const detailQtyDisplay = document.getElementById('detailQtyDisplay');
   const detailBtnText = document.getElementById('detailBtnText');
@@ -819,7 +1044,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (detailPrice) detailPrice.textContent = 'Rp ' + Number(prod.price).toLocaleString('id-ID');
     if (detailDesc) detailDesc.textContent = prod.description || 'Makanan beku berkualitas tinggi, dikemas kedap udara (vacuum sealed food grade).';
     if (detailWeight) detailWeight.textContent = prod.weight || '500g';
-    if (detailShelfLife) detailShelfLife.textContent = prod.shelfLife || '6 Bulan';
 
     if (detailStockBadge) {
       if (prod.stock <= 0) {
@@ -1499,14 +1723,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (recMethod) recMethod.textContent = order.method || 'Diantar Kurir';
     if (recPayment) recPayment.textContent = order.payment_method || order.paymentMethod || 'QRIS Instan';
 
-    if (recItemsList && order.items) {
-      recItemsList.innerHTML = order.items
+    const items = Array.isArray(order.items) ? order.items : (typeof order.items === 'string' ? JSON.parse(order.items) : []);
+    if (recItemsList) {
+      recItemsList.innerHTML = items
         .map(
           (it) => `
-          <div style="display: flex; justify-content: space-between;">
-            <span>${it.name} (${it.qty}x)</span>
-            <span>Rp ${(it.qty * it.price).toLocaleString('id-ID')}</span>
-          </div>
+          <tr>
+            <td style="font-weight: 600;">${it.name}</td>
+            <td style="text-align: center;">${it.qty || 1}x</td>
+            <td style="text-align: right; font-weight: 700;">Rp ${(((it.price || 0) * (it.qty || 1))).toLocaleString('id-ID')}</td>
+          </tr>
         `
         )
         .join('');
