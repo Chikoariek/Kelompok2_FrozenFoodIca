@@ -22,4 +22,6 @@ yarn-error.log
 /.vscode
 /.zed
 ngrok.exe
+.ngrok.exe*
+*.exe
 *.pdf

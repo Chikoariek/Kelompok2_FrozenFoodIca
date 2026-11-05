@@ -59,7 +59,7 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-cream);
   color: var(--text-main);
   line-height: 1.5;
@@ -594,7 +594,7 @@ a {
 
 .admin-stat-label {
   font-size: 0.75rem;
-  color: var(--text-light);
+  color: #475569;
   font-weight: 600;
   margin: 0;
   letter-spacing: 0.02em;
@@ -605,7 +605,7 @@ a {
   height: 32px;
   border-radius: 10px;
   background: #F1F0E8;
-  color: var(--soft-blue);
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -638,7 +638,7 @@ a {
 
 .admin-stat-subtext {
   font-size: 0.725rem;
-  color: var(--text-light);
+  color: #64748B;
   margin: 0.35rem 0 0;
   font-weight: 500;
   line-height: 1.25;
@@ -714,19 +714,19 @@ a {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #F3F4F6;
-  color: #6B7280;
+  background: #F1F5F9;
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
 .popular-rank-badge.rank-1 {
-  background: #FEF3C7;
-  color: var(--amber-dark);
+  background: #F1F5F9;
+  color: #475569;
 }
 
 .popular-product-info {
@@ -813,47 +813,508 @@ a {
 .btn-primary-blue {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
+  height: 40px;
+  padding: 0 1rem;
   background: var(--soft-blue);
   color: #FFFFFF;
   font-weight: 700;
   font-size: 0.8125rem;
   border-radius: var(--radius-md);
+  border: none;
   box-shadow: var(--shadow-2xs);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.btn-primary-blue svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  stroke: #FFFFFF;
 }
 
 .btn-primary-blue:hover {
   background: var(--soft-blue-hover);
+  color: #FFFFFF;
 }
 
 .btn-primary-blue:active {
   transform: scale(0.96);
 }
 
+.btn-primary-blue:disabled,
+.btn-primary-green:disabled,
+.btn-excel-green:disabled,
+.btn-import-navy:disabled,
+.btn-import-teal:disabled,
+.btn-secondary-white:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
 .btn-primary-green {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
+  height: 40px;
+  padding: 0 1rem;
   background: var(--emerald-dark);
   color: #FFFFFF;
   font-weight: 700;
   font-size: 0.8125rem;
   border-radius: var(--radius-md);
+  border: none;
   box-shadow: var(--shadow-2xs);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.btn-primary-green svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  stroke: #FFFFFF;
 }
 
 .btn-primary-green:hover {
   background: #047857;
+  color: #FFFFFF;
 }
 
 .btn-primary-green:active {
   transform: scale(0.96);
+}
+
+/* ==========================================
+   BUTTONS: SECONDARY & EXCEL ACTIONS
+   (Gaya 100% konsisten dengan tombol asli website:
+    - Tinggi 40px, padding 0 1rem, radius 12px
+    - Box-shadow var(--shadow-2xs) netral
+    - Hover hanya perubahan warna background yang lebih gelap, tanpa translateY / floating
+    - Active scale(0.96))
+   ========================================== */
+.btn-secondary-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1rem;
+  background: #F8FAFC;
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-md);
+  border: 1px solid #CBD5E1;
+  box-shadow: var(--shadow-2xs);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.btn-secondary-white svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.btn-secondary-white:hover {
+  background: #E2E8F0;
+  color: var(--navy);
+}
+
+.btn-secondary-white:active {
+  transform: scale(0.96);
+}
+
+/* Tombol Aksi Excel Spreadsheet (Solid Muted Emerald Green) */
+.btn-excel-green {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1rem;
+  background: var(--emerald-dark);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-md);
+  border: none;
+  box-shadow: var(--shadow-2xs);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.btn-excel-green svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  stroke: #FFFFFF;
+}
+
+.btn-excel-green:hover {
+  background: #047857;
+  color: #FFFFFF;
+}
+
+.btn-excel-green:active {
+  transform: scale(0.96);
+}
+
+/* Tombol Aksi Import Excel Kasir Pintar (Solid Dark Navy) */
+.btn-import-navy,
+.btn-import-teal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1rem;
+  background: var(--navy);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-md);
+  border: none;
+  box-shadow: var(--shadow-2xs);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.btn-import-navy svg,
+.btn-import-teal svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  stroke: #FFFFFF;
+}
+
+.btn-import-navy:hover,
+.btn-import-teal:hover {
+  background: var(--navy-dark);
+  color: #FFFFFF;
+}
+
+.btn-import-navy:active,
+.btn-import-teal:active {
+  transform: scale(0.96);
+}
+
+/* Badge Total Pesanan di Header Panel (Tinggi 40px Sejajar dengan Tombol) */
+.order-total-header-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1rem;
+  border-radius: var(--radius-md);
+  background: #F3F4F6;
+  color: var(--navy);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1.5px solid #E5E7EB;
+  box-sizing: border-box;
+  white-space: nowrap;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.order-total-header-badge svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Tautan WhatsApp Cepat Pada Tabel Pesanan (Proporsional 11px, Bersih & Elegan) */
+.order-cust-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.order-cust-phone-wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  background: transparent;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  width: fit-content;
+  line-height: 1;
+}
+
+.order-cust-phone-wa svg {
+  width: 11px;
+  height: 11px;
+  color: #16A34A;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.order-cust-phone-wa:hover {
+  color: #15803D;
+  text-decoration: underline;
+}
+
+.order-cust-phone-wa:hover svg {
+  transform: scale(1.18);
+}
+
+/* ==========================================
+   MODAL IMPORT PRODUK KASIR PINTAR (UI/UX KONSISTEN)
+   ========================================== */
+.import-format-banner {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.import-format-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #166534;
+  margin-bottom: 0.35rem;
+}
+
+.import-format-desc {
+  font-size: 0.75rem;
+  color: #166534;
+  line-height: 1.45;
+  margin: 0 0 0.5rem;
+}
+
+.import-template-pill-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #15803D;
+  background: #DCFCE7;
+  border: 1px solid #86EFAC;
+  padding: 3px 9px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.import-template-pill-link:hover {
+  background: #BBF7D0;
+  color: #14532D;
+  transform: translateY(-1px);
+}
+
+.import-dropzone {
+  border: 2px dashed #94A3B8;
+  border-radius: 16px;
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  background: #F8FAFC;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.import-dropzone:hover {
+  border-color: var(--soft-blue);
+  background: #F0F9FF;
+}
+
+.import-dropzone.dragover {
+  border-color: #10B981 !important;
+  background: #F0FDF4 !important;
+  transform: scale(1.01);
+}
+
+.import-dropzone-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  color: var(--soft-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.import-dropzone:hover .import-dropzone-icon-circle {
+  transform: translateY(-2px);
+  background: var(--soft-blue);
+  color: #FFFFFF;
+}
+
+.import-dropzone-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin: 0 0 0.25rem;
+}
+
+.import-dropzone-subtitle {
+  font-size: 0.75rem;
+  color: #64748B;
+  margin: 0 0 0.65rem;
+}
+
+.import-dropzone-limit-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #64748B;
+  background: #E2E8F0;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.import-file-selected-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F0FDF4;
+  border: 1.5px solid #86EFAC;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+}
+
+.import-file-info-col {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.import-excel-file-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #DCFCE7;
+  color: #107C41;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.import-file-name-text {
+  font-weight: 800;
+  font-size: 0.8125rem;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.import-file-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2px;
+}
+
+.import-file-size-text {
+  font-size: 0.6875rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.import-file-ready-pill {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #166534;
+  background: #DCFCE7;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.btn-remove-import-file {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #64748B;
+  border-radius: 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-remove-import-file:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #DC2626;
+}
+
+.import-sync-option-row {
+  margin-top: 1.25rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #E2E8F0;
+}
+
+.import-sync-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+  user-select: none;
+}
+
+.import-sync-label input[type="checkbox"] {
+  accent-color: var(--soft-blue);
+  width: 16px;
+  height: 16px;
 }
 
 /* ==========================================
@@ -1493,14 +1954,109 @@ a {
 }
 
 .order-items-cell {
-  max-width: 220px;
+  max-width: 240px;
   white-space: normal;
 }
 
-.order-items-list-wrap {
+.order-items-list-wrap,
+.order-items-expandable {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.order-items-initial {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Transisi Halus (Smooth Grid Accordion Expansion) */
+.order-items-more-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease;
+  opacity: 0;
+}
+
+.order-items-expandable.is-expanded .order-items-more-wrapper {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.order-items-more-inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 2px;
+}
+
+.btn-toggle-order-items {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  margin-top: 0.35rem;
+  background-color: #EFF6FF;
+  color: var(--soft-blue);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-toggle-order-items:hover {
+  background-color: var(--soft-blue);
+  color: #FFFFFF;
+  border-color: var(--soft-blue);
+  transform: translateY(-1px);
+}
+
+.btn-toggle-order-items .toggle-items-chevron {
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.order-items-expandable.is-expanded .btn-toggle-order-items .toggle-items-chevron {
+  transform: rotate(180deg);
+}
+
+/* Password Field with Eye Toggle in Admin */
+.form-input-with-eye {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.form-input-with-eye input {
+  width: 100%;
+  padding-right: 2.5rem !important;
+}
+
+.form-input-with-eye .btn-pwd-eye {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--soft-blue);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.form-input-with-eye .btn-pwd-eye:hover {
+  color: var(--navy);
+  transform: translateY(-50%) scale(1.1);
 }
 
 .order-item-bullet {
@@ -1510,7 +2066,7 @@ a {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 220px;
+  max-width: 240px;
 }
 
 .order-total-amount {
@@ -1832,4 +2388,768 @@ a {
   background: #FCA5A5;
   color: #B91C1C;
 }
+
+/* ==========================================
+   MODERN POS (POINT OF SALE) CASHIER STYLES
+   ========================================== */
+.admin-modal-box.pos-modal-wide {
+  max-width: 1120px;
+  width: 95vw;
+  height: 92vh;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.pos-topbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+}
+
+.pos-header-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  color: var(--soft-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pos-header-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pos-header-sub {
+  font-size: 11px;
+  color: #64748B;
+  margin: 2px 0 0;
+}
+
+.pos-badge-live {
+  font-size: 11px;
+  font-weight: 700;
+  color: #059669;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pos-main-split {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: #F8FAFC;
+}
+
+.pos-catalog-col {
+  flex: 1.45;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border-right: 1px solid #E2E8F0;
+}
+
+.pos-catalog-toolbar {
+  padding: 0.75rem 1rem;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.pos-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pos-search-box svg {
+  position: absolute;
+  left: 0.85rem;
+  pointer-events: none;
+}
+
+.pos-search-box input {
+  width: 100%;
+  padding: 0.55rem 2.25rem 0.55rem 2.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: var(--navy);
+  transition: all 0.15s ease;
+}
+
+.pos-search-box input:focus {
+  outline: none;
+  border-color: var(--soft-blue);
+  box-shadow: 0 0 0 3px rgba(74, 119, 157, 0.15);
+}
+
+.pos-btn-clear-search {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px;
+}
+
+.pos-btn-clear-search:hover {
+  color: #EF4444;
+}
+
+.pos-category-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pos-category-scroll {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 2px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: 1;
+  transition: all 0.25s ease;
+}
+
+.pos-category-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.pos-category-scroll.expanded {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  max-height: 140px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.pos-category-scroll.expanded::-webkit-scrollbar {
+  display: block;
+  width: 4px;
+}
+
+.pos-category-scroll.expanded::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.pos-cat-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #64748B;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pos-cat-toggle-btn:hover {
+  background: #EFF6FF;
+  color: var(--soft-blue);
+  transform: scale(1.08);
+}
+
+.pos-cat-toggle-btn.expanded {
+  background: var(--soft-blue);
+  color: #FFFFFF;
+}
+
+.pos-cat-toggle-btn .cat-grid-icon {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  transition: transform 0.2s ease;
+}
+
+.pos-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 30px;
+  padding: 0 0.75rem;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #475569;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.pos-cat-chip:hover {
+  border-color: var(--soft-blue);
+  color: var(--soft-blue);
+}
+
+.pos-cat-chip.active {
+  background: var(--soft-blue);
+  border-color: var(--soft-blue);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(74, 119, 157, 0.25);
+}
+
+.pos-cat-count {
+  font-size: 10px;
+  font-weight: 800;
+  background: #F1F5F9;
+  color: #64748B;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  line-height: 1.2;
+}
+
+.pos-cat-chip.active .pos-cat-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.pos-products-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  align-content: flex-start;
+}
+
+.pos-product-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem;
+  min-height: 108px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.pos-product-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--soft-blue);
+  box-shadow: 0 4px 12px rgba(74, 119, 157, 0.14);
+}
+
+.pos-product-card.out-of-stock {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: #F8FAFC;
+}
+
+.pos-card-in-cart-pill {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--soft-blue);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 5px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px rgba(74, 119, 157, 0.4);
+  border: 2px solid #FFFFFF;
+  z-index: 5;
+  line-height: 1;
+}
+
+.pos-product-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+.pos-product-sku {
+  font-family: monospace;
+  font-weight: 700;
+  color: #64748B;
+}
+
+.pos-product-title {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.35;
+  margin: 0;
+  min-height: 2.2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pos-product-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.pos-product-price {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.pos-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2.5px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.pos-stock-badge.in-stock {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.pos-stock-badge.low-stock {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.pos-stock-badge.out-stock {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* SISI KANAN: PANEL KERANJANG KASIR */
+.pos-cart-col {
+  flex: 1;
+  min-width: 340px;
+  display: flex;
+  flex-direction: column;
+  background: #F8FAFC;
+  border-left: 1px solid #E2E8F0;
+}
+
+.pos-cart-header {
+  padding: 0.875rem 1.25rem;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pos-cart-count-pill {
+  background: #EFF6FF;
+  color: var(--soft-blue);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.pos-btn-reset-cart {
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  color: #EF4444;
+  cursor: pointer;
+}
+
+.pos-btn-reset-cart:hover {
+  text-decoration: underline;
+}
+
+.pos-customer-box {
+  padding: 0.75rem 1.25rem;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+}
+
+.pos-cust-input {
+  width: 100%;
+  padding: 0.45rem 0.625rem;
+  font-size: 11px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  background: #F8FAFC;
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.pos-cust-input:focus {
+  outline: none;
+  border-color: var(--soft-blue);
+  background: #FFFFFF;
+}
+
+.pos-cart-items-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pos-cart-empty-state {
+  margin: auto;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #94A3B8;
+}
+
+.pos-cart-empty-state svg {
+  margin-bottom: 0.5rem;
+  color: #CBD5E1;
+}
+
+.pos-cart-item-row {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 0.625rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+}
+
+.pos-cart-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pos-cart-item-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pos-cart-item-price {
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.pos-qty-pill-wrap {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #D1D5DB;
+  border-radius: 9999px;
+  background: #FFFFFF;
+  padding: 2px 4px;
+  gap: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.pos-qty-pill-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #F3F4F6;
+  color: #374151;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.pos-qty-pill-btn:hover:not(:disabled) {
+  background: var(--soft-blue);
+  color: #FFFFFF;
+}
+
+.pos-qty-pill-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pos-qty-pill-val {
+  min-width: 26px;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--navy);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  user-select: none;
+  display: inline-block;
+  line-height: 1;
+}
+
+.pos-item-subtotal {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--navy);
+  min-width: 70px;
+  text-align: right;
+}
+
+.pos-btn-remove-item {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.pos-btn-remove-item:hover {
+  color: #EF4444;
+}
+
+/* CHECKOUT SUMMARY PANEL */
+.pos-checkout-panel {
+  padding: 0.875rem 1.25rem;
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
+  flex-shrink: 0;
+}
+
+.pos-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pos-payment-method-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem;
+}
+
+.pos-pay-tab {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #F8FAFC;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.pos-pay-tab:hover {
+  border-color: var(--soft-blue);
+  color: var(--soft-blue);
+}
+
+.pos-pay-tab.active {
+  background: var(--soft-blue);
+  border-color: var(--soft-blue);
+  color: #FFFFFF;
+}
+
+.pos-cash-calc-box {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #F1F5F9;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+}
+
+.pos-cash-input {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: var(--navy);
+}
+
+.pos-cash-input:focus {
+  outline: none;
+  border-color: var(--soft-blue);
+}
+
+.pos-quick-cash-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+.pos-btn-quick-cash {
+  flex: 1;
+  padding: 3px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pos-btn-quick-cash:hover {
+  background: var(--soft-blue);
+  color: #FFFFFF;
+  border-color: var(--soft-blue);
+}
+
+@media (max-width: 860px) {
+  .admin-modal-box.pos-modal-wide {
+    height: 96vh;
+    max-height: 96vh;
+  }
+  .pos-main-split {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .pos-catalog-col {
+    border-right: none;
+    border-bottom: 1px solid #E2E8F0;
+    min-height: 380px;
+  }
+  .pos-cart-col {
+    min-width: 100%;
+  }
+}
+
+/* ==========================================
+   SALES REPORTS & ANALYTICS (TAB REPORTS)
+   ========================================== */
+.report-range-btn {
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.report-metric-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.report-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.report-metric-name {
+  font-weight: 700;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.report-metric-val {
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.report-metric-sub {
+  font-size: 0.6875rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.report-progress-track {
+  width: 100%;
+  height: 8px;
+  background: #F1F5F9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.report-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+
 

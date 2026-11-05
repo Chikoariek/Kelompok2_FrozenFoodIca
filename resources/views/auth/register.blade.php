@@ -131,7 +131,7 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn-login" style="margin-top: 1.25rem;">Daftar Akun Baru</button>
+        <button type="submit" class="btn-login">Daftar Akun Baru</button>
 
         <!-- Login Link -->
         <p class="login-register">

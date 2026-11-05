@@ -6,10 +6,11 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ $pageTitle ?? ($title ?? 'Masuk Akun') }} - Ica Frozen Food</title>
 
-        <!-- Favicon (Brand Icon Toko di Tab Browser) -->
-        <link rel="icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
-        <link rel="shortcut icon" type="image/png" href="{{ asset('images/ica_logo.png') }}?v={{ filemtime(public_path('images/ica_logo.png')) }}">
-        <link rel="apple-touch-icon" href="{{ asset('images/ica_logo.png') }}">
+        <!-- Favicon (Brand Icon Toko di Tab Browser - Persegi 1:1 Presisi & Proporsional) -->
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v={{ filemtime(public_path('favicon.ico')) }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v={{ filemtime(public_path('images/favicon-32x32.png')) }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v={{ filemtime(public_path('images/favicon-16x16.png')) }}">
+        <link rel="apple-touch-icon" href="/images/favicon.png?v={{ filemtime(public_path('images/favicon.png')) }}">
 
         <!-- Google Fonts: Plus Jakarta Sans -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -105,16 +106,17 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                padding: 1.5rem 2.5rem;
+                padding: 2.25rem 2.5rem;
                 overflow-y: auto;
                 max-height: 100vh;
             }
 
             .login-card {
                 width: 100%;
-                max-width: 520px;
+                max-width: 480px;
                 text-align: center;
                 margin: auto 0;
+                padding: 0;
             }
 
             .login-logo-link {
@@ -130,41 +132,42 @@
             }
 
             .login-logo {
-                width: 200px;
-                height: 200px;
+                width: 170px;
+                height: auto;
+                max-height: 115px;
                 object-fit: contain;
-                margin: 0 auto 0.75rem;
+                margin: 0 auto 0.6rem;
                 display: block;
-                filter: drop-shadow(0 2px 10px rgba(103,125,158,0.2));
+                filter: drop-shadow(0 2px 8px rgba(103,125,158,0.18));
                 cursor: pointer;
             }
 
             .login-title {
                 color: #2C3E50;
-                font-size: 1.85rem;
+                font-size: 1.65rem;
                 font-weight: 800;
-                margin: 0 0 0.35rem;
+                margin: 0 0 0.25rem;
                 letter-spacing: -0.02em;
             }
 
             .login-subtitle {
                 color: #677D9E;
-                font-size: 0.82rem;
-                font-weight: 400;
-                margin: 0 0 1rem;
+                font-size: 0.8rem;
+                font-weight: 500;
+                margin: 0 0 0.9rem;
             }
 
             .form-group {
-                margin-bottom: 0.85rem;
+                margin-bottom: 0.7rem;
                 text-align: left;
             }
 
             .form-label {
                 display: block;
-                font-size: 0.78rem;
+                font-size: 0.75rem;
                 font-weight: 700;
                 color: #2C3E50;
-                margin-bottom: 0.35rem;
+                margin-bottom: 0.25rem;
                 letter-spacing: 0.01em;
             }
 
@@ -174,11 +177,11 @@
 
             .form-input {
                 width: 100%;
-                padding: 0.7rem 2.5rem 0.7rem 1rem;
+                padding: 0.65rem 2.5rem 0.65rem 0.875rem;
                 border: 1.5px solid #A6B1C3;
                 border-radius: 10px;
                 background: #fff;
-                font-size: 0.85rem;
+                font-size: 0.835rem;
                 color: #2C3E50;
                 outline: none;
                 transition: border-color 0.2s, box-shadow 0.2s;
@@ -192,11 +195,11 @@
 
             .form-icon {
                 position: absolute;
-                right: 1.1rem;
+                right: 1rem;
                 top: 50%;
                 transform: translateY(-50%);
                 color: #677D9E;
-                font-size: 1.15rem;
+                font-size: 1.1rem;
                 pointer-events: none;
                 display: flex;
                 align-items: center;
@@ -208,7 +211,7 @@
 
             .form-toggle-btn {
                 position: absolute;
-                right: 0.85rem;
+                right: 0.75rem;
                 top: 50%;
                 transform: translateY(-50%);
                 background: transparent;
@@ -233,33 +236,34 @@
             .input-error {
                 color: #e53e3e;
                 font-size: 0.75rem;
-                margin-top: 0.3rem;
+                margin-top: 0.25rem;
             }
 
             .btn-login {
                 width: 100%;
-                padding: 0.8rem;
+                padding: 0.75rem;
                 background: #677D9E;
                 color: #fff;
                 border: none;
                 border-radius: 10px;
-                font-size: 0.9rem;
+                font-size: 0.88rem;
                 font-weight: 700;
                 cursor: pointer;
-                margin-top: 1.25rem;
-                margin-bottom: 0.75rem;
+                margin-top: 1rem;
+                margin-bottom: 0.65rem;
                 transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
                 letter-spacing: 0.01em;
                 font-family: 'Plus Jakarta Sans', sans-serif;
-                box-shadow: 0 4px 14px rgba(103,125,158,0.3);
+                box-shadow: 0 4px 14px rgba(103,125,158,0.25);
             }
-            .btn-login:hover { background: #546885; box-shadow: 0 6px 18px rgba(103,125,158,0.45); }
+            .btn-login:hover { background: #546885; box-shadow: 0 6px 18px rgba(103,125,158,0.4); }
             .btn-login:active { transform: scale(0.98); }
 
             .login-register {
-                font-size: 0.9rem;
+                font-size: 0.835rem;
                 color: #677D9E;
                 margin-top: 0.5rem;
+                margin-bottom: 0.5rem;
             }
             .login-register a {
                 color: #677D9E;
@@ -267,10 +271,13 @@
                 text-decoration: underline;
                 text-underline-offset: 2px;
             }
+            .login-register a:hover {
+                color: #2C3E50;
+            }
 
             .login-back {
-                margin-top: 1.5rem;
-                font-size: 0.85rem;
+                margin-top: 1.25rem;
+                font-size: 0.82rem;
                 color: #A6B1C3;
                 text-decoration: none;
                 display: block;
@@ -287,6 +294,41 @@
                 font-size: 0.8rem;
                 margin-bottom: 1rem;
                 text-align: left;
+            }
+
+            /* Adaptif Layar Laptop / Tinggi Viewport Terbatas */
+            @media (max-height: 700px) and (min-width: 769px) {
+                .login-right {
+                    padding: 1.5rem 2.5rem;
+                }
+                .login-logo {
+                    width: 145px;
+                    max-height: 98px;
+                    margin: 0 auto 0.35rem;
+                }
+                .login-title {
+                    font-size: 1.45rem;
+                    margin-bottom: 0.2rem;
+                }
+                .login-subtitle {
+                    font-size: 0.78rem;
+                    margin-bottom: 0.65rem;
+                }
+                .form-group {
+                    margin-bottom: 0.55rem;
+                }
+                .form-input {
+                    padding: 0.55rem 2.5rem 0.55rem 0.8rem;
+                    font-size: 0.8rem;
+                }
+                .btn-login {
+                    padding: 0.68rem;
+                    margin-top: 0.75rem;
+                    margin-bottom: 0.5rem;
+                }
+                .login-register {
+                    font-size: 0.8rem;
+                }
             }
 
             @media (max-width: 768px) {
@@ -310,7 +352,7 @@
                     width: 100%;
                     min-height: 100vh;
                     max-height: none;
-                    padding: 2.5rem 1.25rem;
+                    padding: 2rem 1.25rem;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
@@ -319,22 +361,23 @@
                 .login-card {
                     width: 100%;
                     max-width: 420px;
-                    padding: 0 0.5rem;
+                    padding: 0.5rem;
                     margin: auto 0;
                 }
                 .login-logo {
-                    width: 185px;
-                    height: 185px;
-                    max-width: 80vw;
-                    margin: 0 auto 1.5rem;
+                    width: 150px;
+                    height: auto;
+                    max-height: 105px;
+                    max-width: 70vw;
+                    margin: 0 auto 0.75rem;
                 }
                 .login-title {
-                    font-size: 1.5rem;
+                    font-size: 1.45rem;
                     margin-bottom: 0.25rem;
                 }
                 .login-subtitle {
-                    font-size: 0.82rem;
-                    margin-bottom: 1.25rem;
+                    font-size: 0.8rem;
+                    margin-bottom: 1rem;
                 }
             }
         </style>
@@ -359,10 +402,9 @@
                     <!-- Logo (klik untuk ke homepage) -->
                     <a href="{{ route('home') }}" class="login-logo-link" title="Kembali ke Homepage">
                         <img
-                            src="/images/ica_logo.png"
+                            src="/images/ica_logo.png?v={{ filemtime(public_path('images/ica_logo.png')) }}"
                             alt="Ica Frozen Food"
                             class="login-logo"
-                            onerror="this.style.display='none'"
                         >
                     </a>
 

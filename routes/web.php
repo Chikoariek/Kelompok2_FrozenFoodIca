@@ -36,13 +36,21 @@ Route::middleware(['auth', 'role:admin', 'prevent-back-history'])->prefix('admin
         $products = \App\Models\Product::all();
         $categories = \App\Models\Category::all();
         $orders = \App\Models\Order::orderBy('created_at', 'desc')->get();
-        return view('admin.dashboard', [
+        return view('admin', [
             'user' => Auth::user(),
             'products' => $products,
             'categories' => $categories,
             'orders' => $orders,
         ]);
     })->name('dashboard');
+
+    // Export Data Excel / CSV
+    Route::get('/export/products', [\App\Http\Controllers\AdminDataController::class, 'exportProducts'])->name('export.products');
+    Route::get('/export/orders', [\App\Http\Controllers\AdminDataController::class, 'exportOrders'])->name('export.orders');
+    Route::get('/export/template-products', [\App\Http\Controllers\AdminDataController::class, 'exportProductTemplate'])->name('export.template');
+
+    // Import Data Produk dari Excel / CSV (Kasir Pintar)
+    Route::post('/products/import', [\App\Http\Controllers\AdminDataController::class, 'importProducts'])->name('products.import');
 
     // Fallback URL di bawah /admin/ agar kembali ke dashboard
     Route::get('/{any}', function () {
@@ -84,6 +92,7 @@ Route::prefix('api')->group(function () {
     Route::post('/products/{id}/stock', [\App\Http\Controllers\AdminDataController::class, 'updateProductStock']);
     Route::delete('/products/{id}', [\App\Http\Controllers\AdminDataController::class, 'destroyProduct']);
     Route::post('/products/sync', [\App\Http\Controllers\AdminDataController::class, 'syncProducts']);
+    Route::post('/products/import', [\App\Http\Controllers\AdminDataController::class, 'importProducts']);
 });
 
 // --- 6. Rute Autentikasi Laravel Breeze (Login, Register, Logout) ---

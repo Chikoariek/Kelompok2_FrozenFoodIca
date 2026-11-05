@@ -42,7 +42,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Kategori berhasil disimpan ke database!',
+            'message' => 'Kategori berhasil ditambahkan!',
             'category' => $category,
         ]);
     }
@@ -70,7 +70,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Kategori berhasil diperbarui di database!',
+            'message' => 'Kategori berhasil diperbarui!',
         ]);
     }
 
@@ -85,7 +85,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Kategori berhasil dihapus dari database!',
+            'message' => 'Kategori berhasil dihapus!',
         ]);
     }
 
@@ -111,7 +111,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Seluruh kategori berhasil disinkronisasi & disimpan ke database!',
+            'message' => 'Seluruh kategori berhasil disinkronisasi & disimpan!',
             'timestamp' => now()->translatedFormat('H:i:s \W\I\B'),
             'categories' => Category::all()->pluck('name'),
         ]);
@@ -187,7 +187,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Produk berhasil disimpan ke database!',
+            'message' => 'Produk berhasil disimpan!',
             'product' => $product,
         ]);
     }
@@ -214,7 +214,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Stok produk berhasil diperbarui di database!',
+            'message' => 'Stok produk berhasil diperbarui!',
             'product' => $product,
         ]);
     }
@@ -225,7 +225,7 @@ class AdminDataController extends Controller
         Product::where('id', $id)->delete();
         return response()->json([
             'success' => true,
-            'message' => 'Produk berhasil dihapus dari database!',
+            'message' => 'Produk berhasil dihapus!',
         ]);
     }
 
@@ -257,10 +257,479 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Seluruh data produk & stok berhasil disimpan ke database!',
+            'message' => 'Seluruh data produk & stok berhasil disimpan!',
             'timestamp' => now()->translatedFormat('H:i:s \W\I\B'),
             'products' => Product::all(),
         ]);
+    }
+
+    // --- 2b. Ekspor & Impor Data Produk (Integrasi Kasir Pintar / Excel) ---
+
+    /**
+     * Export seluruh data produk freezer ke format CSV (BOM UTF-8, kompatibel Microsoft Excel)
+     */
+    public function exportProducts()
+    {
+        $products = Product::all();
+        $filename = 'Etalase_Produk_IcaFrozenFood_' . now()->format('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($products) {
+            $handle = fopen('php://output', 'w');
+            fputs($handle, "\xEF\xBB\xBF"); // UTF-8 BOM untuk Microsoft Excel
+
+            fputcsv($handle, [
+                'Kode SKU',
+                'Nama Produk',
+                'Kategori',
+                'Harga Jual (Rp)',
+                'Stok Freezer',
+                'Berat Kemasan',
+                'Keterangan / Deskripsi',
+                'Label Tag',
+            ], ',');
+
+            foreach ($products as $p) {
+                $tagsStr = is_array($p->tags) ? implode(', ', $p->tags) : ($p->tags ?? '');
+                fputcsv($handle, [
+                    $p->id,
+                    $p->name,
+                    $p->category,
+                    $p->price,
+                    $p->stock,
+                    $p->weight ?? '500g',
+                    $p->description ?? '',
+                    $tagsStr,
+                ], ',');
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Download template CSV standar dan Kasir Pintar untuk panduan impor produk
+     */
+    public function exportProductTemplate()
+    {
+        $filename = 'Template_Import_Produk_KasirPintar.csv';
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fputs($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, [
+                'Kode SKU',
+                'Nama Produk',
+                'Kategori',
+                'Harga Jual',
+                'Stok',
+                'Berat Kemasan',
+                'Deskripsi',
+            ], ',');
+            fputcsv($handle, [
+                'P01',
+                'Dimsum Ayam Premium (Isi 15)',
+                'Dimsum & Siomay',
+                '35000',
+                '25',
+                '350g',
+                'Dimsum ayam premium dengan olahan daging ayam segar dan saus sambal khas.',
+            ], ',');
+            fputcsv($handle, [
+                'P02',
+                'Crispy Chicken Nugget Original',
+                'Nugget & Sosis',
+                '48000',
+                '30',
+                '500g',
+                'Nugget ayam renyah keemasan, praktis digoreng untuk camilan keluarga.',
+            ], ',');
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export rekap riwayat transaksi pesanan ke format CSV (BOM UTF-8, kompatibel Microsoft Excel)
+     */
+    public function exportOrders()
+    {
+        $orders = Order::orderBy('created_at', 'desc')->get();
+        $filename = 'Laporan_Penjualan_IcaFrozenFood_' . now()->format('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($orders) {
+            $handle = fopen('php://output', 'w');
+            fputs($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, [
+                'No Pesanan',
+                'Tanggal Transaksi',
+                'Channel',
+                'Nama Pelanggan',
+                'No WhatsApp / HP',
+                'Metode Pengantaran',
+                'Metode Pembayaran',
+                'Status Pesanan',
+                'Status Pembayaran',
+                'Ringkasan Produk',
+                'Subtotal (Rp)',
+                'Ongkir / Ice Fee (Rp)',
+                'Total Transaksi (Rp)',
+            ], ',');
+
+            foreach ($orders as $order) {
+                $itemsSummary = [];
+                if (is_array($order->items)) {
+                    foreach ($order->items as $it) {
+                        $name = $it['name'] ?? 'Item';
+                        $qty = $it['qty'] ?? 1;
+                        $itemsSummary[] = "{$name} ({$qty}x)";
+                    }
+                }
+                $itemStr = implode(' | ', $itemsSummary);
+
+                fputcsv($handle, [
+                    $order->id,
+                    $order->order_date ?? ($order->created_at ? $order->created_at->format('Y-m-d H:i') : ''),
+                    $order->channel ?? 'Online',
+                    $order->customer_name,
+                    $order->customer_phone ?? '-',
+                    $order->method ?? 'Ambil di Toko',
+                    $order->payment_method ?? 'QRIS Instan',
+                    $order->status ?? 'Diproses',
+                    $order->is_paid ? 'Lunas' : 'Belum Lunas',
+                    $itemStr,
+                    $order->subtotal ?? 0,
+                    $order->shipping_fee ?? 0,
+                    $order->total ?? 0,
+                ], ',');
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Import data produk dari file spreadsheet Excel (.xlsx) atau CSV (Kasir Pintar Pro & Template Standar)
+     */
+    public function importProducts(Request $request)
+    {
+        $rows = [];
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $extension = strtolower($file->getClientOriginalExtension());
+            $path = $file->getRealPath();
+
+            if ($extension === 'xlsx') {
+                $rows = $this->parseXlsxFile($path);
+            } elseif (in_array($extension, ['csv', 'txt'])) {
+                $rows = $this->parseCsvFile($path);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format file tidak didukung. Harap unggah file .xlsx atau .csv.',
+                ], 422);
+            }
+        } elseif ($request->filled('rows')) {
+            $rows = $request->input('rows');
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Silakan pilih file spreadsheet atau unggah berkas yang valid.',
+            ], 422);
+        }
+
+        if (empty($rows) || count($rows) < 2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File kosong atau tidak memiliki baris data produk yang dapat dibaca.',
+            ], 422);
+        }
+
+        // Header mapping
+        $headerRow = array_map(function ($h) {
+            return strtolower(trim((string) $h));
+        }, $rows[0]);
+
+        $colMap = [
+            'sku' => -1,
+            'name' => -1,
+            'category' => -1,
+            'price' => -1,
+            'stock' => -1,
+            'weight' => -1,
+            'description' => -1,
+        ];
+
+        foreach ($headerRow as $idx => $headerText) {
+            $clean = preg_replace('/[^a-z0-9_ ]/', '', $headerText);
+
+            if ($colMap['sku'] === -1 && (
+                str_contains($clean, 'sku') || 
+                str_contains($clean, 'kode') || 
+                str_contains($clean, 'barcode') || 
+                $clean === 'id'
+            )) {
+                $colMap['sku'] = $idx;
+            } elseif ($colMap['name'] === -1 && (
+                str_contains($clean, 'nama') || 
+                str_contains($clean, 'name') || 
+                str_contains($clean, 'produk') || 
+                str_contains($clean, 'barang') || 
+                str_contains($clean, 'item')
+            )) {
+                $colMap['name'] = $idx;
+            } elseif ($colMap['category'] === -1 && (
+                str_contains($clean, 'kategori') || 
+                str_contains($clean, 'category') || 
+                str_contains($clean, 'kelompok') || 
+                str_contains($clean, 'group')
+            )) {
+                $colMap['category'] = $idx;
+            } elseif ($colMap['price'] === -1 && (
+                str_contains($clean, 'harga') || 
+                str_contains($clean, 'price') || 
+                str_contains($clean, 'jual')
+            )) {
+                $colMap['price'] = $idx;
+            } elseif ($colMap['stock'] === -1 && (
+                str_contains($clean, 'stok') || 
+                str_contains($clean, 'stock') || 
+                str_contains($clean, 'qty') || 
+                str_contains($clean, 'jumlah')
+            )) {
+                $colMap['stock'] = $idx;
+            } elseif ($colMap['weight'] === -1 && (
+                str_contains($clean, 'berat') || 
+                str_contains($clean, 'weight') || 
+                str_contains($clean, 'kemasan') || 
+                str_contains($clean, 'satuan')
+            )) {
+                $colMap['weight'] = $idx;
+            } elseif ($colMap['description'] === -1 && (
+                str_contains($clean, 'deskripsi') || 
+                str_contains($clean, 'keterangan') || 
+                str_contains($clean, 'detail') || 
+                str_contains($clean, 'desc')
+            )) {
+                $colMap['description'] = $idx;
+            }
+        }
+
+        if ($colMap['name'] === -1) {
+            $colMap['name'] = isset($headerRow[1]) ? 1 : 0;
+        }
+
+        $imported = 0;
+        $updated = 0;
+        $created = 0;
+        $updateExisting = $request->boolean('update_existing', true);
+
+        DB::transaction(function () use ($rows, $colMap, $updateExisting, &$imported, &$updated, &$created) {
+            for ($i = 1; $i < count($rows); $i++) {
+                $row = $rows[$i];
+                if (empty($row) || !is_array($row)) continue;
+
+                $name = $colMap['name'] !== -1 ? trim((string)($row[$colMap['name']] ?? '')) : '';
+                if ($name === '') continue;
+
+                $sku = $colMap['sku'] !== -1 ? trim((string)($row[$colMap['sku']] ?? '')) : '';
+                if ($sku === '') {
+                    $sku = 'PRD-' . time() . '-' . $i;
+                }
+
+                $category = $colMap['category'] !== -1 ? trim((string)($row[$colMap['category']] ?? '')) : 'Frozen Food';
+                if ($category === '') $category = 'Frozen Food';
+
+                Category::firstOrCreate(['name' => $category]);
+
+                $priceRaw = $colMap['price'] !== -1 ? (string)($row[$colMap['price']] ?? '0') : '0';
+                $price = (int) preg_replace('/[^0-9]/', '', $priceRaw);
+
+                $stockRaw = $colMap['stock'] !== -1 ? (string)($row[$colMap['stock']] ?? '0') : '0';
+                $stock = (int) preg_replace('/[^0-9]/', '', $stockRaw);
+
+                $weight = $colMap['weight'] !== -1 ? trim((string)($row[$colMap['weight']] ?? '500g')) : '500g';
+                if ($weight === '') $weight = '500g';
+
+                $desc = $colMap['description'] !== -1 ? trim((string)($row[$colMap['description']] ?? '')) : '';
+
+                $existing = Product::find($sku);
+                if ($existing) {
+                    if ($updateExisting) {
+                        $existing->update([
+                            'name' => $name,
+                            'category' => $category,
+                            'price' => $price > 0 ? $price : $existing->price,
+                            'stock' => $stock,
+                            'weight' => $weight,
+                            'description' => $desc ?: $existing->description,
+                        ]);
+                        $updated++;
+                        $imported++;
+                    }
+                } else {
+                    Product::create([
+                        'id' => $sku,
+                        'name' => $name,
+                        'category' => $category,
+                        'price' => $price,
+                        'stock' => $stock,
+                        'weight' => $weight,
+                        'description' => $desc,
+                        'image' => '/images/products/nugget.png',
+                        'tags' => ['Kasir Pintar'],
+                    ]);
+                    $created++;
+                    $imported++;
+                }
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil memproses {$imported} produk ({$created} produk baru, {$updated} diperbarui) dari file spreadsheet!",
+            'imported_count' => $imported,
+            'created_count' => $created,
+            'updated_count' => $updated,
+            'products' => Product::all(),
+            'categories' => Category::all()->pluck('name'),
+        ]);
+    }
+
+    /**
+     * Parsing file CSV menjadi array baris data
+     */
+    private function parseCsvFile(string $filePath): array
+    {
+        $rows = [];
+        if (($handle = fopen($filePath, 'r')) !== false) {
+            $firstLine = fgets($handle);
+            rewind($handle);
+            $delimiter = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+
+            while (($data = fgetcsv($handle, 10000, $delimiter)) !== false) {
+                if (empty($rows) && isset($data[0])) {
+                    $data[0] = preg_replace('/^\xEF\xBB\xBF/', '', $data[0]);
+                }
+                $rows[] = array_map('trim', $data);
+            }
+            fclose($handle);
+        }
+        return $rows;
+    }
+
+    /**
+     * Parsing file Excel .xlsx murni PHP (ZipArchive & SimpleXML) tanpa library pihak ketiga
+     */
+    private function parseXlsxFile(string $filePath): array
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            return [];
+        }
+
+        $sharedStrings = [];
+        $ssXml = $zip->getFromName('xl/sharedStrings.xml');
+        if ($ssXml !== false) {
+            $xml = simplexml_load_string($ssXml);
+            if ($xml) {
+                foreach ($xml->children() as $item) {
+                    $text = '';
+                    if (isset($item->t)) {
+                        $text = (string) $item->t;
+                    } elseif (isset($item->r)) {
+                        foreach ($item->r as $run) {
+                            $text .= (string) $run->t;
+                        }
+                    }
+                    $sharedStrings[] = $text;
+                }
+            }
+        }
+
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        if ($sheetXml === false) {
+            for ($i = 1; $i <= 5; $i++) {
+                $sheetXml = $zip->getFromName("xl/worksheets/sheet{$i}.xml");
+                if ($sheetXml !== false) break;
+            }
+        }
+
+        if ($sheetXml === false) {
+            $zip->close();
+            return [];
+        }
+
+        $xml = simplexml_load_string($sheetXml);
+        $rows = [];
+
+        if ($xml && isset($xml->sheetData)) {
+            foreach ($xml->sheetData->row as $row) {
+                $rowArr = [];
+                $currentCol = 0;
+
+                foreach ($row->c as $cell) {
+                    $ref = (string) $cell['r'];
+                    preg_match('/([A-Z]+)/', $ref, $matches);
+                    $colStr = $matches[1] ?? 'A';
+
+                    $targetCol = 0;
+                    $len = strlen($colStr);
+                    for ($k = 0; $k < $len; $k++) {
+                        $targetCol = $targetCol * 26 + (ord($colStr[$k]) - 64);
+                    }
+                    $targetCol -= 1;
+
+                    while ($currentCol < $targetCol) {
+                        $rowArr[] = '';
+                        $currentCol++;
+                    }
+
+                    $type = (string) $cell['t'];
+                    $val = isset($cell->v) ? (string) $cell->v : '';
+
+                    if ($type === 's') {
+                        $sIndex = (int) $val;
+                        $val = $sharedStrings[$sIndex] ?? '';
+                    } elseif ($type === 'inlineStr' && isset($cell->is->t)) {
+                        $val = (string) $cell->is->t;
+                    }
+
+                    $rowArr[] = trim($val);
+                    $currentCol++;
+                }
+                $rows[] = $rowArr;
+            }
+        }
+
+        $zip->close();
+        return $rows;
     }
 
     // --- 3. Proses Pesanan ---
@@ -347,7 +816,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Pesanan berhasil disimpan ke database!',
+            'message' => 'Pesanan berhasil disimpan!',
             'order'   => [
                 'id'            => $order->id,
                 'customerName'  => $order->customer_name,
@@ -391,7 +860,7 @@ class AdminDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Status pesanan {$id} berhasil diperbarui di database!",
+            'message' => "Status pesanan {$id} berhasil diperbarui!",
             'order'   => [
                 'id'            => $order->id,
                 'customerName'  => $order->customer_name,
