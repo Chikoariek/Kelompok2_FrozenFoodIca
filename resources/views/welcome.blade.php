@@ -157,7 +157,7 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
 
                                     <!-- Navigasi Akun Sesuai Peran -->
                                     @if($user->is_admin)
-                                        <a href="{{ route('admin.dashboard') }}" class="user-dropdown-btn-item admin-highlight">
+                                        <a href="{{ route('admin.dashboard') }}" class="user-dropdown-btn-item admin-highlight link-to-admin-dashboard">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669"
                                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path
@@ -328,7 +328,7 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
                                     style="font-size: 10px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 0.5rem; margin-bottom: 0.25rem;">Akun
                                     Pengguna</span>
                                 @if($user->is_admin)
-                                    <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link admin-highlight">
+                                    <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link admin-highlight link-to-admin-dashboard">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path
@@ -1092,8 +1092,8 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
     <!-- 9. Modal Detail Informasi & Spesifikasi Produk -->
     <div id="productDetailModal" class="modal-product-backdrop">
         <div class="modal-product-card-wrap">
-            <button id="detailModalClose" class="modal-close-round-btn" title="Tutup" type="button">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <button id="detailModalClose" class="modal-close-round-btn" title="Tutup" type="button" aria-label="Tutup">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1228,9 +1228,8 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
                     <p id="drawerCartCountLabel" style="font-size: 0.75rem; color: #6B7280;">0 Produk Makanan Beku</p>
                 </div>
             </div>
-            <button id="btnCloseCart" style="padding: 0.5rem; border-radius: 12px; color: #9CA3AF; cursor: pointer;"
-                title="Tutup">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button id="btnCloseCart" class="modal-close-round-btn" style="position: static;" title="Tutup" type="button" aria-label="Tutup Keranjang">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1435,8 +1434,8 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
                         </p>
                     </div>
                 </div>
-                <button type="button" id="btnPaymentClose" class="payment-modal-close-btn" title="Kembali ke Keranjang">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button type="button" id="btnPaymentClose" class="payment-modal-close-btn" aria-label="Tutup" title="Kembali ke Keranjang">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -1586,9 +1585,9 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
         <div class="user-profile-modal-card">
             <!-- Modal Header -->
             <div class="user-modal-header">
-                <button id="btnCloseProfileModal" class="user-modal-close-btn" type="button" aria-label="Tutup">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
+                <button id="btnCloseProfileModal" class="user-modal-close-btn" type="button" aria-label="Tutup" title="Tutup">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -1888,6 +1887,18 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
 
     <!-- Pure Vanilla JS Storefront Logic -->
     <script src="{{ asset('js/store.js') }}?v={{ filemtime(public_path('js/store.js')) }}"></script>
+    <!-- Sync link to admin dashboard dengan tab terakhir yang dibuka -->
+    <script>
+        try {
+            var lastAdminTab = sessionStorage.getItem('ica_admin_active_tab');
+            var validAdminTabs = ['dashboard', 'profile', 'orders', 'inventory', 'categories', 'reports'];
+            if (lastAdminTab && lastAdminTab !== 'dashboard' && validAdminTabs.indexOf(lastAdminTab) !== -1) {
+                document.querySelectorAll('.link-to-admin-dashboard').forEach(function(link) {
+                    link.href = "{{ route('admin.dashboard') }}?tab=" + encodeURIComponent(lastAdminTab);
+                });
+            }
+        } catch (e) {}
+    </script>
 </body>
 
 </html>

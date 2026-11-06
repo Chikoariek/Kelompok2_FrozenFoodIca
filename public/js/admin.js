@@ -614,12 +614,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (textSpan) textSpan.textContent = `Lihat ${remainingCount} item lainnya`;
       } else {
         wrap.classList.add('is-expanded');
-        if (textSpan) textSpan.textContent = '▴ Tampilkan Lebih Sedikit';
+        if (textSpan) textSpan.textContent = 'Tutup item lainnya';
       }
     }
   });
 
-  // Otomatis menutup daftar item yang terbuka saat halaman atau tabel discroll
+  // Otomatis menutup daftar item yang terbuka & dropdown profil saat halaman discroll
   let orderItemsScrollTimer = null;
   function collapseAllOrderItems() {
     document.querySelectorAll('.order-items-expandable.is-expanded').forEach((wrap) => {
@@ -631,17 +631,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  window.addEventListener('scroll', () => {
-    clearTimeout(orderItemsScrollTimer);
-    orderItemsScrollTimer = setTimeout(collapseAllOrderItems, 120);
-  }, { passive: true });
+  function handleUserScroll() {
+    // 1. Tutup dropdown profil jika terbuka saat discroll
+    if (adminProfileDropdown?.classList.contains('open')) {
+      closeProfileDropdown();
+    }
 
-  document.querySelectorAll('.table-responsive').forEach((tbl) => {
-    tbl.addEventListener('scroll', () => {
-      clearTimeout(orderItemsScrollTimer);
-      orderItemsScrollTimer = setTimeout(collapseAllOrderItems, 120);
-    }, { passive: true });
-  });
+    // 2. Tutup daftar item yang sedang dibuka setelah jeda scroll stabil
+    clearTimeout(orderItemsScrollTimer);
+    orderItemsScrollTimer = setTimeout(collapseAllOrderItems, 250);
+  }
+
+  // Gunakan capture: true agar menangkap scroll di window, .admin-scroll-body, dan .table-responsive
+  window.addEventListener('scroll', handleUserScroll, { passive: true, capture: true });
 
   // Toggle Lihat/Sembunyikan Kata Sandi pada Profil Admin
   document.querySelectorAll('.btn-pwd-eye').forEach((btn) => {

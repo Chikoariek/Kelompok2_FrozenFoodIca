@@ -155,16 +155,27 @@ a {
   position: absolute;
   top: 0;
   right: 0.75rem;
-  padding: 0.35rem;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFFFFF;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebar-mobile-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.06);
+}
+
+.sidebar-mobile-close-btn:active {
+  transform: scale(0.95);
 }
 
 .sidebar-nav-menu {
@@ -392,12 +403,20 @@ a {
   border: 1px solid var(--border-color);
   padding: 0.5rem;
   z-index: 100;
-  display: none;
-  animation: fadeIn 0.15s ease-out;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              visibility 0.22s;
 }
 
 .topbar-profile-dropdown.open {
-  display: block;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
 
 .dropdown-user-card {
@@ -1068,10 +1087,10 @@ a {
 .order-cust-phone-wa {
   display: inline-flex;
   align-items: center;
-  gap: 3.5px;
+  gap: 4px;
   font-size: 11px;
   font-weight: 600;
-  color: #64748B;
+  color: #16A34A;
   background: transparent;
   padding: 0;
   border: none;
@@ -1079,12 +1098,12 @@ a {
   text-decoration: none;
   transition: all 0.15s ease;
   width: fit-content;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .order-cust-phone-wa svg {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   color: #16A34A;
   flex-shrink: 0;
   transition: transform 0.15s ease;
@@ -1096,7 +1115,7 @@ a {
 }
 
 .order-cust-phone-wa:hover svg {
-  transform: scale(1.18);
+  transform: scale(1.15);
 }
 
 /* ==========================================
@@ -1744,6 +1763,54 @@ a {
   margin: 0;
 }
 
+/* ==========================================
+   STANDAR TOMBOL TUTUP / CLOSE BUTTON (X) UI/UX
+   ========================================== */
+.btn-modal-close {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  background-color: #FFFFFF;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.btn-modal-close:hover {
+  background-color: #F8FAFC;
+  color: #0F172A;
+  border-color: #CBD5E1;
+  transform: scale(1.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-modal-close:active {
+  transform: scale(0.95);
+  background-color: #F1F5F9;
+}
+
+.btn-modal-close svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
 .modal-body-pad {
   padding: 1.5rem;
 }
@@ -1883,7 +1950,7 @@ a {
   }
 
   .sidebar-mobile-close-btn {
-    display: block;
+    display: flex;
   }
 
   .topbar-mobile-menu-btn {
@@ -1975,8 +2042,9 @@ a {
 .order-items-more-wrapper {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease;
+  transition: grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
   opacity: 0;
+  will-change: grid-template-rows, opacity;
 }
 
 .order-items-expandable.is-expanded .order-items-more-wrapper {
@@ -1996,7 +2064,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.2rem 0.55rem;
+  padding: 0.22rem 0.6rem;
   margin-top: 0.35rem;
   background-color: #EFF6FF;
   color: var(--soft-blue);
@@ -2006,7 +2074,7 @@ a {
   font-weight: 700;
   cursor: pointer;
   align-self: flex-start;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-toggle-order-items:hover {
@@ -2017,7 +2085,7 @@ a {
 }
 
 .btn-toggle-order-items .toggle-items-chevron {
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
