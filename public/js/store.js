@@ -1324,6 +1324,14 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   window.openCartDrawer = function () {
+    // Validasi Tamu: Wajib login sebelum dapat mengakses keranjang (disamakan dengan saat klik icon keranjang di katalog)
+    if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {
+      if (confirm('Silakan masuk ke akun Anda terlebih dahulu untuk mulai memesan produk di Ica Frozen Food.\n\nKlik "OK" untuk menuju halaman Login sekarang.')) {
+        window.location.href = window.__LOGIN_URL__ || '/login';
+      }
+      return;
+    }
+
     renderCart();
     if (cartDrawerOverlay) cartDrawerOverlay.classList.add('active');
     if (cartDrawer) cartDrawer.classList.add('active');

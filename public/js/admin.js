@@ -167,9 +167,12 @@ document.addEventListener('DOMContentLoaded', function () {
       // Scroll to top smoothly
       if (scrollBody) scrollBody.scrollTop = 0;
 
-      // Render / update chart jika membuka tab reports
+      // Render / update chart jika membuka tab reports atau dashboard
       if (tabId === 'reports' && typeof updateSalesReport === 'function') {
         setTimeout(updateSalesReport, 60);
+      }
+      if (tabId === 'dashboard' && typeof updateDashboardSalesChart === 'function') {
+        setTimeout(updateDashboardSalesChart, 60);
       }
   }
 
@@ -183,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Quick cross-tab links
   document.getElementById('btnOverviewSeeAllOrders')?.addEventListener('click', () => switchTab('orders'));
   document.getElementById('btnOverviewSeeInventory')?.addEventListener('click', () => switchTab('inventory'));
+  document.getElementById('btnOverviewSeeReports')?.addEventListener('click', () => switchTab('reports'));
   document.getElementById('btnSwitchToProfile')?.addEventListener('click', () => {
     closeProfileDropdown();
     switchTab('profile');
@@ -1919,7 +1923,134 @@ document.addEventListener('DOMContentLoaded', function () {
   // 11. MODUL LAPORAN PENJUALAN & ANALISIS TOKO (CHART.JS)
   // ==========================================
   let salesChartInstance = null;
+  let dashboardSalesChartInstance = null;
   let activeReportRange = '7'; // '7', '30', 'month', 'all'
+
+  // Diagram Ringkas Omzet 7 Hari Terakhir di Tab Dashboard Overview
+  function updateDashboardSalesChart() {
+    const chartCanvas = document.getElementById('dashboardSalesChart');
+    if (!chartCanvas) return;
+
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0);
+
+    const dailyMap = {};
+    const chartLabels = [];
+    const chartData = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const key = `${y}-${m}-${day}`;
+      dailyMap[key] = 0;
+      chartLabels.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }));
+    }
+
+    const validOrders = (orders || []).filter((o) => {
+      if (o.status === 'Dibatalkan') return false;
+      if (o.status !== 'Selesai' && !o.is_paid) return false;
+      const oDate = new Date(o.order_date || o.created_at || now);
+      return oDate >= startDate;
+    });
+
+    validOrders.forEach((o) => {
+      const d = new Date(o.order_date || o.created_at);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const key = `${y}-${m}-${day}`;
+      const amount = parseInt(o.total, 10) || 0;
+      if (dailyMap.hasOwnProperty(key)) {
+        dailyMap[key] += amount;
+      }
+    });
+
+    Object.keys(dailyMap).forEach((k) => {
+      chartData.push(dailyMap[k]);
+    });
+
+    if (typeof Chart !== 'undefined') {
+      const ctx = chartCanvas.getContext('2d');
+      if (dashboardSalesChartInstance) {
+        dashboardSalesChartInstance.destroy();
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+      gradient.addColorStop(0, 'rgba(103, 125, 158, 0.35)');
+      gradient.addColorStop(1, 'rgba(103, 125, 158, 0.01)');
+
+      dashboardSalesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: 'Omzet Harian',
+            data: chartData,
+            borderColor: '#677D9E',
+            backgroundColor: gradient,
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.32,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#FFFFFF',
+            pointBorderColor: '#677D9E',
+            pointBorderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1E293B',
+              padding: 10,
+              cornerRadius: 8,
+              titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
+              bodyFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
+              displayColors: false,
+              callbacks: {
+                label: function (tooltipItem) {
+                  return 'Omzet: Rp ' + (tooltipItem.parsed.y || 0).toLocaleString('id-ID');
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                font: { family: 'Plus Jakarta Sans', size: 10, weight: '600' },
+                color: '#64748B',
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 12,
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: '#F1F5F9',
+                borderDash: [4, 4],
+              },
+              ticks: {
+                font: { family: 'Plus Jakarta Sans', size: 10, weight: '600' },
+                color: '#64748B',
+                callback: function (val) {
+                  if (val >= 1000000) return 'Rp ' + (val / 1000000).toFixed(val % 1000000 === 0 ? 0 : 1) + 'jt';
+                  if (val >= 1000) return 'Rp ' + (val / 1000).toFixed(0) + 'rb';
+                  return 'Rp ' + val;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
 
   function updateSalesReport() {
     const rangeText = document.getElementById('reportActiveRangeText');
@@ -2272,11 +2403,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Export function to global scope for switchTab trigger
   window.updateSalesReport = updateSalesReport;
+  window.updateDashboardSalesChart = updateDashboardSalesChart;
 
-  // Initial call if reports tab is active on load
+  // Initial call based on active tab
   const initialTabParam = new URLSearchParams(window.location.search).get('tab');
   if (initialTabParam === 'reports') {
     setTimeout(updateSalesReport, 100);
+  } else if (!initialTabParam || initialTabParam === 'dashboard') {
+    setTimeout(updateDashboardSalesChart, 100);
   }
 
   // --- 10. Handler Penutup Semua Jendela Modal Dialog ---

@@ -81,15 +81,11 @@
             </button>
         </div>
 
-        <!-- 6 Menu Navigasi -->
+        <!-- 5 Menu Navigasi Utama Operasional Toko -->
         <nav class="sidebar-nav-menu">
             <button class="sidebar-nav-btn {{ $activeTab === 'dashboard' ? 'active' : '' }}" data-tab="dashboard">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
                 <span>Dashboard</span>
-            </button>
-            <button class="sidebar-nav-btn {{ $activeTab === 'profile' ? 'active' : '' }}" data-tab="profile">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span>Profil Admin</span>
             </button>
             <button class="sidebar-nav-btn {{ $activeTab === 'orders' ? 'active' : '' }}" data-tab="orders">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -437,6 +433,29 @@
                                 </div>
                             @endif
                         </div>
+                    </div>
+                </div>
+
+                <!-- Diagram Ringkas Penjualan 7 Hari Terakhir (Chart.js) -->
+                <div class="admin-card-box" style="margin-top: 1.5rem;">
+                    <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(103, 125, 158, 0.12); display: flex; align-items: center; justify-content: center; color: var(--soft-blue);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="admin-card-title" style="margin: 0; font-size: 0.9375rem;">Grafik Ringkasan Tren Omzet Penjualan (7 Hari Terakhir)</h3>
+                                <p style="font-size: 0.6875rem; color: #64748B; margin: 2px 0 0;">Visualisasi fluktuasi nilai pendapatan harian transaksi toko</p>
+                            </div>
+                        </div>
+                        <div>
+                            <button id="btnOverviewSeeReports" class="admin-card-action-link" type="button" title="Buka menu laporan lengkap">
+                                <span>Laporan Lengkap →</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="padding: 1.25rem; position: relative; min-height: 280px;">
+                        <canvas id="dashboardSalesChart" style="max-height: 280px; width: 100%;"></canvas>
                     </div>
                 </div>
             </section>
