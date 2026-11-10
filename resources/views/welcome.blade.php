@@ -188,8 +188,8 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
 
                                     <div class="dropdown-separator-line"></div>
 
-                                    <!-- Logout Form (Otomatis bersihkan keranjang saat keluar akun) -->
-                                    <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');}catch(e){}">
+                                    <!-- Logout Form (Otomatis bersihkan keranjang & session admin saat keluar akun) -->
+                                    <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}">
                                         @csrf
                                         <button type="submit" class="user-dropdown-btn-item logout">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444"
@@ -355,8 +355,8 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
                                         <span>Edit Profil &amp; Alamat</span>
                                     </button>
                                 @endif
-                                <!-- Logout Form Mobile (Otomatis bersihkan keranjang saat keluar akun) -->
-                                <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');}catch(e){}">
+                                <!-- Logout Form Mobile (Otomatis bersihkan keranjang & session admin saat keluar akun) -->
+                                <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}">
                                     @csrf
                                     <button type="submit" class="mobile-nav-link logout">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444"
@@ -1887,12 +1887,12 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
 
     <!-- Pure Vanilla JS Storefront Logic -->
     <script src="{{ asset('js/store.js') }}?v={{ filemtime(public_path('js/store.js')) }}"></script>
-    <!-- Sync link to admin dashboard dengan tab terakhir yang dibuka -->
+    <!-- Sync link to admin dashboard dengan menu sidebar terakhir sebelum ke homepage (jika belum logout) -->
     <script>
         try {
             var lastAdminTab = sessionStorage.getItem('ica_admin_active_tab');
-            var validAdminTabs = ['dashboard', 'profile', 'orders', 'inventory', 'categories', 'reports'];
-            if (lastAdminTab && lastAdminTab !== 'dashboard' && validAdminTabs.indexOf(lastAdminTab) !== -1) {
+            var validOperationalTabs = ['orders', 'inventory', 'categories', 'reports'];
+            if (lastAdminTab && validOperationalTabs.indexOf(lastAdminTab) !== -1) {
                 document.querySelectorAll('.link-to-admin-dashboard').forEach(function(link) {
                     link.href = "{{ route('admin.dashboard') }}?tab=" + encodeURIComponent(lastAdminTab);
                 });

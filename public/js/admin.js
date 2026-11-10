@@ -153,11 +153,25 @@ document.addEventListener('DOMContentLoaded', function () {
       if (topbarTitle) topbarTitle.textContent = tabMeta[tabId].title;
       if (topbarSubtitle) topbarSubtitle.textContent = tabMeta[tabId].subtitle;
 
-      // Simpan ke URL & sessionStorage
-      sessionStorage.setItem("ica_admin_active_tab", tabId);
+      // Simpan menu aktif sidebar ke sessionStorage (Tab non-sidebar seperti 'profile' direset ke 'dashboard')
+      const sidebarTabs = ['dashboard', 'orders', 'inventory', 'categories', 'reports'];
+      if (sidebarTabs.includes(tabId)) {
+        try {
+          sessionStorage.setItem("ica_admin_active_tab", tabId);
+        } catch (e) {}
+      } else {
+        try {
+          sessionStorage.setItem("ica_admin_active_tab", "dashboard");
+        } catch (e) {}
+      }
+
       try {
           const url = new URL(window.location.href);
-          url.searchParams.set("tab", tabId);
+          if (tabId === 'dashboard') {
+            url.searchParams.delete("tab");
+          } else {
+            url.searchParams.set("tab", tabId);
+          }
           window.history.replaceState({}, "", url.toString());
       } catch (e) {}
 
@@ -192,16 +206,29 @@ document.addEventListener('DOMContentLoaded', function () {
     switchTab('profile');
   });
 
-  // Restore active tab dari query string atau session
+  // Restore active tab dari query string URL atau sesi kerja terakhir di sidebar
   const urlParams = new URLSearchParams(window.location.search);
   const paramTab = urlParams.get('tab');
   const savedTab = sessionStorage.getItem('ica_admin_active_tab');
+  const sidebarTabs = ['dashboard', 'orders', 'inventory', 'categories', 'reports'];
 
   if (paramTab && tabMeta[paramTab]) {
     switchTab(paramTab);
-  } else if (savedTab && tabMeta[savedTab]) {
+  } else if (savedTab && sidebarTabs.includes(savedTab) && tabMeta[savedTab]) {
     switchTab(savedTab);
+  } else {
+    // Tanpa parameter ?tab dan tanpa savedTab (misal setelah logout / login baru) -> selalu dashboard
+    switchTab('dashboard');
   }
+
+  // Event listener pembersihan sesi admin saat logout
+  document.querySelectorAll('form[action*="logout"]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      try {
+        sessionStorage.removeItem('ica_admin_active_tab');
+      } catch (e) {}
+    });
+  });
 
   // --- 4. Kelola Data Profil Admin & Ganti Password ---
   const formAdminProfile = document.getElementById('formAdminProfile');

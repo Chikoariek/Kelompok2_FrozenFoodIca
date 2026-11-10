@@ -31,21 +31,6 @@
                 window.location.replace("{{ route('home') }}");
             }
         });
-
-        // Pre-sync Active Tab dari sessionStorage jika URL belum membawa query param ?tab
-        (function () {
-            try {
-                var urlParams = new URLSearchParams(window.location.search);
-                var currentTab = urlParams.get('tab');
-                var savedTab = sessionStorage.getItem('ica_admin_active_tab');
-                var validTabs = ['dashboard', 'profile', 'orders', 'inventory', 'categories', 'reports'];
-                if (!currentTab && savedTab && savedTab !== 'dashboard' && validTabs.indexOf(savedTab) !== -1) {
-                    var url = new URL(window.location.href);
-                    url.searchParams.set('tab', savedTab);
-                    window.location.replace(url.toString());
-                }
-            } catch (e) {}
-        })();
     </script>
 </head>
 <body>
@@ -109,7 +94,7 @@
         <div class="sidebar-footer-info" style="padding: 1.25rem 1.25rem 0; margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.15);">
             <div class="sidebar-footer-row" style="display: flex; align-items: center; gap: 0.5rem;">
                 <span class="sidebar-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;"></span>
-                <span class="sidebar-footer-title" style="font-size: 0.8125rem; font-weight: 800; color: #FFFFFF;">Toko Online Aktif</span>
+                <span class="sidebar-footer-title" style="font-size: 0.8125rem; font-weight: 800; color: #FFFFFF;">Operasional Aktif</span>
             </div>
             <p class="sidebar-footer-sub" style="font-size: 0.6875rem; color: rgba(255, 255, 255, 0.65); margin: 0.35rem 0 0;">Sistem Ica Frozen Food v1.0</p>
         </div>
@@ -181,7 +166,7 @@
                             <div class="dropdown-divider"></div>
                             
                             <!-- Tombol Logout Resmi -->
-                            <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                            <form method="POST" action="{{ route('logout') }}" onsubmit="try{sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}" style="margin: 0;">
                                 @csrf
                                 <button type="submit" class="dropdown-menu-item logout" title="Keluar dari sesi admin">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>

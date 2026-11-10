@@ -125,11 +125,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Event Listener: Bersihkan data keranjang saat tombol logout ditekan
+  // Event Listener: Bersihkan data keranjang & sesi admin saat tombol logout ditekan
   document.querySelectorAll('form[action*="logout"]').forEach((form) => {
     form.addEventListener('submit', () => {
       try {
         localStorage.removeItem('ica_cart');
+        sessionStorage.removeItem('ica_admin_active_tab');
       } catch (e) {}
     });
   });
