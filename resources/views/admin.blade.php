@@ -801,7 +801,13 @@
 
             <!-- Tab 4: Inventaris Data Produk & Stok Freezer -->
             <section id="tab-inventory" class="tab-pane {{ $activeTab === 'inventory' ? 'active' : '' }}">
-                <!-- Top Header Card -->
+                @php
+                    $bundles = $bundles ?? \App\Models\Bundle::with('items.product')->get();
+                @endphp
+
+                <!-- Sub-tab 1: Produk Satuan -->
+                <div id="subtabContentProducts" class="inv-subtab-content">
+                    <!-- Top Header Card -->
                 <div class="panel-top-header-card">
                     <div>
                         <div class="panel-header-badge">
@@ -831,16 +837,31 @@
                     </div>
                 </div>
 
-                <!-- Filter & Search Toolbar (Posisi & Lebar Search Konsisten: sm:w-80) -->
+                <!-- Filter & Search Toolbar (Opsi Tampilan: Produk Satuan vs Paket Hemat & Filter Stok) -->
                 <div class="admin-toolbar-card">
-                    <div class="toolbar-filters-group">
-                        <button id="filterAllProducts" class="filter-btn-pill active prod-filter-btn" data-filter="all" type="button">
-                            Semua Produk ({{ count($products) }})
-                        </button>
-                        <button id="filterLowStockProducts" class="filter-btn-pill warning prod-filter-btn" data-filter="low" type="button">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                            <span>Stok Menipis &lt; 5 Unit</span>
-                        </button>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <!-- Segmented Switcher Toggle: Produk Satuan vs Paket Hemat (Style Identik Menu Kategori) -->
+                        <div class="category-view-toggle-wrap">
+                            <button class="btn-toggle-view active btn-switch-subtab" data-subtab="products" type="button" title="Katalog Produk Satuan">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+                                <span>Produk Satuan</span>
+                            </button>
+                            <button class="btn-toggle-view btn-switch-subtab" data-subtab="bundles" type="button" title="Paket Hemat Promo (Bundling)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+                                <span>Paket Hemat</span>
+                            </button>
+                        </div>
+
+                        <!-- Filter Status Stok Produk Satuan -->
+                        <div class="toolbar-filters-group">
+                            <button id="filterAllProducts" class="filter-btn-pill active prod-filter-btn" data-filter="all" type="button">
+                                Semua ({{ count($products) }})
+                            </button>
+                            <button id="filterLowStockProducts" class="filter-btn-pill warning prod-filter-btn" data-filter="low" type="button">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                <span>Stok Menipis &lt; 5 Unit</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Search Box (Konsisten) -->
@@ -939,6 +960,147 @@
                         </table>
                     </div>
                 </div>
+                </div> <!-- /#subtabContentProducts -->
+
+                <!-- Sub-tab 2: Paket Hemat Promosi (Bundling) -->
+                <div id="subtabContentBundles" class="inv-subtab-content" style="display: none;">
+                    <!-- Top Header Card Paket Hemat -->
+                    <div class="panel-top-header-card">
+                        <div>
+                            <div class="panel-header-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+                                <span>Inventaris Toko</span>
+                            </div>
+                            <h2 class="panel-header-title">Manajemen Paket Hemat (Bundling)</h2>
+                            <p class="panel-header-desc">
+                                Atur promo bundling produk dengan harga spesial relasional. Paket yang aktif otomatis tampil di etalase rekomendasi cerdas homepage.
+                            </p>
+                        </div>
+                        <div class="panel-header-actions">
+                            <button id="btnOpenAddBundleModal" class="btn-primary-blue" title="Tambah Paket Hemat Baru" type="button">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <span>Tambah Paket Hemat</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Toolbar / Search Bundles -->
+                    <div class="admin-toolbar-card">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <!-- Segmented Switcher Toggle: Produk Satuan vs Paket Hemat (Style Identik Menu Kategori) -->
+                            <div class="category-view-toggle-wrap">
+                                <button class="btn-toggle-view btn-switch-subtab" data-subtab="products" type="button" title="Katalog Produk Satuan">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+                                    <span>Produk Satuan</span>
+                                </button>
+                                <button class="btn-toggle-view active btn-switch-subtab" data-subtab="bundles" type="button" title="Paket Hemat Promo (Bundling)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+                                    <span>Paket Hemat</span>
+                                </button>
+                            </div>
+
+                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--navy); padding-left: 0.5rem; border-left: 1px solid #E5E7EB;">
+                                Total: <strong id="totalBundlesCount">{{ count($bundles) }}</strong> Paket Hemat
+                            </div>
+                        </div>
+
+                        <div class="toolbar-search-wrap">
+                            <svg class="toolbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="bundleSearchInput" class="toolbar-search-input" placeholder="Cari nama atau ID paket hemat...">
+                        </div>
+                    </div>
+
+                    <!-- Table List Bundles -->
+                    <div class="admin-table-container">
+                        <div class="table-responsive">
+                            <table class="admin-data-table" id="tableBundles">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 28%;">Paket Promo</th>
+                                        <th style="width: 16%;">Badge Label</th>
+                                        <th style="width: 26%;">Produk Relasional (Isi Paket)</th>
+                                        <th style="width: 14%;">Harga Normal vs Promo</th>
+                                        <th style="width: 8%; text-align: center;">Status</th>
+                                        <th style="width: 8%; text-align: center;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBundlesBody">
+                                    @forelse($bundles as $b)
+                                        <tr class="bundle-row-item" data-id="{{ $b->id }}" data-name="{{ strtolower($b->name) }}">
+                                            <td>
+                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                    <img src="{{ $b->image }}" alt="{{ $b->name }}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid #E5E7EB; flex-shrink: 0;" onerror="this.src='/images/products/nugget.png'">
+                                                    <div>
+                                                        <p style="font-weight: 800; color: var(--navy); margin: 0; line-height: 1.2;">{{ $b->name }}</p>
+                                                        <p style="font-size: 10px; color: #9CA3AF; font-family: monospace; margin: 2px 0 0;">ID: {{ $b->id }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                                    <span style="font-size: 0.72rem; font-weight: 700; background: var(--soft-blue-light, #EBF0F6); color: var(--soft-blue, #677D9E); padding: 2px 8px; border-radius: 6px;">{{ $b->badge_left ?? 'Paket Promo' }}</span>
+                                                    @if(!empty($b->badge_right))
+                                                        <span style="font-size: 0.72rem; font-weight: 700; background: #F3F4F6; color: var(--navy, #2C3E50); padding: 2px 8px; border-radius: 6px; border: 1px solid #E5E7EB;">{{ $b->badge_right }}</span>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                                    @if($b->items && $b->items->isNotEmpty())
+                                                        @foreach($b->items as $bi)
+                                                            <span style="display: inline-flex; align-items: center; gap: 4px; background: #F8FAFC; color: #4B5563; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; border: 1px solid #E5E7EB;">
+                                                                <strong style="color: var(--navy);">{{ $bi->quantity }}x</strong> {{ $bi->product ? $bi->product->name : $bi->product_id }}
+                                                            </span>
+                                                        @endforeach
+                                                    @else
+                                                        <span style="font-size: 0.75rem; color: #94A3B8; font-style: italic;">Tidak ada produk</span>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div style="font-size: 0.75rem; color: #9CA3AF; text-decoration: line-through; font-family: monospace;">
+                                                        Rp {{ number_format($b->original_price, 0, ',', '.') }}
+                                                    </div>
+                                                    <div style="font-size: 0.875rem; font-weight: 800; color: var(--navy); font-family: monospace;">
+                                                        Rp {{ number_format($b->bundle_price, 0, ',', '.') }}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <button type="button" class="btn-toggle-bundle-status" data-id="{{ $b->id }}" data-active="{{ $b->is_active ? '1' : '0' }}" title="Klik untuk mengaktifkan/menonaktifkan paket" style="background: none; border: none; cursor: pointer; padding: 4px;">
+                                                    @if($b->is_active)
+                                                        <span class="badge-status selesai">● Aktif</span>
+                                                    @else
+                                                        <span class="badge-status" style="background: #F3F4F6; color: #6B7280;">● Nonaktif</span>
+                                                    @endif
+                                                </button>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <div style="display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                                                    <button class="btn-table-action edit btn-edit-bundle" data-id="{{ $b->id }}" title="Edit Paket Hemat" type="button">
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                                        <span>Edit</span>
+                                                    </button>
+                                                    <button class="btn-table-action delete btn-delete-bundle" data-id="{{ $b->id }}" title="Hapus Paket" type="button">
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                                        <span>Hapus</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: #9CA3AF; padding: 2.5rem;">
+                                                Belum ada paket hemat promo. Klik tombol <strong>Tambah Paket Hemat</strong> untuk membuat paket baru.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div> <!-- /#subtabContentBundles -->
             </section>
 
 
@@ -1459,6 +1621,228 @@
         </div>
     </div>
 
+    <!-- Modal Tambah Paket Hemat (Bundling) -->
+    <div id="modalAddBundle" class="admin-modal-backdrop">
+        <div class="admin-modal-box" style="max-width: 640px;">
+            <div class="modal-header-row">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="background: #FEF3C7; color: #D97706; padding: 6px; border-radius: 8px; display: flex;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+                    </span>
+                    <h3 class="modal-header-title">Tambah Paket Hemat (Bundling) Baru</h3>
+                </div>
+                <button type="button" class="btn-modal-close" aria-label="Tutup" title="Tutup">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="formAddBundle">
+                <div class="modal-body-pad" style="max-height: 70vh; overflow-y: auto;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+                        <div class="form-group-item">
+                            <label for="addBundleName">Nama Paket Hemat *</label>
+                            <input type="text" id="addBundleName" required placeholder="Contoh: Paket Sahur Kenyang">
+                        </div>
+                        <div class="form-group-item">
+                            <label for="addBundleBadgeLeft">Label Badge Kiri</label>
+                            <input type="text" id="addBundleBadgeLeft" value="Paling Laris" placeholder="Contoh: Paling Laris">
+                        </div>
+                    </div>
+
+                    <div class="form-group-item">
+                        <label for="addBundleDesc">Deskripsi Paket</label>
+                        <textarea id="addBundleDesc" rows="2" placeholder="Contoh: Kombinasi nugget renyah + dimsum ayam lembut siap saji keluarga."></textarea>
+                    </div>
+
+                    <!-- Pilihan Produk Relasional yang Masuk ke Paket -->
+                    <div class="form-group-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <label style="margin: 0; font-weight: 700;">Pilih Produk Relasional (Isi Paket) *</label>
+                            <span style="font-size: 0.75rem; color: #0284C7; font-weight: 700;" id="addBundleCalcNote">Pilih minimal 1 produk</span>
+                        </div>
+                        <div class="bundle-products-selector" style="border: 1px solid #E2E8F0; border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 0.5rem; background: #F8FAFC;">
+                            @foreach($products as $p)
+                                <div class="bundle-prod-choice-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.5rem; border-radius: 6px; margin-bottom: 4px; background: #FFFFFF; border: 1px solid #E2E8F0;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; flex: 1; font-weight: 500; font-size: 0.8125rem;">
+                                        <input type="checkbox" class="cb-bundle-prod" data-id="{{ $p->id }}" data-price="{{ $p->price }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #0284C7;">
+                                        <img src="{{ $p->image }}" alt="{{ $p->name }}" style="width: 28px; height: 28px; border-radius: 4px; object-fit: cover;" onerror="this.src='/images/products/nugget.png'">
+                                        <span>{{ $p->name }}</span>
+                                        <span style="font-size: 0.75rem; color: #64748B;">(Rp {{ number_format($p->price, 0, ',', '.') }})</span>
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                                        <span style="font-size: 0.7rem; color: #64748B;">Qty:</span>
+                                        <input type="number" class="qty-bundle-prod" data-id="{{ $p->id }}" value="1" min="1" max="99" style="width: 52px; padding: 2px 4px; font-size: 0.75rem; border: 1px solid #CBD5E1; border-radius: 4px; text-align: center;" disabled>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+                        <div class="form-group-item">
+                            <label for="addBundleOriginalPrice">Total Harga Normal (Otomatis)</label>
+                            <div style="position: relative;">
+                                <input type="number" id="addBundleOriginalPrice" readonly style="background: #F1F5F9; font-weight: 700; color: #475569;" placeholder="0">
+                                <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: #94A3B8;">Auto-calc</span>
+                            </div>
+                        </div>
+                        <div class="form-group-item">
+                            <label for="addBundlePrice">Harga Paket Promo (Rp) *</label>
+                            <input type="number" id="addBundlePrice" required placeholder="Contoh: 59000" min="0">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+                        <div class="form-group-item">
+                            <label for="addBundleBadgeRight">Label Diskon Kanan</label>
+                            <input type="text" id="addBundleBadgeRight" placeholder="Kosongkan untuk otomatis dihitung: Hemat Rp X">
+                        </div>
+                    </div>
+
+                    <!-- Upload Foto Paket -->
+                    <div class="form-group-item">
+                        <label>Foto Paket Hemat (Opsional)</label>
+                        <div class="product-image-uploader-box">
+                            <div class="product-image-preview-wrap" id="addBundlePreviewWrap" style="display: none;">
+                                <img id="addBundlePreviewImg" src="" alt="Preview Paket" class="product-image-preview-thumb">
+                                <div class="product-image-preview-info">
+                                    <p id="addBundlePreviewName" class="product-image-file-name">foto-paket.jpg</p>
+                                    <button type="button" class="btn-remove-preview" id="btnRemoveAddBundleImg">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                        <span>Ganti Foto</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="product-image-dropzone" id="addBundleDropzone">
+                                <input type="file" id="addBundleImageFile" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;">
+                                <button type="button" class="btn-choose-product-img" id="btnChooseAddBundleImg">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                    <span>Pilih Foto Gambar Paket</span>
+                                </button>
+                                <p class="product-image-hint">Format PNG/JPG (Maks 5MB). Jika kosong, menggunakan foto default bundle.</p>
+                            </div>
+                            <input type="hidden" id="addBundleImage" value="">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer-row">
+                    <button type="button" class="btn-modal-cancel">Batal</button>
+                    <button type="submit" class="btn-primary-blue">Simpan Paket ke Database</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit Paket Hemat (Bundling) -->
+    <div id="modalEditBundle" class="admin-modal-backdrop">
+        <div class="admin-modal-box" style="max-width: 640px;">
+            <div class="modal-header-row">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="background: #DBEAFE; color: #1D4ED8; padding: 6px; border-radius: 8px; display: flex;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </span>
+                    <h3 class="modal-header-title">Edit Paket Hemat (Bundling)</h3>
+                </div>
+                <button type="button" class="btn-modal-close" aria-label="Tutup" title="Tutup">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="formEditBundle">
+                <input type="hidden" id="editBundleId">
+                <div class="modal-body-pad" style="max-height: 70vh; overflow-y: auto;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+                        <div class="form-group-item">
+                            <label for="editBundleName">Nama Paket Hemat *</label>
+                            <input type="text" id="editBundleName" required>
+                        </div>
+                        <div class="form-group-item">
+                            <label for="editBundleBadgeLeft">Label Badge Kiri</label>
+                            <input type="text" id="editBundleBadgeLeft">
+                        </div>
+                    </div>
+
+                    <div class="form-group-item">
+                        <label for="editBundleDesc">Deskripsi Paket</label>
+                        <textarea id="editBundleDesc" rows="2"></textarea>
+                    </div>
+
+                    <!-- Pilihan Produk Relasional yang Masuk ke Paket -->
+                    <div class="form-group-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <label style="margin: 0; font-weight: 700;">Pilih Produk Relasional (Isi Paket) *</label>
+                            <span style="font-size: 0.75rem; color: #0284C7; font-weight: 700;" id="editBundleCalcNote">Pilih minimal 1 produk</span>
+                        </div>
+                        <div class="bundle-products-selector" id="editBundleProductsContainer" style="border: 1px solid #E2E8F0; border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 0.5rem; background: #F8FAFC;">
+                            @foreach($products as $p)
+                                <div class="bundle-prod-choice-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.5rem; border-radius: 6px; margin-bottom: 4px; background: #FFFFFF; border: 1px solid #E2E8F0;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; flex: 1; font-weight: 500; font-size: 0.8125rem;">
+                                        <input type="checkbox" class="cb-edit-bundle-prod" data-id="{{ $p->id }}" data-price="{{ $p->price }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #0284C7;">
+                                        <img src="{{ $p->image }}" alt="{{ $p->name }}" style="width: 28px; height: 28px; border-radius: 4px; object-fit: cover;" onerror="this.src='/images/products/nugget.png'">
+                                        <span>{{ $p->name }}</span>
+                                        <span style="font-size: 0.75rem; color: #64748B;">(Rp {{ number_format($p->price, 0, ',', '.') }})</span>
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                                        <span style="font-size: 0.7rem; color: #64748B;">Qty:</span>
+                                        <input type="number" class="qty-edit-bundle-prod" data-id="{{ $p->id }}" value="1" min="1" max="99" style="width: 52px; padding: 2px 4px; font-size: 0.75rem; border: 1px solid #CBD5E1; border-radius: 4px; text-align: center;" disabled>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+                        <div class="form-group-item">
+                            <label for="editBundleOriginalPrice">Total Harga Normal (Otomatis)</label>
+                            <div style="position: relative;">
+                                <input type="number" id="editBundleOriginalPrice" readonly style="background: #F1F5F9; font-weight: 700; color: #475569;">
+                                <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: #94A3B8;">Auto-calc</span>
+                            </div>
+                        </div>
+                        <div class="form-group-item">
+                            <label for="editBundlePrice">Harga Paket Promo (Rp) *</label>
+                            <input type="number" id="editBundlePrice" required min="0">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+                        <div class="form-group-item">
+                            <label for="editBundleBadgeRight">Label Diskon Kanan</label>
+                            <input type="text" id="editBundleBadgeRight" placeholder="Kosongkan untuk otomatis dihitung: Hemat Rp X">
+                        </div>
+                    </div>
+
+                    <!-- Upload Foto Paket -->
+                    <div class="form-group-item">
+                        <label>Foto Paket Hemat</label>
+                        <div class="product-image-uploader-box">
+                            <div class="product-image-preview-wrap" id="editBundlePreviewWrap" style="display: flex;">
+                                <img id="editBundlePreviewImg" src="" alt="Preview Paket" class="product-image-preview-thumb">
+                                <div class="product-image-preview-info">
+                                    <p id="editBundlePreviewName" class="product-image-file-name">foto-paket.jpg</p>
+                                    <input type="file" id="editBundleImageFile" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;">
+                                    <button type="button" class="btn-choose-product-img" id="btnChooseEditBundleImg" style="align-self: flex-start; padding: 4px 10px; font-size: 11px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/></svg>
+                                        <span>Ganti Foto Paket</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="editBundleImage" value="">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer-row">
+                    <button type="button" class="btn-modal-cancel">Batal</button>
+                    <button type="submit" class="btn-primary-blue">Perbarui Paket di Database</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Official Thermal Receipt Modal (ReceiptModal.jsx) -->
     <div id="modalReceipt" class="admin-modal-backdrop">
         <div class="receipt-paper-box">
@@ -1769,6 +2153,7 @@
         window.__BASE_URL__ = "{{ url('/') }}";
         window.__API_URL__ = "{{ url('api') }}";
         window.__ADMIN_PRODUCTS__ = @json($products ?? \App\Models\Product::all());
+        window.__ADMIN_BUNDLES__ = @json($bundles ?? \App\Models\Bundle::with('items.product')->get());
         window.__ADMIN_CATEGORIES__ = @json(isset($categories) ? (is_array($categories) ? $categories : $categories->pluck('name')) : \App\Models\Category::pluck('name'));
         window.__ADMIN_ORDERS__ = @json($orders ?? \App\Models\Order::orderBy('created_at', 'desc')->get());
         window.__ADMIN_USER__ = @json($user ?? \Illuminate\Support\Facades\Auth::user());

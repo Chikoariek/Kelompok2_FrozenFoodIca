@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
+use App\Models\Bundle;
+use App\Models\BundleItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,14 +76,25 @@ class AdminDataController extends Controller
         ]);
     }
 
-    // Menghapus kategori dari database
+    // Menghapus kategori dari database dengan validasi pencegahan relasional
     public function destroyCategory(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string',
         ]);
 
-        Category::where('name', trim($validated['name']))->delete();
+        $categoryName = trim($validated['name']);
+
+        // Validasi Relasional (ON DELETE RESTRICT): Kategori dilarang dihapus jika masih digunakan oleh produk
+        $usedCount = Product::where('category', $categoryName)->count();
+        if ($usedCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "Kategori '{$categoryName}' tidak dapat dihapus karena masih digunakan oleh {$usedCount} produk. Silakan ubah atau hapus produk terkait terlebih dahulu.",
+            ], 422);
+        }
+
+        Category::where('name', $categoryName)->delete();
 
         return response()->json([
             'success' => true,
@@ -98,6 +111,18 @@ class AdminDataController extends Controller
         ]);
 
         $names = array_unique(array_map('trim', $validated['categories']));
+
+        // Validasi Relasional: Cek apakah ada kategori terhapus yang masih digunakan produk
+        $toDelete = Category::whereNotIn('name', $names)->pluck('name');
+        $usedCategories = Product::whereIn('category', $toDelete)->distinct()->pluck('category')->toArray();
+
+        if (!empty($usedCategories)) {
+            $catList = implode(', ', $usedCategories);
+            return response()->json([
+                'success' => false,
+                'message' => "Kategori ({$catList}) tidak dapat dihapus karena masih digunakan oleh produk aktif.",
+            ], 422);
+        }
 
         DB::transaction(function () use ($names) {
             // Hapus yang tidak ada dalam list baru
@@ -226,6 +251,159 @@ class AdminDataController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Produk berhasil dihapus!',
+        ]);
+    }
+
+    // --- 2b. Manajemen Paket Hemat Promosi (Bundles) ---
+
+    // Mengambil seluruh paket hemat beserta item relasinya
+    public function getBundles()
+    {
+        $bundles = Bundle::with('items.product')->get();
+        return response()->json([
+            'success' => true,
+            'bundles' => $bundles,
+        ]);
+    }
+
+    // Menyimpan paket baru atau mengedit paket hemat beserta item relasinya
+    public function storeBundle(Request $request)
+    {
+        $validated = $request->validate([
+            'id'             => 'nullable|string',
+            'name'           => 'required|string|max:100',
+            'description'    => 'nullable|string',
+            'badge_left'     => 'nullable|string|max:50',
+            'badge_right'    => 'nullable|string|max:50',
+            'bundle_price'   => 'required|numeric|min:0',
+            'original_price' => 'nullable|numeric|min:0',
+            'items'          => 'required|array|min:1',
+            'items.*.product_id' => 'required|string|exists:products,id',
+            'items.*.quantity'   => 'nullable|integer|min:1',
+            'image'          => 'nullable|string',
+            'image_file'     => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+        ]);
+
+        $id = $request->input('id');
+        if (!$id) {
+            $existingIds = Bundle::pluck('id')->toArray();
+            $maxNum = 0;
+            foreach ($existingIds as $eid) {
+                if (preg_match('/BND-(\d+)/', $eid, $m)) {
+                    $maxNum = max($maxNum, (int)$m[1]);
+                }
+            }
+            $id = 'BND-' . str_pad($maxNum + 1, 2, '0', STR_PAD_LEFT);
+        }
+
+        $existingBundle = Bundle::find($id);
+        $imagePath = $existingBundle ? $existingBundle->image : 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80';
+
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $uploadDir = public_path('images/bundles');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadDir, $filename);
+            $imagePath = '/images/bundles/' . $filename;
+        } elseif ($request->filled('image')) {
+            $imagePath = $request->input('image');
+        }
+
+        // Hitung harga asli otomatis dari total harga produk jika tidak diinput
+        $originalPrice = (int) ($validated['original_price'] ?? 0);
+        if ($originalPrice <= 0) {
+            foreach ($validated['items'] as $item) {
+                $p = Product::find($item['product_id']);
+                if ($p) {
+                    $qty = (int) ($item['quantity'] ?? 1);
+                    $originalPrice += ((int) $p->price * $qty);
+                }
+            }
+        }
+
+        $bundlePrice = (int) $validated['bundle_price'];
+        $badgeRight = $validated['badge_right'] ?? '';
+        if (empty($badgeRight) && $originalPrice > $bundlePrice) {
+            $hemat = $originalPrice - $bundlePrice;
+            $badgeRight = 'Hemat Rp ' . number_format($hemat, 0, ',', '.');
+        }
+
+        $bundle = DB::transaction(function () use ($id, $validated, $imagePath, $originalPrice, $bundlePrice, $badgeRight, $request) {
+            $bundle = Bundle::updateOrCreate(
+                ['id' => $id],
+                [
+                    'name'           => $validated['name'],
+                    'description'    => $validated['description'] ?? '',
+                    'badge_left'     => $validated['badge_left'] ?? 'Paling Laris',
+                    'badge_right'    => $badgeRight,
+                    'original_price' => $originalPrice,
+                    'bundle_price'   => $bundlePrice,
+                    'image'          => $imagePath,
+                    'tags'           => $request->input('tags', ['#Paket Hemat', '#Keluarga']),
+                    'is_active'      => true,
+                ]
+            );
+
+            // Perbarui data relasi di bundle_items
+            BundleItem::where('bundle_id', $bundle->id)->delete();
+            foreach ($validated['items'] as $item) {
+                BundleItem::create([
+                    'bundle_id'  => $bundle->id,
+                    'product_id' => $item['product_id'],
+                    'quantity'   => (int) ($item['quantity'] ?? 1),
+                ]);
+            }
+
+            return $bundle->load('items.product');
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Paket hemat berhasil disimpan dan langsung tampil di etalase homepage!',
+            'bundle'  => $bundle,
+        ]);
+    }
+
+    // Menghapus paket hemat
+    public function destroyBundle($id)
+    {
+        $bundle = Bundle::find($id);
+        if (!$bundle) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paket hemat tidak ditemukan.',
+            ], 404);
+        }
+
+        $bundle->delete(); // Otomatis menghapus baris bundle_items karena cascade
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Paket hemat berhasil dihapus dari database & homepage.',
+        ]);
+    }
+
+    // Mengaktifkan / menonaktifkan tampilan paket di homepage
+    public function toggleBundleStatus($id)
+    {
+        $bundle = Bundle::find($id);
+        if (!$bundle) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paket hemat tidak ditemukan.',
+            ], 404);
+        }
+
+        $bundle->is_active = !$bundle->is_active;
+        $bundle->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $bundle->is_active ? 'Paket hemat berhasil diaktifkan di homepage.' : 'Paket hemat dinonaktifkan dari homepage.',
+            'is_active' => $bundle->is_active,
         ]);
     }
 

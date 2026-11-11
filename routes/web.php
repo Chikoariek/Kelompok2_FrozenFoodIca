@@ -15,6 +15,7 @@ Route::get('/', function () {
         'products' => \App\Models\Product::all(),
         'categories' => \App\Models\Category::all(),
         'orders' => \App\Models\Order::all(),
+        'bundles' => \App\Models\Bundle::with('items.product')->where('is_active', true)->get(),
     ]);
 })->name('home');
 
@@ -41,6 +42,7 @@ Route::middleware(['auth', 'role:admin', 'prevent-back-history'])->prefix('admin
             'products' => $products,
             'categories' => $categories,
             'orders' => $orders,
+            'bundles' => \App\Models\Bundle::with('items.product')->get(),
         ]);
     })->name('dashboard');
 
@@ -72,9 +74,13 @@ Route::middleware(['auth', 'prevent-back-history'])->group(function () {
 
 // --- 5. Rute API AJAX (Sinkronisasi database tanpa reload halaman) ---
 Route::prefix('api')->group(function () {
-    // Ambil data kategori, produk, dan riwayat pesanan
+    // Ambil data kategori, produk, paket hemat, dan riwayat pesanan
     Route::get('/categories', [\App\Http\Controllers\AdminDataController::class, 'getCategories']);
     Route::get('/products', [\App\Http\Controllers\AdminDataController::class, 'getProducts']);
+    Route::get('/bundles', [\App\Http\Controllers\AdminDataController::class, 'getBundles']);
+    Route::post('/bundles', [\App\Http\Controllers\AdminDataController::class, 'storeBundle']);
+    Route::delete('/bundles/{id}', [\App\Http\Controllers\AdminDataController::class, 'destroyBundle']);
+    Route::patch('/bundles/{id}/toggle', [\App\Http\Controllers\AdminDataController::class, 'toggleBundleStatus']);
     Route::get('/orders', [\App\Http\Controllers\AdminDataController::class, 'getOrders']);
 
     // Simpan pesanan baru & perbarui status pesanan

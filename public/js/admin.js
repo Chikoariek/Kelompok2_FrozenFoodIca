@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const baseUrl = window.__BASE_URL__ || '';
   const apiUrl = window.__API_URL__ || (baseUrl + '/api');
   let products = window.__ADMIN_PRODUCTS__ || [];
+  let bundles = window.__ADMIN_BUNDLES__ || [];
   let categories = window.__ADMIN_CATEGORIES__ || [];
   let orders = window.__ADMIN_ORDERS__ || [];
   let user = window.__ADMIN_USER__ || {};
@@ -1130,6 +1131,461 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (err) {
           showToast('Gagal terhubung ke server.', 'error');
         }
+      }
+    }
+  });
+
+  // --- 8b. Manajemen Paket Hemat Promo (Bundling) di Sub-tab Inventaris ---
+  const subtabBtnProducts = document.getElementById('subtabBtnProducts');
+  const subtabBtnBundles = document.getElementById('subtabBtnBundles');
+  const subtabContentProducts = document.getElementById('subtabContentProducts');
+  const subtabContentBundles = document.getElementById('subtabContentBundles');
+
+  function switchInventorySubtab(tabName) {
+    const isBundles = tabName === 'bundles';
+
+    document.querySelectorAll('.btn-switch-subtab').forEach((btn) => {
+      const match = btn.getAttribute('data-subtab') === tabName;
+      btn.classList.toggle('active', match);
+      btn.setAttribute('aria-selected', match ? 'true' : 'false');
+    });
+
+    if (subtabContentProducts) subtabContentProducts.style.display = isBundles ? 'none' : 'block';
+    if (subtabContentBundles) subtabContentBundles.style.display = isBundles ? 'block' : 'none';
+    sessionStorage.setItem('ica_inventory_subtab', isBundles ? 'bundles' : 'products');
+  }
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-switch-subtab');
+    if (btn) {
+      const subtab = btn.getAttribute('data-subtab');
+      if (subtab) switchInventorySubtab(subtab);
+    }
+  });
+
+  // Restore subtab pilihan terakhir dari session storage atau URL param
+  const currentUrlParams = new URLSearchParams(window.location.search);
+  if (currentUrlParams.get('subtab') === 'bundles' || sessionStorage.getItem('ica_inventory_subtab') === 'bundles') {
+    switchInventorySubtab('bundles');
+  }
+
+  // Filter / Search Paket Hemat di Tabel
+  const bundleSearchInput = document.getElementById('bundleSearchInput');
+  bundleSearchInput?.addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.bundle-row-item').forEach((row) => {
+      const name = (row.getAttribute('data-name') || '').toLowerCase();
+      const id = (row.getAttribute('data-id') || '').toLowerCase();
+      if (!q || name.includes(q) || id.includes(q)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+
+  // Modal Tambah Paket Hemat
+  const modalAddBundle = document.getElementById('modalAddBundle');
+  const btnOpenAddBundleModal = document.getElementById('btnOpenAddBundleModal');
+  const formAddBundle = document.getElementById('formAddBundle');
+
+  btnOpenAddBundleModal?.addEventListener('click', function () {
+    formAddBundle?.reset();
+    document.querySelectorAll('.cb-bundle-prod').forEach((cb) => {
+      cb.checked = false;
+      const qtyInput = document.querySelector(`.qty-bundle-prod[data-id="${cb.getAttribute('data-id')}"]`);
+      if (qtyInput) {
+        qtyInput.value = 1;
+        qtyInput.disabled = true;
+      }
+    });
+    updateAddBundleCalculations();
+    const previewWrap = document.getElementById('addBundlePreviewWrap');
+    const dropzone = document.getElementById('addBundleDropzone');
+    if (previewWrap) previewWrap.style.display = 'none';
+    if (dropzone) dropzone.style.display = 'flex';
+    modalAddBundle?.classList.add('open');
+  });
+
+  function updateAddBundleCalculations() {
+    let totalNormal = 0;
+    let selectedCount = 0;
+    document.querySelectorAll('.cb-bundle-prod:checked').forEach((cb) => {
+      selectedCount++;
+      const price = parseInt(cb.getAttribute('data-price') || '0', 10);
+      const qtyInput = document.querySelector(`.qty-bundle-prod[data-id="${cb.getAttribute('data-id')}"]`);
+      const qty = parseInt(qtyInput?.value || '1', 10);
+      totalNormal += price * qty;
+    });
+
+    const origInput = document.getElementById('addBundleOriginalPrice');
+    if (origInput) origInput.value = totalNormal;
+
+    const note = document.getElementById('addBundleCalcNote');
+    if (note) {
+      note.textContent = selectedCount > 0
+        ? `${selectedCount} produk terpilih (Total Normal: Rp ${totalNormal.toLocaleString('id-ID')})`
+        : 'Pilih minimal 1 produk';
+    }
+
+    const priceInput = document.getElementById('addBundlePrice');
+    const badgeRightInput = document.getElementById('addBundleBadgeRight');
+    if (priceInput && priceInput.value && badgeRightInput && !badgeRightInput.dataset.manual) {
+      const p = parseInt(priceInput.value || '0', 10);
+      if (totalNormal > p) {
+        badgeRightInput.value = `Hemat Rp ${(totalNormal - p).toLocaleString('id-ID')}`;
+      }
+    }
+  }
+
+  document.querySelectorAll('.cb-bundle-prod').forEach((cb) => {
+    cb.addEventListener('change', function () {
+      const qtyInput = document.querySelector(`.qty-bundle-prod[data-id="${this.getAttribute('data-id')}"]`);
+      if (qtyInput) {
+        qtyInput.disabled = !this.checked;
+        if (this.checked && parseInt(qtyInput.value || '0', 10) < 1) qtyInput.value = 1;
+      }
+      updateAddBundleCalculations();
+    });
+  });
+
+  document.querySelectorAll('.qty-bundle-prod').forEach((qty) => {
+    qty.addEventListener('input', updateAddBundleCalculations);
+  });
+
+  document.getElementById('addBundlePrice')?.addEventListener('input', function () {
+    const badgeRightInput = document.getElementById('addBundleBadgeRight');
+    const totalNormal = parseInt(document.getElementById('addBundleOriginalPrice')?.value || '0', 10);
+    const p = parseInt(this.value || '0', 10);
+    if (badgeRightInput && !badgeRightInput.dataset.manual && totalNormal > p) {
+      badgeRightInput.value = `Hemat Rp ${(totalNormal - p).toLocaleString('id-ID')}`;
+    }
+  });
+
+  document.getElementById('addBundleBadgeRight')?.addEventListener('input', function () {
+    this.dataset.manual = 'true';
+  });
+
+  // Upload Foto Paket Baru
+  const addBundleImageFile = document.getElementById('addBundleImageFile');
+  const btnChooseAddBundleImg = document.getElementById('btnChooseAddBundleImg');
+  const addBundlePreviewWrap = document.getElementById('addBundlePreviewWrap');
+  const addBundlePreviewImg = document.getElementById('addBundlePreviewImg');
+  const addBundlePreviewName = document.getElementById('addBundlePreviewName');
+  const addBundleDropzone = document.getElementById('addBundleDropzone');
+  const btnRemoveAddBundleImg = document.getElementById('btnRemoveAddBundleImg');
+
+  btnChooseAddBundleImg?.addEventListener('click', () => addBundleImageFile?.click());
+  btnRemoveAddBundleImg?.addEventListener('click', () => {
+    if (addBundleImageFile) addBundleImageFile.value = '';
+    if (addBundlePreviewWrap) addBundlePreviewWrap.style.display = 'none';
+    if (addBundleDropzone) addBundleDropzone.style.display = 'flex';
+  });
+
+  addBundleImageFile?.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('File harus berupa gambar (PNG, JPG, WEBP)!', 'error');
+      addBundleImageFile.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+      if (addBundlePreviewImg) addBundlePreviewImg.src = evt.target.result;
+      if (addBundlePreviewName) addBundlePreviewName.textContent = file.name;
+      if (addBundleDropzone) addBundleDropzone.style.display = 'none';
+      if (addBundlePreviewWrap) addBundlePreviewWrap.style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  formAddBundle?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const name = document.getElementById('addBundleName')?.value.trim();
+    const badgeLeft = document.getElementById('addBundleBadgeLeft')?.value.trim() || 'Paling Laris';
+    const badgeRight = document.getElementById('addBundleBadgeRight')?.value.trim();
+    const desc = document.getElementById('addBundleDesc')?.value.trim();
+    const bundlePrice = document.getElementById('addBundlePrice')?.value;
+    const origPrice = document.getElementById('addBundleOriginalPrice')?.value;
+
+    const checkedBoxes = Array.from(document.querySelectorAll('.cb-bundle-prod:checked'));
+    if (checkedBoxes.length === 0) {
+      showToast('Pilih minimal 1 produk relasional untuk isi paket!', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('badge_left', badgeLeft);
+    if (badgeRight) formData.append('badge_right', badgeRight);
+    if (desc) formData.append('description', desc);
+    formData.append('bundle_price', bundlePrice);
+    if (origPrice) formData.append('original_price', origPrice);
+
+    checkedBoxes.forEach((cb, idx) => {
+      const pid = cb.getAttribute('data-id');
+      const qtyInput = document.querySelector(`.qty-bundle-prod[data-id="${pid}"]`);
+      const qty = qtyInput?.value || 1;
+      formData.append(`items[${idx}][product_id]`, pid);
+      formData.append(`items[${idx}][quantity]`, qty);
+    });
+
+    if (addBundleImageFile?.files[0]) {
+      formData.append('image_file', addBundleImageFile.files[0]);
+    }
+
+    try {
+      const res = await fetch(`${apiUrl}/bundles`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('Paket hemat berhasil dibuat dan langsung tampil di homepage!');
+        modalAddBundle?.classList.remove('open');
+        sessionStorage.setItem('ica_inventory_subtab', 'bundles');
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        showToast(data.message || 'Gagal menyimpan paket hemat.', 'error');
+      }
+    } catch (err) {
+      showToast('Gagal terhubung ke server.', 'error');
+    }
+  });
+
+  // Modal Edit Paket Hemat
+  const modalEditBundle = document.getElementById('modalEditBundle');
+  const formEditBundle = document.getElementById('formEditBundle');
+  const editBundleId = document.getElementById('editBundleId');
+  const editBundleName = document.getElementById('editBundleName');
+  const editBundleBadgeLeft = document.getElementById('editBundleBadgeLeft');
+  const editBundleBadgeRight = document.getElementById('editBundleBadgeRight');
+  const editBundleDesc = document.getElementById('editBundleDesc');
+  const editBundlePrice = document.getElementById('editBundlePrice');
+  const editBundleOriginalPrice = document.getElementById('editBundleOriginalPrice');
+  const editBundleImageFile = document.getElementById('editBundleImageFile');
+  const editBundlePreviewImg = document.getElementById('editBundlePreviewImg');
+  const editBundlePreviewName = document.getElementById('editBundlePreviewName');
+  const btnChooseEditBundleImg = document.getElementById('btnChooseEditBundleImg');
+
+  btnChooseEditBundleImg?.addEventListener('click', () => editBundleImageFile?.click());
+
+  editBundleImageFile?.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('File harus berupa gambar (PNG, JPG, WEBP)!', 'error');
+      editBundleImageFile.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+      if (editBundlePreviewImg) editBundlePreviewImg.src = evt.target.result;
+      if (editBundlePreviewName) editBundlePreviewName.textContent = file.name + ' (Foto Baru)';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function updateEditBundleCalculations() {
+    let totalNormal = 0;
+    let selectedCount = 0;
+    document.querySelectorAll('.cb-edit-bundle-prod:checked').forEach((cb) => {
+      selectedCount++;
+      const price = parseInt(cb.getAttribute('data-price') || '0', 10);
+      const qtyInput = document.querySelector(`.qty-edit-bundle-prod[data-id="${cb.getAttribute('data-id')}"]`);
+      const qty = parseInt(qtyInput?.value || '1', 10);
+      totalNormal += price * qty;
+    });
+
+    if (editBundleOriginalPrice) editBundleOriginalPrice.value = totalNormal;
+    const note = document.getElementById('editBundleCalcNote');
+    if (note) {
+      note.textContent = selectedCount > 0
+        ? `${selectedCount} produk terpilih (Total Normal: Rp ${totalNormal.toLocaleString('id-ID')})`
+        : 'Pilih minimal 1 produk';
+    }
+  }
+
+  document.querySelectorAll('.cb-edit-bundle-prod').forEach((cb) => {
+    cb.addEventListener('change', function () {
+      const qtyInput = document.querySelector(`.qty-edit-bundle-prod[data-id="${this.getAttribute('data-id')}"]`);
+      if (qtyInput) {
+        qtyInput.disabled = !this.checked;
+        if (this.checked && parseInt(qtyInput.value || '0', 10) < 1) qtyInput.value = 1;
+      }
+      updateEditBundleCalculations();
+    });
+  });
+
+  document.querySelectorAll('.qty-edit-bundle-prod').forEach((qty) => {
+    qty.addEventListener('input', updateEditBundleCalculations);
+  });
+
+  document.addEventListener('click', function (e) {
+    const btnEdit = e.target.closest('.btn-edit-bundle');
+    if (btnEdit) {
+      const id = btnEdit.getAttribute('data-id');
+      const bundle = bundles.find((b) => b.id === id);
+      if (bundle) {
+        if (editBundleId) editBundleId.value = bundle.id;
+        if (editBundleName) editBundleName.value = bundle.name;
+        if (editBundleBadgeLeft) editBundleBadgeLeft.value = bundle.badge_left || '';
+        if (editBundleBadgeRight) editBundleBadgeRight.value = bundle.badge_right || '';
+        if (editBundleDesc) editBundleDesc.value = bundle.description || '';
+        if (editBundlePrice) editBundlePrice.value = bundle.bundle_price;
+        if (editBundleOriginalPrice) editBundleOriginalPrice.value = bundle.original_price;
+
+        if (editBundlePreviewImg) editBundlePreviewImg.src = bundle.image || '/images/products/nugget.png';
+        if (editBundlePreviewName) editBundlePreviewName.textContent = bundle.name;
+        if (editBundleImageFile) editBundleImageFile.value = '';
+
+        // Reset dan centang checkbox produk sesuai relasi paket
+        const itemMap = {};
+        if (bundle.items) {
+          bundle.items.forEach((it) => {
+            itemMap[it.product_id] = it.quantity || 1;
+          });
+        }
+
+        document.querySelectorAll('.cb-edit-bundle-prod').forEach((cb) => {
+          const pid = cb.getAttribute('data-id');
+          const isIncluded = Object.prototype.hasOwnProperty.call(itemMap, pid);
+          cb.checked = isIncluded;
+          const qtyInput = document.querySelector(`.qty-edit-bundle-prod[data-id="${pid}"]`);
+          if (qtyInput) {
+            qtyInput.disabled = !isIncluded;
+            qtyInput.value = isIncluded ? itemMap[pid] : 1;
+          }
+        });
+
+        updateEditBundleCalculations();
+        modalEditBundle?.classList.add('open');
+      }
+    }
+  });
+
+  formEditBundle?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const id = editBundleId?.value;
+    const name = editBundleName?.value.trim();
+    const badgeLeft = editBundleBadgeLeft?.value.trim() || 'Paling Laris';
+    const badgeRight = editBundleBadgeRight?.value.trim();
+    const desc = editBundleDesc?.value.trim();
+    const bundlePrice = editBundlePrice?.value;
+    const origPrice = editBundleOriginalPrice?.value;
+
+    const checkedBoxes = Array.from(document.querySelectorAll('.cb-edit-bundle-prod:checked'));
+    if (checkedBoxes.length === 0) {
+      showToast('Pilih minimal 1 produk relasional untuk isi paket!', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('name', name);
+    formData.append('badge_left', badgeLeft);
+    if (badgeRight) formData.append('badge_right', badgeRight);
+    if (desc) formData.append('description', desc);
+    formData.append('bundle_price', bundlePrice);
+    if (origPrice) formData.append('original_price', origPrice);
+
+    checkedBoxes.forEach((cb, idx) => {
+      const pid = cb.getAttribute('data-id');
+      const qtyInput = document.querySelector(`.qty-edit-bundle-prod[data-id="${pid}"]`);
+      const qty = qtyInput?.value || 1;
+      formData.append(`items[${idx}][product_id]`, pid);
+      formData.append(`items[${idx}][quantity]`, qty);
+    });
+
+    if (editBundleImageFile?.files[0]) {
+      formData.append('image_file', editBundleImageFile.files[0]);
+    }
+
+    try {
+      const res = await fetch(`${apiUrl}/bundles`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('Paket hemat berhasil diperbarui!');
+        modalEditBundle?.classList.remove('open');
+        sessionStorage.setItem('ica_inventory_subtab', 'bundles');
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        showToast(data.message || 'Gagal memperbarui paket.', 'error');
+      }
+    } catch (err) {
+      showToast('Gagal terhubung ke server.', 'error');
+    }
+  });
+
+  // Toggle status paket aktif / nonaktif
+  document.addEventListener('click', async function (e) {
+    const btnToggle = e.target.closest('.btn-toggle-bundle-status');
+    if (btnToggle) {
+      const id = btnToggle.getAttribute('data-id');
+      try {
+        const res = await fetch(`${apiUrl}/bundles/${id}/toggle`, {
+          method: 'PATCH',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+          },
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(data.message || 'Status paket berhasil diubah!');
+          sessionStorage.setItem('ica_inventory_subtab', 'bundles');
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          showToast(data.message || 'Gagal mengubah status paket.', 'error');
+        }
+      } catch (err) {
+        showToast('Gagal terhubung ke server.', 'error');
+      }
+    }
+  });
+
+  // Hapus paket hemat
+  document.addEventListener('click', async function (e) {
+    const btnDelete = e.target.closest('.btn-delete-bundle');
+    if (btnDelete) {
+      const id = btnDelete.getAttribute('data-id');
+      if (!confirm(`Apakah Anda yakin ingin menghapus paket promo ${id}?`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`${apiUrl}/bundles/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+          },
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('Paket hemat berhasil dihapus dari sistem!');
+          const row = document.querySelector(`.bundle-row-item[data-id="${id}"]`);
+          if (row) row.remove();
+          sessionStorage.setItem('ica_inventory_subtab', 'bundles');
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          showToast(data.message || 'Gagal menghapus paket.', 'error');
+        }
+      } catch (err) {
+        showToast('Gagal terhubung ke server.', 'error');
       }
     }
   });

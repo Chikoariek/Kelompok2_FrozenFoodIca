@@ -3219,5 +3219,109 @@ a {
   transition: width 0.4s ease;
 }
 
+/* ==========================================
+   INVENTORY SUB-TABS TOGGLE BUTTON
+   Mengacu 100% pada Referensi Menu Kategori (.category-view-toggle-wrap & .btn-toggle-view)
+   Minimalis, Elegan, Bersih & Tidak Terlalu Banyak Warna
+   Palette: Background #F3F4F6, Active #FFFFFF, Text #6B7280 -> var(--soft-blue)
+   ========================================== */
+.inventory-subtabs-wrapper {
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.inventory-subtabs-nav {
+  display: inline-flex;
+  align-items: center;
+  background: #F3F4F6;
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  gap: 3px;
+}
+
+.inv-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #6B7280;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  outline: none;
+  white-space: nowrap;
+}
+
+.inv-subtab-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  flex-shrink: 0;
+  transition: stroke 0.15s ease;
+}
+
+.inv-subtab-btn:hover {
+  color: var(--navy);
+}
+
+.inv-subtab-btn.active {
+  background: #FFFFFF;
+  color: var(--soft-blue);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.inv-subtab-btn.active svg {
+  stroke: var(--soft-blue);
+}
+
+/* Badge Counter: Senada, Ringkas & Monokrom Harmonis */
+.inv-subtab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+  background: #E5E7EB;
+  color: #6B7280;
+}
+
+.inv-subtab-btn:hover .inv-subtab-badge {
+  color: var(--navy);
+}
+
+.inv-subtab-btn.active .inv-subtab-badge {
+  background: var(--soft-blue-light, #EBF0F6);
+  color: var(--soft-blue, #677D9E);
+}
+
+@media (max-width: 640px) {
+  .inventory-subtabs-wrapper {
+    width: 100%;
+  }
+  .inventory-subtabs-nav {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .inv-subtab-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+
 
 

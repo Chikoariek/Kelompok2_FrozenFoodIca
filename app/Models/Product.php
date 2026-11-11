@@ -33,4 +33,12 @@ class Product extends Model
         'stock' => 'integer',
         'tags'  => 'array',
     ];
+
+    // Relasi Many-to-Many ke Master Paket Hemat (Bundles)
+    public function bundles()
+    {
+        return $this->belongsToMany(Bundle::class, 'bundle_items', 'product_id', 'bundle_id')
+            ->withPivot('quantity')
+            ->withTimestamps();
+    }
 }

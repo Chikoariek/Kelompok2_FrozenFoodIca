@@ -2,8 +2,17 @@
 $products = $products ?? \App\Models\Product::all();
 $categories = $categories ?? \App\Models\Category::all();
 $orders = $orders ?? \App\Models\Order::all();
+$bundles = $bundles ?? (class_exists(\App\Models\Bundle::class) ? \App\Models\Bundle::with('items.product')->where('is_active', true)->get() : collect());
 $user = $user ?? \Illuminate\Support\Facades\Auth::user();
 $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
+
+$bundlesData = $bundles->map(function($b) {
+    return [
+        'id' => $b->id,
+        'name' => $b->name,
+        'items' => $b->items ? $b->items->pluck('product_id')->toArray() : [],
+    ];
+})->toArray();
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -753,34 +762,54 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
                     </div>
                 </div>
 
-                <!-- 3 Bundles Grid -->
+                <!-- 3 Bundles Grid (Dinamis dari Database Relasional 'bundles' & 'bundle_items') -->
                 <div class="bundles-cards-grid">
-                    <!-- Bundle 1 -->
+                    @forelse($bundles as $b)
                     <div class="bundle-card-single">
                         <div>
                             <div class="bundle-img-top-wrap">
-                                <img src="https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80"
-                                    alt="Paket Sarapan Praktis Keluarga" class="bundle-img-cover">
-                                <div class="bundle-badge-left">Paling Laris</div>
-                                <div class="bundle-badge-right">Hemat Rp 14.000</div>
+                                <img src="{{ $b->image }}"
+                                    alt="{{ $b->name }}" class="bundle-img-cover">
+                                @if($b->badge_left)
+                                    <div class="bundle-badge-left">{{ $b->badge_left }}</div>
+                                @endif
+                                @if($b->badge_right)
+                                    <div class="bundle-badge-right">{{ $b->badge_right }}</div>
+                                @endif
                             </div>
                             <div class="bundle-card-middle-content">
+                                @if(!empty($b->tags))
                                 <div class="bundle-tags-row">
-                                    <span class="bundle-tag-pill">#Cukup 3-4 Orang</span>
-                                    <span class="bundle-tag-pill">#Hemat 12%</span>
+                                    @foreach($b->tags as $tag)
+                                        <span class="bundle-tag-pill">{{ $tag }}</span>
+                                    @endforeach
                                 </div>
-                                <h3 class="bundle-title-text">Paket Sarapan Praktis Keluarga</h3>
-                                <p class="bundle-desc-text">Kombinasi Dimsum Ayam + Crispy Chicken Nugget + Sosis
-                                    Cocktail untuk sarapan cepat bergizi.</p>
+                                @endif
+                                <h3 class="bundle-title-text">{{ $b->name }}</h3>
+                                <p class="bundle-desc-text">{{ $b->description }}</p>
                                 <div class="bundle-items-bullets">
                                     <p class="bundle-items-title">Isi Dalam Paket:</p>
-                                    <div class="bullet-line">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
-                                            stroke-width="2.5">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        <span>Produk beku terverifikasi higienis</span>
-                                    </div>
+                                    @if($b->items && $b->items->count() > 0)
+                                        @foreach($b->items as $bi)
+                                            @if($bi->product)
+                                            <div class="bullet-line">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
+                                                    stroke-width="2.5">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg>
+                                                <span>{{ $bi->product->name }} ({{ $bi->quantity }}x)</span>
+                                            </div>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <div class="bullet-line">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
+                                                stroke-width="2.5">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                            <span>Produk beku terverifikasi higienis</span>
+                                        </div>
+                                    @endif
                                     <div class="bullet-line">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
                                             stroke-width="2.5">
@@ -794,12 +823,14 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
                         <div class="bundle-card-bottom-action">
                             <div class="bundle-price-row">
                                 <div>
-                                    <span class="bundle-old-price">Rp 119.000</span>
-                                    <span class="bundle-current-price">Rp 105.000</span>
+                                    @if($b->original_price > $b->bundle_price)
+                                        <span class="bundle-old-price">Rp {{ number_format($b->original_price, 0, ',', '.') }}</span>
+                                    @endif
+                                    <span class="bundle-current-price">Rp {{ number_format($b->bundle_price, 0, ',', '.') }}</span>
                                 </div>
                                 <span class="bundle-best-value-tag">Best Value</span>
                             </div>
-                            <button class="btn-bundle-take" onclick="window.addBundleToCart('BND-01')">
+                            <button class="btn-bundle-take" onclick="window.addBundleToCart('{{ $b->id }}')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <circle cx="8" cy="21" r="1" />
@@ -811,120 +842,8 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
                             </button>
                         </div>
                     </div>
-
-                    <!-- Bundle 2 -->
-                    <div class="bundle-card-single">
-                        <div>
-                            <div class="bundle-img-top-wrap">
-                                <img src="https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=600&q=80"
-                                    alt="Paket Dimsum Party Time" class="bundle-img-cover">
-                                <div class="bundle-badge-left">Rekomendasi Chef</div>
-                                <div class="bundle-badge-right">Hemat Rp 15.000</div>
-                            </div>
-                            <div class="bundle-card-middle-content">
-                                <div class="bundle-tags-row">
-                                    <span class="bundle-tag-pill">#Dimsum Lovers</span>
-                                    <span class="bundle-tag-pill">#Kukus / Goreng</span>
-                                </div>
-                                <h3 class="bundle-title-text">Paket Dimsum Party Time</h3>
-                                <p class="bundle-desc-text">Lengkap dengan Siomay Udang, Hakau Kristal, dan Lumpia Kulit
-                                    Tahu untuk santai sore seru.</p>
-                                <div class="bundle-items-bullets">
-                                    <p class="bundle-items-title">Isi Dalam Paket:</p>
-                                    <div class="bullet-line">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
-                                            stroke-width="2.5">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        <span>Produk beku terverifikasi higienis</span>
-                                    </div>
-                                    <div class="bullet-line">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
-                                            stroke-width="2.5">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        <span>Termasuk ice gel &amp; kemasan vakum</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bundle-card-bottom-action">
-                            <div class="bundle-price-row">
-                                <div>
-                                    <span class="bundle-old-price">Rp 125.000</span>
-                                    <span class="bundle-current-price">Rp 110.000</span>
-                                </div>
-                                <span class="bundle-best-value-tag">Best Value</span>
-                            </div>
-                            <button class="btn-bundle-take" onclick="window.addBundleToCart('BND-02')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle cx="8" cy="21" r="1" />
-                                    <circle cx="19" cy="21" r="1" />
-                                    <path
-                                        d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-                                </svg>
-                                <span>Ambil Paket Hemat Ini</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Bundle 3 -->
-                    <div class="bundle-card-single">
-                        <div>
-                            <div class="bundle-img-top-wrap">
-                                <img src="https://images.unsplash.com/photo-1547928576-a4a33237cbc3?auto=format&fit=crop&w=600&q=80"
-                                    alt="Paket Shabu & Grill Weekend" class="bundle-img-cover">
-                                <div class="bundle-badge-left">Super Hemat</div>
-                                <div class="bundle-badge-right">Hemat Rp 17.000</div>
-                            </div>
-                            <div class="bundle-card-middle-content">
-                                <div class="bundle-tags-row">
-                                    <span class="bundle-tag-pill">#Pesta Barbeque</span>
-                                    <span class="bundle-tag-pill">#Weekend Special</span>
-                                </div>
-                                <h3 class="bundle-title-text">Paket Shabu &amp; Grill Weekend</h3>
-                                <p class="bundle-desc-text">US Beef Shortplate 500g + Bakso Seafood Shabu Mix 500g +
-                                    Snow Crabstick untuk pesta keluarga.</p>
-                                <div class="bundle-items-bullets">
-                                    <p class="bundle-items-title">Isi Dalam Paket:</p>
-                                    <div class="bullet-line">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
-                                            stroke-width="2.5">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        <span>Produk beku terverifikasi higienis</span>
-                                    </div>
-                                    <div class="bullet-line">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
-                                            stroke-width="2.5">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        <span>Termasuk ice gel &amp; kemasan vakum</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bundle-card-bottom-action">
-                            <div class="bundle-price-row">
-                                <div>
-                                    <span class="bundle-old-price">Rp 149.000</span>
-                                    <span class="bundle-current-price">Rp 132.000</span>
-                                </div>
-                                <span class="bundle-best-value-tag">Best Value</span>
-                            </div>
-                            <button class="btn-bundle-take" onclick="window.addBundleToCart('BND-03')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle cx="8" cy="21" r="1" />
-                                    <circle cx="19" cy="21" r="1" />
-                                    <path
-                                        d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-                                </svg>
-                                <span>Ambil Paket Hemat Ini</span>
-                            </button>
-                        </div>
-                    </div>
+                    @empty
+                    @endforelse
                 </div>
 
             </div>
@@ -1866,23 +1785,7 @@ $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
         window.__LOGIN_URL__ = "{{ route('login') }}";
         window.__ICA_PRODUCTS__ = @json($products);
         window.__ICA_ORDERS__ = @json($orders);
-        window.__ICA_BUNDLES__ = [
-            {
-                id: 'BND-01',
-                name: 'Paket Sarapan Praktis Keluarga',
-                items: ['P01', 'P05', 'P07'],
-            },
-            {
-                id: 'BND-02',
-                name: 'Paket Dimsum Party Time',
-                items: ['P02', 'P03', 'P04'],
-            },
-            {
-                id: 'BND-03',
-                name: 'Paket Shabu & Grill Weekend',
-                items: ['P12', 'P09', 'P11'],
-            }
-        ];
+        window.__ICA_BUNDLES__ = {!! json_encode($bundlesData) !!};
     </script>
 
     <!-- Pure Vanilla JS Storefront Logic -->
