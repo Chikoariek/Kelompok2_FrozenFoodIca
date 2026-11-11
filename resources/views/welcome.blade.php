@@ -1,18 +1,18 @@
 @php
-$products = $products ?? \App\Models\Product::all();
-$categories = $categories ?? \App\Models\Category::all();
-$orders = $orders ?? \App\Models\Order::all();
-$bundles = $bundles ?? (class_exists(\App\Models\Bundle::class) ? \App\Models\Bundle::with('items.product')->where('is_active', true)->get() : collect());
-$user = $user ?? \Illuminate\Support\Facades\Auth::user();
-$isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
+    $products = $products ?? \App\Models\Product::all();
+    $categories = $categories ?? \App\Models\Category::all();
+    $orders = $orders ?? \App\Models\Order::all();
+    $bundles = $bundles ?? (class_exists(\App\Models\Bundle::class) ? \App\Models\Bundle::with('items.product')->where('is_active', true)->get() : collect());
+    $user = $user ?? \Illuminate\Support\Facades\Auth::user();
+    $isLoggedIn = $isLoggedIn ?? \Illuminate\Support\Facades\Auth::check();
 
-$bundlesData = $bundles->map(function($b) {
-    return [
-        'id' => $b->id,
-        'name' => $b->name,
-        'items' => $b->items ? $b->items->pluck('product_id')->toArray() : [],
-    ];
-})->toArray();
+    $bundlesData = $bundles->map(function ($b) {
+        return [
+            'id' => $b->id,
+            'name' => $b->name,
+            'items' => $b->items ? $b->items->pluck('product_id')->toArray() : [],
+        ];
+    })->toArray();
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -32,15 +32,19 @@ $bundlesData = $bundles->map(function($b) {
 
     <!-- Favicon (Brand Icon Toko di Tab Browser - Persegi 1:1 Presisi & Proporsional) -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v={{ filemtime(public_path('favicon.ico')) }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v={{ filemtime(public_path('images/favicon-32x32.png')) }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v={{ filemtime(public_path('images/favicon-16x16.png')) }}">
+    <link rel="icon" type="image/png" sizes="32x32"
+        href="/images/favicon-32x32.png?v={{ filemtime(public_path('images/favicon-32x32.png')) }}">
+    <link rel="icon" type="image/png" sizes="16x16"
+        href="/images/favicon-16x16.png?v={{ filemtime(public_path('images/favicon-16x16.png')) }}">
     <link rel="apple-touch-icon" href="/images/favicon.png?v={{ filemtime(public_path('images/favicon.png')) }}">
 
     <!-- Google Fonts: Plus Jakarta Sans (Preload & Optimized Weights) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <!-- Pure Vanilla CSS Stylesheet -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
@@ -105,7 +109,8 @@ $bundlesData = $bundles->map(function($b) {
                     <div class="navbar-right-actions">
 
                         <!-- Cart Button (Hanya Icon & Badge Jumlah Item) -->
-                        <button id="btnOpenCart" class="btn-open-cart-box" title="Buka Keranjang Belanja" aria-label="Buka Keranjang Belanja">
+                        <button id="btnOpenCart" class="btn-open-cart-box" title="Buka Keranjang Belanja"
+                            aria-label="Buka Keranjang Belanja">
                             <div class="cart-icon-pos">
                                 <svg class="cart-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -166,7 +171,8 @@ $bundlesData = $bundles->map(function($b) {
 
                                     <!-- Navigasi Akun Sesuai Peran -->
                                     @if($user->is_admin)
-                                        <a href="{{ route('admin.dashboard') }}" class="user-dropdown-btn-item admin-highlight link-to-admin-dashboard">
+                                        <a href="{{ route('admin.dashboard') }}"
+                                            class="user-dropdown-btn-item admin-highlight link-to-admin-dashboard">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669"
                                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path
@@ -198,7 +204,8 @@ $bundlesData = $bundles->map(function($b) {
                                     <div class="dropdown-separator-line"></div>
 
                                     <!-- Logout Form (Otomatis bersihkan keranjang & session admin saat keluar akun) -->
-                                    <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}">
+                                    <form method="POST" action="{{ route('logout') }}"
+                                        onsubmit="try{localStorage.removeItem('ica_cart');sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}">
                                         @csrf
                                         <button type="submit" class="user-dropdown-btn-item logout">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444"
@@ -274,7 +281,8 @@ $bundlesData = $bundles->map(function($b) {
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                                         <p
                                             style="font-weight: 800; font-size: 0.875rem; color: var(--navy); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                            {{ $user->name }}</p>
+                                            {{ $user->name }}
+                                        </p>
                                         @if($user->is_admin)
                                             <span
                                                 style="font-size: 10px; font-weight: 800; background: #ECFDF5; color: #065F46; padding: 2px 6px; border-radius: 9999px;">Admin</span>
@@ -285,7 +293,8 @@ $bundlesData = $bundles->map(function($b) {
                                     </div>
                                     <p
                                         style="font-size: 0.75rem; color: #6B7280; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        {{ $user->email }}</p>
+                                        {{ $user->email }}
+                                    </p>
                                 </div>
                             </div>
                         @endif
@@ -337,7 +346,8 @@ $bundlesData = $bundles->map(function($b) {
                                     style="font-size: 10px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 0.5rem; margin-bottom: 0.25rem;">Akun
                                     Pengguna</span>
                                 @if($user->is_admin)
-                                    <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link admin-highlight link-to-admin-dashboard">
+                                    <a href="{{ route('admin.dashboard') }}"
+                                        class="mobile-nav-link admin-highlight link-to-admin-dashboard">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path
@@ -365,7 +375,8 @@ $bundlesData = $bundles->map(function($b) {
                                     </button>
                                 @endif
                                 <!-- Logout Form Mobile (Otomatis bersihkan keranjang & session admin saat keluar akun) -->
-                                <form method="POST" action="{{ route('logout') }}" onsubmit="try{localStorage.removeItem('ica_cart');sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}">
+                                <form method="POST" action="{{ route('logout') }}"
+                                    onsubmit="try{localStorage.removeItem('ica_cart');sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}">
                                     @csrf
                                     <button type="submit" class="mobile-nav-link logout">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444"
@@ -398,7 +409,8 @@ $bundlesData = $bundles->map(function($b) {
                             Solusi Masak Praktis, <span>Kualitas Terbaik</span> untuk yang Tersayang
                         </h1>
                         <p class="hero-subhead">
-                            Aneka hidangan beku lezat, halal, dan bebas bahan pengawet berbahaya. Tinggal goreng atau kukus, siap dinikmati.
+                            Aneka hidangan beku lezat, halal, dan bebas bahan pengawet berbahaya. Tinggal goreng atau
+                            kukus, siap dinikmati.
                         </p>
                         <div class="hero-cta-buttons-row">
                             <a href="#katalog-section" class="btn-cta-blue">
@@ -524,7 +536,8 @@ $bundlesData = $bundles->map(function($b) {
                     <!-- Header saat Kategori Dijabarkan (Expand Mode) -->
                     <div class="category-nav-header-row" id="categoryNavHeaderRow" style="display: none;">
                         <div class="category-nav-title-wrap">
-                            <svg class="cat-header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <svg class="cat-header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.2">
                                 <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
                                 <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
                                 <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
@@ -533,9 +546,13 @@ $bundlesData = $bundles->map(function($b) {
                             <span class="category-nav-heading">Semua Kategori Produk</span>
                             <span class="category-nav-subbadge">{{ count($categories) + 1 }} Kategori</span>
                         </div>
-                        <button type="button" class="btn-toggle-categories-top" id="btnToggleCategoriesTop" aria-expanded="true" title="Kembali ke tampilan awal">
+                        <button type="button" class="btn-toggle-categories-top" id="btnToggleCategoriesTop"
+                            aria-expanded="true" title="Kembali ke tampilan awal">
                             <span class="btn-toggle-top-text">Sembunyikan</span>
-                            <svg class="cat-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                            <svg class="cat-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5">
+                                <polyline points="18 15 12 9 6 15" />
+                            </svg>
                         </button>
                     </div>
 
@@ -548,7 +565,7 @@ $bundlesData = $bundles->map(function($b) {
                             </button>
                             @foreach($categories as $c)
                                 @php
-    $pCount = $products->where('category', $c->name)->count();
+                                    $pCount = $products->where('category', $c->name)->count();
                                 @endphp
                                 <button class="btn-category-pill" data-cat="{{ $c->name }}" type="button">
                                     <span>{{ $c->name }}</span>
@@ -559,8 +576,12 @@ $bundlesData = $bundles->map(function($b) {
 
                         <!-- Tombol Buka / Tutup Seluruh Kategori (Sisi Kanan Baris Awal - Hanya Icon Tanpa Background) -->
                         <div class="category-toggle-wrap" id="categoryToggleWrap">
-                            <button type="button" class="btn-toggle-categories" id="btnToggleCategories" aria-expanded="false" aria-label="Tampilkan semua kategori" title="Tampilkan semua kategori">
-                                <svg class="cat-grid-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <button type="button" class="btn-toggle-categories" id="btnToggleCategories"
+                                aria-expanded="false" aria-label="Tampilkan semua kategori"
+                                title="Tampilkan semua kategori">
+                                <svg class="cat-grid-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                    stroke-linejoin="round">
                                     <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
                                     <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
                                     <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
@@ -579,7 +600,8 @@ $bundlesData = $bundles->map(function($b) {
 
                     <div class="catalog-sort-box">
                         <label for="catalogSortSelect" class="catalog-sort-label">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.25">
                                 <line x1="4" y1="6" x2="20" y2="6" />
                                 <line x1="4" y1="12" x2="15" y2="12" />
                                 <line x1="4" y1="18" x2="9" y2="18" />
@@ -587,33 +609,55 @@ $bundlesData = $bundles->map(function($b) {
                             <span>Urutkan:</span>
                         </label>
                         <div class="custom-sort-dropdown" id="customSortDropdown">
-                            <button type="button" class="custom-sort-trigger" id="customSortTrigger" aria-expanded="false" aria-haspopup="listbox">
+                            <button type="button" class="custom-sort-trigger" id="customSortTrigger"
+                                aria-expanded="false" aria-haspopup="listbox">
                                 <span id="customSortCurrentText">Paling Laris (Rekomendasi)</span>
-                                <svg class="sort-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                                <svg class="sort-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
                             </button>
                             <ul class="custom-sort-menu" id="customSortMenu" role="listbox">
-                                <li class="custom-sort-item active" data-value="popular" role="option" aria-selected="true">
+                                <li class="custom-sort-item active" data-value="popular" role="option"
+                                    aria-selected="true">
                                     <span>Paling Laris (Rekomendasi)</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
                                 </li>
                                 <li class="custom-sort-item" data-value="price_asc" role="option" aria-selected="false">
                                     <span>Harga: Rendah ke Tinggi</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
                                 </li>
-                                <li class="custom-sort-item" data-value="price_desc" role="option" aria-selected="false">
+                                <li class="custom-sort-item" data-value="price_desc" role="option"
+                                    aria-selected="false">
                                     <span>Harga: Tinggi ke Rendah</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
                                 </li>
                                 <li class="custom-sort-item" data-value="name_asc" role="option" aria-selected="false">
                                     <span>Nama: A ke Z</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
                                 </li>
                                 <li class="custom-sort-item" data-value="name_desc" role="option" aria-selected="false">
                                     <span>Nama: Z ke A</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
                                 </li>
                             </ul>
-                            <select id="catalogSortSelect" class="catalog-sort-select visually-hidden" aria-hidden="true" style="display: none;">
+                            <select id="catalogSortSelect" class="catalog-sort-select visually-hidden"
+                                aria-hidden="true" style="display: none;">
                                 <option value="popular">Paling Laris (Rekomendasi)</option>
                                 <option value="price_asc">Harga: Rendah ke Tinggi</option>
                                 <option value="price_desc">Harga: Tinggi ke Rendah</option>
@@ -627,11 +671,8 @@ $bundlesData = $bundles->map(function($b) {
                 <!-- Products Cards Grid -->
                 <div id="catalogGrid" class="products-cards-grid">
                     @foreach($products as $prod)
-                        <div class="product-card-single"
-                            data-id="{{ $prod->id }}"
-                            data-name="{{ strtolower($prod->name) }}"
-                            data-category="{{ $prod->category }}"
-                            data-price="{{ (int) $prod->price }}"
+                        <div class="product-card-single" data-id="{{ $prod->id }}" data-name="{{ strtolower($prod->name) }}"
+                            data-category="{{ $prod->category }}" data-price="{{ (int) $prod->price }}"
                             data-stock="{{ (int) $prod->stock }}">
                             <!-- Image Box -->
                             <div class="card-img-container" onclick="window.openDetailModal('{{ $prod->id }}')">
@@ -697,30 +738,31 @@ $bundlesData = $bundles->map(function($b) {
 
                 <!-- Empty State (Jika Pencarian / Filter Tidak Menemukan Produk) -->
                 <div id="catalogEmptyState" class="catalog-empty-box" style="display: none;">
-                    <div class="catalog-empty-icon-wrap">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#677D9E" stroke-width="2">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            <line x1="8" y1="11" x2="14" y2="11" />
-                        </svg>
+                    <div class="catalog-empty-inner">
+                        <img src="/images/ica_logo.png" alt="Ica Frozen Food" class="catalog-empty-watermark-logo"
+                            aria-hidden="true">
+                        <h3 class="catalog-empty-title">Produk Segera Hadir!</h3>
+                        <p class="catalog-empty-desc">
+                            Stok kategori ini sedang disiapkan. Yuk, cek pilihan kategori lainnya dulu!
+                        </p>
+                        <button id="btnResetCatalogFilter" class="btn-reset-filter" type="button">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                                <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                                <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                                <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                            </svg>
+                            <span>Lihat Semua Produk</span>
+                        </button>
                     </div>
-                    <h3 class="catalog-empty-title">Produk Tidak Ditemukan</h3>
-                    <p class="catalog-empty-desc">
-                        Tidak ada produk makanan beku yang sesuai dengan kata kunci pencarian atau kategori ini.
-                    </p>
-                    <button id="btnResetCatalogFilter" class="btn-reset-filter" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                            <path d="M3 3v5h5" />
-                        </svg>
-                        <span>Lihat Semua Produk</span>
-                    </button>
                 </div>
 
                 <!-- Load More & Progress Pagination (Batas 12 Produk per Tampilan) -->
                 <div id="catalogLoadMoreWrap" class="catalog-load-more-wrap">
                     <button id="btnCatalogLoadMore" class="btn-catalog-load-more" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
                             <polyline points="6 9 12 15 18 9" />
                         </svg>
                         <span>Muat Lebih Banyak Produk</span>
@@ -729,7 +771,8 @@ $bundlesData = $bundles->map(function($b) {
                         <div id="catalogProgressBar" class="catalog-progress-bar-fill"></div>
                     </div>
                     <p id="catalogProgressText" class="catalog-progress-info">
-                        Menampilkan <strong id="catalogShowingCount">12</strong> dari <strong id="catalogTotalCount">{{ count($products) }}</strong> produk
+                        Menampilkan <strong id="catalogShowingCount">12</strong> dari <strong
+                            id="catalogTotalCount">{{ count($products) }}</strong> produk
                     </p>
                 </div>
             </div>
@@ -765,83 +808,84 @@ $bundlesData = $bundles->map(function($b) {
                 <!-- 3 Bundles Grid (Dinamis dari Database Relasional 'bundles' & 'bundle_items') -->
                 <div class="bundles-cards-grid">
                     @forelse($bundles as $b)
-                    <div class="bundle-card-single">
-                        <div>
-                            <div class="bundle-img-top-wrap">
-                                <img src="{{ $b->image }}"
-                                    alt="{{ $b->name }}" class="bundle-img-cover">
-                                @if($b->badge_left)
-                                    <div class="bundle-badge-left">{{ $b->badge_left }}</div>
-                                @endif
-                                @if($b->badge_right)
-                                    <div class="bundle-badge-right">{{ $b->badge_right }}</div>
-                                @endif
-                            </div>
-                            <div class="bundle-card-middle-content">
-                                @if(!empty($b->tags))
-                                <div class="bundle-tags-row">
-                                    @foreach($b->tags as $tag)
-                                        <span class="bundle-tag-pill">{{ $tag }}</span>
-                                    @endforeach
+                        <div class="bundle-card-single">
+                            <div>
+                                <div class="bundle-img-top-wrap">
+                                    <img src="{{ $b->image }}" alt="{{ $b->name }}" class="bundle-img-cover">
+                                    @if($b->badge_left)
+                                        <div class="bundle-badge-left">{{ $b->badge_left }}</div>
+                                    @endif
+                                    @if($b->badge_right)
+                                        <div class="bundle-badge-right">{{ $b->badge_right }}</div>
+                                    @endif
                                 </div>
-                                @endif
-                                <h3 class="bundle-title-text">{{ $b->name }}</h3>
-                                <p class="bundle-desc-text">{{ $b->description }}</p>
-                                <div class="bundle-items-bullets">
-                                    <p class="bundle-items-title">Isi Dalam Paket:</p>
-                                    @if($b->items && $b->items->count() > 0)
-                                        @foreach($b->items as $bi)
-                                            @if($bi->product)
+                                <div class="bundle-card-middle-content">
+                                    @if(!empty($b->tags))
+                                        <div class="bundle-tags-row">
+                                            @foreach($b->tags as $tag)
+                                                <span class="bundle-tag-pill">{{ $tag }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    <h3 class="bundle-title-text">{{ $b->name }}</h3>
+                                    <p class="bundle-desc-text">{{ $b->description }}</p>
+                                    <div class="bundle-items-bullets">
+                                        <p class="bundle-items-title">Isi Dalam Paket:</p>
+                                        @if($b->items && $b->items->count() > 0)
+                                            @foreach($b->items as $bi)
+                                                @if($bi->product)
+                                                    <div class="bullet-line">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
+                                                            stroke-width="2.5">
+                                                            <polyline points="20 6 9 17 4 12" />
+                                                        </svg>
+                                                        <span>{{ $bi->product->name }} ({{ $bi->quantity }}x)</span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @else
                                             <div class="bullet-line">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
                                                     stroke-width="2.5">
                                                     <polyline points="20 6 9 17 4 12" />
                                                 </svg>
-                                                <span>{{ $bi->product->name }} ({{ $bi->quantity }}x)</span>
+                                                <span>Produk beku terverifikasi higienis</span>
                                             </div>
-                                            @endif
-                                        @endforeach
-                                    @else
+                                        @endif
                                         <div class="bullet-line">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
                                                 stroke-width="2.5">
                                                 <polyline points="20 6 9 17 4 12" />
                                             </svg>
-                                            <span>Produk beku terverifikasi higienis</span>
+                                            <span>Termasuk ice gel &amp; kemasan vakum</span>
                                         </div>
-                                    @endif
-                                    <div class="bullet-line">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669"
-                                            stroke-width="2.5">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        <span>Termasuk ice gel &amp; kemasan vakum</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="bundle-card-bottom-action">
-                            <div class="bundle-price-row">
-                                <div>
-                                    @if($b->original_price > $b->bundle_price)
-                                        <span class="bundle-old-price">Rp {{ number_format($b->original_price, 0, ',', '.') }}</span>
-                                    @endif
-                                    <span class="bundle-current-price">Rp {{ number_format($b->bundle_price, 0, ',', '.') }}</span>
+                            <div class="bundle-card-bottom-action">
+                                <div class="bundle-price-row">
+                                    <div>
+                                        @if($b->original_price > $b->bundle_price)
+                                            <span class="bundle-old-price">Rp
+                                                {{ number_format($b->original_price, 0, ',', '.') }}</span>
+                                        @endif
+                                        <span class="bundle-current-price">Rp
+                                            {{ number_format($b->bundle_price, 0, ',', '.') }}</span>
+                                    </div>
+                                    <span class="bundle-best-value-tag">Best Value</span>
                                 </div>
-                                <span class="bundle-best-value-tag">Best Value</span>
+                                <button class="btn-bundle-take" onclick="window.addBundleToCart('{{ $b->id }}')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="8" cy="21" r="1" />
+                                        <circle cx="19" cy="21" r="1" />
+                                        <path
+                                            d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                                    </svg>
+                                    <span>Ambil Paket Hemat Ini</span>
+                                </button>
                             </div>
-                            <button class="btn-bundle-take" onclick="window.addBundleToCart('{{ $b->id }}')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle cx="8" cy="21" r="1" />
-                                    <circle cx="19" cy="21" r="1" />
-                                    <path
-                                        d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-                                </svg>
-                                <span>Ambil Paket Hemat Ini</span>
-                            </button>
                         </div>
-                    </div>
                     @empty
                     @endforelse
                 </div>
@@ -854,19 +898,22 @@ $bundlesData = $bundles->map(function($b) {
             <div class="max-w-7xl">
                 <div class="why-us-header">
                     <h2 class="why-us-title">Kenapa Belanja di Ica Frozen Food?</h2>
-                    <p class="why-us-subtitle">Pilihan sehat dan higienis untuk stok dapur rumah Anda, tanpa bahan pengawet berbahaya</p>
+                    <p class="why-us-subtitle">Pilihan sehat dan higienis untuk stok dapur rumah Anda, tanpa bahan
+                        pengawet berbahaya</p>
                 </div>
                 <div class="why-us-grid">
                     <div class="why-us-card">
                         <div class="why-us-icon-box" style="background-color: var(--soft-blue);">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+                                <path
+                                    d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
                                 <path d="M7 7h.01" />
                             </svg>
                         </div>
                         <h3 class="why-us-card-title">Harga Hemat & Pas di Kantong</h3>
-                        <p class="why-us-card-desc">Pilihan frozen food bermutu tinggi dengan harga terjangkau, bikin belanja bulanan keluarga tetap hemat.</p>
+                        <p class="why-us-card-desc">Pilihan frozen food bermutu tinggi dengan harga terjangkau, bikin
+                            belanja bulanan keluarga tetap hemat.</p>
                     </div>
 
                     <div class="why-us-card">
@@ -879,7 +926,8 @@ $bundlesData = $bundles->map(function($b) {
                             </svg>
                         </div>
                         <h3 class="why-us-card-title">100% Halal & Mutu Terjamin</h3>
-                        <p class="why-us-card-desc">Semua produk higienis, bersertifikasi halal, dan disimpan dalam suhu optimal agar kualitasnya tetap terjaga.</p>
+                        <p class="why-us-card-desc">Semua produk higienis, bersertifikasi halal, dan disimpan dalam suhu
+                            optimal agar kualitasnya tetap terjaga.</p>
                     </div>
 
                     <div class="why-us-card">
@@ -887,7 +935,8 @@ $bundlesData = $bundles->map(function($b) {
                             <span class="motor-delivery-icon" style="width: 26px; height: 17px; color: #FFFFFF;"></span>
                         </div>
                         <h3 class="why-us-card-title">Bisa Diantar Via Kurir</h3>
-                        <p class="why-us-card-desc">Pengiriman cepat dan aman untuk area Banjarbaru, Martapura, dan sekitarnya. Barang sampai tetap beku segar.</p>
+                        <p class="why-us-card-desc">Pengiriman cepat dan aman untuk area Banjarbaru, Martapura, dan
+                            sekitarnya. Barang sampai tetap beku segar.</p>
                     </div>
                 </div>
             </div>
@@ -936,7 +985,8 @@ $bundlesData = $bundles->map(function($b) {
                         </div>
                     </div>
                     <p style="font-size: 0.75rem; color: #6B7280; line-height: 1.625;">
-                        Sahabat setia dapur keluarga. Menyediakan aneka makanan beku lezat, praktis, halal, dan bebas pengawet untuk hidangan
+                        Sahabat setia dapur keluarga. Menyediakan aneka makanan beku lezat, praktis, halal, dan bebas
+                        pengawet untuk hidangan
                         hangat setiap hari.
                     </p>
                 </div>
@@ -990,11 +1040,12 @@ $bundlesData = $bundles->map(function($b) {
                             <a href="https://wa.me/6287854513770" target="_blank" rel="noreferrer"
                                 style="font-weight: 600; color: #374151;">+0878-5451-3770 (WhatsApp Admin)</a>
                         </p>
-                        <p style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #6B7280; line-height: 1.5;">
+                        <p
+                            style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #6B7280; line-height: 1.5;">
                             <span class="motor-delivery-icon"
                                 style="width: 14px; height: 14px; color: var(--soft-blue); flex-shrink: 0;"></span>
                             <span>Siap melayani pemesanan langsung ke toko maupun antar via kurir ke rumah Anda.</span>
-                        <!-- Melayani pengantaran via kurir area Banjarbaru & sekitarnya! -->
+                            <!-- Melayani pengantaran via kurir area Banjarbaru & sekitarnya! -->
                         </p>
                     </div>
                 </div>
@@ -1003,7 +1054,8 @@ $bundlesData = $bundles->map(function($b) {
 
             <!-- Bottom Copyright -->
             <div class="footer-bottom-copy-row">
-                <p class="footer-copyright-text">&copy; {{ date('Y') }} Ica Frozen Food. Solusi Makanan Beku Praktis, Higienis &amp; Halal.</p>
+                <p class="footer-copyright-text">&copy; {{ date('Y') }} Ica Frozen Food. Solusi Makanan Beku Praktis,
+                    Higienis &amp; Halal.</p>
             </div>
         </div>
     </footer>
@@ -1012,7 +1064,8 @@ $bundlesData = $bundles->map(function($b) {
     <div id="productDetailModal" class="modal-product-backdrop">
         <div class="modal-product-card-wrap">
             <button id="detailModalClose" class="modal-close-round-btn" title="Tutup" type="button" aria-label="Tutup">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1147,8 +1200,10 @@ $bundlesData = $bundles->map(function($b) {
                     <p id="drawerCartCountLabel" style="font-size: 0.75rem; color: #6B7280;">0 Produk Makanan Beku</p>
                 </div>
             </div>
-            <button id="btnCloseCart" class="modal-close-round-btn" style="position: static;" title="Tutup" type="button" aria-label="Tutup Keranjang">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button id="btnCloseCart" class="modal-close-round-btn" style="position: static;" title="Tutup"
+                type="button" aria-label="Tutup Keranjang">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1353,8 +1408,10 @@ $bundlesData = $bundles->map(function($b) {
                         </p>
                     </div>
                 </div>
-                <button type="button" id="btnPaymentClose" class="payment-modal-close-btn" aria-label="Tutup" title="Kembali ke Keranjang">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" id="btnPaymentClose" class="payment-modal-close-btn" aria-label="Tutup"
+                    title="Kembali ke Keranjang">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -1433,7 +1490,8 @@ $bundlesData = $bundles->map(function($b) {
             <div class="receipt-header-center">
                 <h2 style="font-size: 1rem; font-weight: 900; margin: 0; color: #111827;">ICA FROZEN FOOD</h2>
                 <p style="font-size: 10px; margin: 2px 0; color: #4B5563;">Makanan Beku Higienis &amp; Halal</p>
-                <p style="font-size: 10px; margin: 0; color: #4B5563;">Loktabat Utara, Banjarbaru Utara, Kalimantan Selatan</p>
+                <p style="font-size: 10px; margin: 0; color: #4B5563;">Loktabat Utara, Banjarbaru Utara, Kalimantan
+                    Selatan</p>
                 <p style="font-size: 10px; margin: 0; color: #4B5563;">WhatsApp: 0878-5451-3770</p>
             </div>
 
@@ -1441,8 +1499,8 @@ $bundlesData = $bundles->map(function($b) {
                 <div>No. Nota: <strong id="recNoOrder">-</strong></div>
                 <div>Tanggal : <span id="recDate">-</span></div>
                 <div>Customer: <strong id="recCustomer">-</strong></div>
-                <div>Metode  : <span id="recMethod">-</span></div>
-                <div>Bayar   : <span id="recPayment">-</span></div>
+                <div>Metode : <span id="recMethod">-</span></div>
+                <div>Bayar : <span id="recPayment">-</span></div>
             </div>
 
             <div class="receipt-divider-dash"></div>
@@ -1489,9 +1547,15 @@ $bundlesData = $bundles->map(function($b) {
             </div>
 
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                <button type="button" id="btnReceiptClose" style="flex: 1; padding: 0.625rem; border-radius: 10px; border: 1px solid #D1D5DB; background: #FFFFFF; color: #374151; font-size: 0.75rem; font-weight: 700; cursor: pointer;">Tutup</button>
-                <button type="button" id="btnPrintReceipt" style="flex: 1; padding: 0.625rem; border-radius: 10px; border: none; background: var(--soft-blue); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                <button type="button" id="btnReceiptClose"
+                    style="flex: 1; padding: 0.625rem; border-radius: 10px; border: 1px solid #D1D5DB; background: #FFFFFF; color: #374151; font-size: 0.75rem; font-weight: 700; cursor: pointer;">Tutup</button>
+                <button type="button" id="btnPrintReceipt"
+                    style="flex: 1; padding: 0.625rem; border-radius: 10px; border: none; background: var(--soft-blue); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                        <rect width="12" height="8" x="6" y="14" />
+                    </svg>
                     <span>Cetak Struk</span>
                 </button>
             </div>
@@ -1499,281 +1563,296 @@ $bundlesData = $bundles->map(function($b) {
     </div>
 
     @if($user && !$user->is_admin)
-    <!-- 13. Modal Pengaturan Profil Pengguna & Akun (Khusus Pelanggan) -->
-    <div id="userProfileModal" class="modal-product-backdrop" style="display: none;">
-        <div class="user-profile-modal-card">
-            <!-- Modal Header -->
-            <div class="user-modal-header">
-                <button id="btnCloseProfileModal" class="user-modal-close-btn" type="button" aria-label="Tutup" title="Tutup">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
-                <div class="user-modal-header-content">
-                    <div id="profileModalAvatar" class="user-modal-avatar">
-                        @if($user && $user->avatar)
-                            <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
-                                style="width: 100%; height: 100%; object-fit: cover;">
-                        @else
-                            {{ strtoupper(substr($user->name ?? 'U', 0, 2)) }}
-                        @endif
-                    </div>
-                    <div style="min-width: 0; color: #FFFFFF;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <h3 id="profileModalName"
-                                style="font-size: 1.125rem; font-weight: 800; margin: 0; color: #FFFFFF;">
-                                {{ $user->name ?? '' }}</h3>
-                            @if($user && $user->is_admin)
-                                <span
-                                    style="display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; background: rgba(5, 150, 105, 0.9); color: #FFFFFF; padding: 2px 8px; border-radius: 9999px;">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 13 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-                                        <path d="m9 12 2 2 4-4" />
-                                    </svg> Admin
-                                </span>
+        <!-- 13. Modal Pengaturan Profil Pengguna & Akun (Khusus Pelanggan) -->
+        <div id="userProfileModal" class="modal-product-backdrop" style="display: none;">
+            <div class="user-profile-modal-card">
+                <!-- Modal Header -->
+                <div class="user-modal-header">
+                    <button id="btnCloseProfileModal" class="user-modal-close-btn" type="button" aria-label="Tutup"
+                        title="Tutup">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                    <div class="user-modal-header-content">
+                        <div id="profileModalAvatar" class="user-modal-avatar">
+                            @if($user && $user->avatar)
+                                <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
                             @else
-                                <span
-                                    style="font-size: 10px; font-weight: 800; background: rgba(14, 165, 233, 0.9); color: #FFFFFF; padding: 2px 8px; border-radius: 9999px;">
-                                    Pelanggan
-                                </span>
+                                {{ strtoupper(substr($user->name ?? 'U', 0, 2)) }}
                             @endif
                         </div>
-                        <p id="profileModalEmail"
-                            style="font-size: 0.75rem; color: rgba(255,255,255,0.8); margin: 0.15rem 0 0;">
-                            {{ $user->email ?? '' }}</p>
+                        <div style="min-width: 0; color: #FFFFFF;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <h3 id="profileModalName"
+                                    style="font-size: 1.125rem; font-weight: 800; margin: 0; color: #FFFFFF;">
+                                    {{ $user->name ?? '' }}
+                                </h3>
+                                @if($user && $user->is_admin)
+                                    <span
+                                        style="display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; background: rgba(5, 150, 105, 0.9); color: #FFFFFF; padding: 2px 8px; border-radius: 9999px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path
+                                                d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 13 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                                            <path d="m9 12 2 2 4-4" />
+                                        </svg> Admin
+                                    </span>
+                                @else
+                                    <span
+                                        style="font-size: 10px; font-weight: 800; background: rgba(14, 165, 233, 0.9); color: #FFFFFF; padding: 2px 8px; border-radius: 9999px;">
+                                        Pelanggan
+                                    </span>
+                                @endif
+                            </div>
+                            <p id="profileModalEmail"
+                                style="font-size: 0.75rem; color: rgba(255,255,255,0.8); margin: 0.15rem 0 0;">
+                                {{ $user->email ?? '' }}
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tabs Navigation -->
-            <div class="user-modal-tabs">
-                <button id="tabBtnProfileData" class="user-modal-tab-btn active" type="button">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    <span>Data Profil</span>
-                </button>
-                <button id="tabBtnPasswordData" class="user-modal-tab-btn" type="button">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                    <span>Ubah Kata Sandi</span>
-                </button>
-            </div>
+                <!-- Tabs Navigation -->
+                <div class="user-modal-tabs">
+                    <button id="tabBtnProfileData" class="user-modal-tab-btn active" type="button">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <span>Data Profil</span>
+                    </button>
+                    <button id="tabBtnPasswordData" class="user-modal-tab-btn" type="button">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span>Ubah Kata Sandi</span>
+                    </button>
+                </div>
 
-            <!-- Tab 1: Profile Form -->
-            <div id="modalProfileTabContent" class="user-modal-body">
-                <form id="formCustomerProfile" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                        <label
-                            style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
-                            Nama Lengkap <span style="color: #EF4444;">*</span>
-                        </label>
-                        <div style="position: relative;">
-                            <input type="text" id="custProfileName" required value="{{ $user->name ?? '' }}"
-                                placeholder="Masukkan nama lengkap"
-                                style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2"
-                                style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
-                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <label
-                            style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
-                            Email Akun <span style="color: #EF4444;">*</span>
-                        </label>
-                        <div style="position: relative;">
-                            <input type="email" id="custProfileEmail" required value="{{ $user->email ?? '' }}"
-                                placeholder="Masukkan email aktif"
-                                style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2"
-                                style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
-                                <rect width="20" height="16" x="2" y="4" rx="2" />
-                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <label
-                            style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
-                            Nomor Telepon / WhatsApp
-                        </label>
-                        <div style="position: relative;">
-                            <input type="tel" id="custProfilePhone" value="{{ $user->phone ?? '' }}"
-                                placeholder="Contoh: 081234567890"
-                                style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2"
-                                style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
-                                <path
-                                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <label
-                            style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
-                            Alamat Lengkap Pengiriman
-                        </label>
-                        <div style="position: relative;">
-                            <textarea id="custProfileAddress" rows="3"
-                                placeholder="Tuliskan jalan, nomor rumah, RT/RW, kelurahan, kecamatan..."
-                                style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px; resize: none;">{{ $user->address ?? '' }}</textarea>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2" style="position: absolute; left: 0.75rem; top: 0.75rem;">
-                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
-                        <button id="btnCancelProfileModal" type="button"
-                            style="padding: 0.625rem 1rem; border-radius: 12px; border: 1px solid rgba(166,177,195,0.6); font-size: 0.75rem; font-weight: 700; color: #4B5563; cursor: pointer;">
-                            Batal
-                        </button>
-                        <button id="btnSubmitCustProfile" type="submit"
-                            style="padding: 0.625rem 1.25rem; border-radius: 12px; background: var(--soft-blue); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-xs);">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                <polyline points="17 21 17 13 7 13 7 21" />
-                                <polyline points="7 3 7 8 15 8" />
-                            </svg>
-                            <span>Simpan Profil</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Tab 2: Password Form -->
-            <div id="modalPasswordTabContent" class="user-modal-body" style="display: none;">
-                <form id="formCustomerPassword" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                        <label
-                            style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
-                            Kata Sandi Saat Ini <span style="color: #EF4444;">*</span>
-                        </label>
-                        <div style="position: relative;">
-                            <input type="password" id="custCurrentPassword" required
-                                placeholder="Masukkan sandi saat ini"
-                                style="width: 100%; padding: 0.625rem 2.25rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2"
-                                style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
-                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            <button type="button" class="btn-pwd-eye" data-target="custCurrentPassword" aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
-                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                    <circle cx="12" cy="12" r="3" />
+                <!-- Tab 1: Profile Form -->
+                <div id="modalProfileTabContent" class="user-modal-body">
+                    <form id="formCustomerProfile" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
+                                Nama Lengkap <span style="color: #EF4444;">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <input type="text" id="custProfileName" required value="{{ $user->name ?? '' }}"
+                                    placeholder="Masukkan nama lengkap"
+                                    style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
+                                    stroke-width="2"
+                                    style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
                                 </svg>
-                                <svg class="eye-off-icon" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                                    <line x1="2" x2="22" y1="2" y2="22" />
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
+                                Email Akun <span style="color: #EF4444;">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <input type="email" id="custProfileEmail" required value="{{ $user->email ?? '' }}"
+                                    placeholder="Masukkan email aktif"
+                                    style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
+                                    stroke-width="2"
+                                    style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
+                                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                                 </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
+                                Nomor Telepon / WhatsApp
+                            </label>
+                            <div style="position: relative;">
+                                <input type="tel" id="custProfilePhone" value="{{ $user->phone ?? '' }}"
+                                    placeholder="Contoh: 081234567890"
+                                    style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
+                                    stroke-width="2"
+                                    style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
+                                Alamat Lengkap Pengiriman
+                            </label>
+                            <div style="position: relative;">
+                                <textarea id="custProfileAddress" rows="3"
+                                    placeholder="Tuliskan jalan, nomor rumah, RT/RW, kelurahan, kecamatan..."
+                                    style="width: 100%; padding: 0.625rem 0.875rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px; resize: none;">{{ $user->address ?? '' }}</textarea>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
+                                    stroke-width="2" style="position: absolute; left: 0.75rem; top: 0.75rem;">
+                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button id="btnCancelProfileModal" type="button"
+                                style="padding: 0.625rem 1rem; border-radius: 12px; border: 1px solid rgba(166,177,195,0.6); font-size: 0.75rem; font-weight: 700; color: #4B5563; cursor: pointer;">
+                                Batal
+                            </button>
+                            <button id="btnSubmitCustProfile" type="submit"
+                                style="padding: 0.625rem 1.25rem; border-radius: 12px; background: var(--soft-blue); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-xs);">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                    <polyline points="17 21 17 13 7 13 7 21" />
+                                    <polyline points="7 3 7 8 15 8" />
+                                </svg>
+                                <span>Simpan Profil</span>
                             </button>
                         </div>
-                    </div>
-                    <div>
-                        <label
-                            style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
-                            Kata Sandi Baru <span style="color: #EF4444;">*</span>
-                        </label>
-                        <div style="position: relative;">
-                            <input type="password" id="custNewPassword" required minlength="8"
-                                placeholder="Minimal 8 karakter"
-                                style="width: 100%; padding: 0.625rem 2.25rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2"
-                                style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
-                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            <button type="button" class="btn-pwd-eye" data-target="custNewPassword" aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
-                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                    <circle cx="12" cy="12" r="3" />
+                    </form>
+                </div>
+
+                <!-- Tab 2: Password Form -->
+                <div id="modalPasswordTabContent" class="user-modal-body" style="display: none;">
+                    <form id="formCustomerPassword" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
+                                Kata Sandi Saat Ini <span style="color: #EF4444;">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <input type="password" id="custCurrentPassword" required
+                                    placeholder="Masukkan sandi saat ini"
+                                    style="width: 100%; padding: 0.625rem 2.25rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
+                                    stroke-width="2"
+                                    style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                 </svg>
-                                <svg class="eye-off-icon" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                                    <line x1="2" x2="22" y1="2" y2="22" />
+                                <button type="button" class="btn-pwd-eye" data-target="custCurrentPassword"
+                                    aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
+                                    style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    <svg class="eye-off-icon" style="display: none;" width="18" height="18"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                        <path
+                                            d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                        <line x1="2" x2="22" y1="2" y2="22" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
+                                Kata Sandi Baru <span style="color: #EF4444;">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <input type="password" id="custNewPassword" required minlength="8"
+                                    placeholder="Minimal 8 karakter"
+                                    style="width: 100%; padding: 0.625rem 2.25rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
+                                    stroke-width="2"
+                                    style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                 </svg>
+                                <button type="button" class="btn-pwd-eye" data-target="custNewPassword"
+                                    aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
+                                    style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    <svg class="eye-off-icon" style="display: none;" width="18" height="18"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                        <path
+                                            d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                        <line x1="2" x2="22" y1="2" y2="22" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
+                                Konfirmasi Kata Sandi Baru <span style="color: #EF4444;">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <input type="password" id="custConfirmPassword" required minlength="8"
+                                    placeholder="Ulangi kata sandi baru"
+                                    style="width: 100%; padding: 0.625rem 2.25rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
+                                    stroke-width="2"
+                                    style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                                <button type="button" class="btn-pwd-eye" data-target="custConfirmPassword"
+                                    aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
+                                    style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    <svg class="eye-off-icon" style="display: none;" width="18" height="18"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                        <path
+                                            d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                        <line x1="2" x2="22" y1="2" y2="22" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button id="btnCancelPasswordModal" type="button"
+                                style="padding: 0.625rem 1rem; border-radius: 12px; border: 1px solid rgba(166,177,195,0.6); font-size: 0.75rem; font-weight: 700; color: #4B5563; cursor: pointer;">
+                                Batal
+                            </button>
+                            <button id="btnSubmitCustPassword" type="submit"
+                                style="padding: 0.625rem 1.25rem; border-radius: 12px; background: var(--soft-blue); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-xs);">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="m9 11 3 3L22 4" />
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                                </svg>
+                                <span>Perbarui Sandi</span>
                             </button>
                         </div>
-                    </div>
-                    <div>
-                        <label
-                            style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">
-                            Konfirmasi Kata Sandi Baru <span style="color: #EF4444;">*</span>
-                        </label>
-                        <div style="position: relative;">
-                            <input type="password" id="custConfirmPassword" required minlength="8"
-                                placeholder="Ulangi kata sandi baru"
-                                style="width: 100%; padding: 0.625rem 2.25rem 0.625rem 2.25rem; font-size: 0.78rem; border: 1px solid rgba(166,177,195,0.6); border-radius: 12px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)"
-                                stroke-width="2"
-                                style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);">
-                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            <button type="button" class="btn-pwd-eye" data-target="custConfirmPassword" aria-label="Lihat / Sembunyikan sandi" title="Lihat / Sembunyikan sandi"
-                                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--soft-blue); background: transparent; border: none; padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                <svg class="eye-open-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                </svg>
-                                <svg class="eye-off-icon" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                                    <line x1="2" x2="22" y1="2" y2="22" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
-                        <button id="btnCancelPasswordModal" type="button"
-                            style="padding: 0.625rem 1rem; border-radius: 12px; border: 1px solid rgba(166,177,195,0.6); font-size: 0.75rem; font-weight: 700; color: #4B5563; cursor: pointer;">
-                            Batal
-                        </button>
-                        <button id="btnSubmitCustPassword" type="submit"
-                            style="padding: 0.625rem 1.25rem; border-radius: 12px; background: var(--soft-blue); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-xs);">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="m9 11 3 3L22 4" />
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                            </svg>
-                            <span>Perbarui Sandi</span>
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
     @endif
 
     <!-- Data Injection -->
@@ -1796,11 +1875,11 @@ $bundlesData = $bundles->map(function($b) {
             var lastAdminTab = sessionStorage.getItem('ica_admin_active_tab');
             var validOperationalTabs = ['orders', 'inventory', 'categories', 'reports'];
             if (lastAdminTab && validOperationalTabs.indexOf(lastAdminTab) !== -1) {
-                document.querySelectorAll('.link-to-admin-dashboard').forEach(function(link) {
+                document.querySelectorAll('.link-to-admin-dashboard').forEach(function (link) {
                     link.href = "{{ route('admin.dashboard') }}?tab=" + encodeURIComponent(lastAdminTab);
                 });
             }
-        } catch (e) {}
+        } catch (e) { }
     </script>
 </body>
 

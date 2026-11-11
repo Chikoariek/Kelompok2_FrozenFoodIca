@@ -617,6 +617,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const categoryPillContainer = document.getElementById('categoryPillContainer');
   const catalogSortSelect = document.getElementById('catalogSortSelect');
   const catalogEmptyState = document.getElementById('catalogEmptyState');
+  const defaultEmptyTitle = catalogEmptyState?.querySelector('.catalog-empty-title')?.textContent?.trim() || 'Produk Segera Hadir!';
+  const defaultEmptyDesc = catalogEmptyState?.querySelector('.catalog-empty-desc')?.textContent?.trim() || 'Stok kategori ini sedang disiapkan. Silakan pilih kategori lainnya.';
   const btnResetCatalogFilter = document.getElementById('btnResetCatalogFilter');
   const catalogLoadMoreWrap = document.getElementById('catalogLoadMoreWrap');
   const btnCatalogLoadMore = document.getElementById('btnCatalogLoadMore');
@@ -714,12 +716,21 @@ document.addEventListener('DOMContentLoaded', function () {
         catalogEmptyState.style.display = 'block';
         const emptyTitle = catalogEmptyState.querySelector('.catalog-empty-title');
         const emptyDesc = catalogEmptyState.querySelector('.catalog-empty-desc');
-        if (searchQuery.trim().length > 0) {
+        const trimmedSearch = searchQuery.trim();
+        const isSearchMode = trimmedSearch.length > 0;
+
+        if (isSearchMode) {
           if (emptyTitle) emptyTitle.textContent = 'Produk Tidak Ditemukan';
-          if (emptyDesc) emptyDesc.innerHTML = `Tidak ada produk makanan beku yang sesuai dengan kata kunci "<strong>${searchQuery}</strong>".`;
+          if (emptyDesc) {
+            emptyDesc.replaceChildren();
+            emptyDesc.append('Tidak ada menu yang cocok dengan kata kunci "');
+            const strong = document.createElement('strong');
+            strong.textContent = trimmedSearch;
+            emptyDesc.append(strong, '".');
+          }
         } else {
-          if (emptyTitle) emptyTitle.textContent = 'Kategori Belum Memiliki Produk';
-          if (emptyDesc) emptyDesc.innerHTML = `Stok produk untuk kategori <strong>${selectedCategory}</strong> sedang dipersiapkan.`;
+          if (emptyTitle) emptyTitle.textContent = defaultEmptyTitle;
+          if (emptyDesc) emptyDesc.textContent = defaultEmptyDesc;
         }
       } else {
         catalogEmptyState.style.display = 'none';

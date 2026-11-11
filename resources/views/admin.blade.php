@@ -1488,7 +1488,7 @@
                 </div>
                 <div class="modal-footer-row">
                     <button type="button" class="btn-modal-cancel">Batal</button>
-                    <button type="submit" class="btn-primary-blue">Simpan Produk ke Database</button>
+                    <button type="submit" class="btn-primary-blue">Simpan Produk</button>
                 </div>
             </form>
         </div>
@@ -1639,7 +1639,7 @@
                 </button>
             </div>
             <form id="formAddBundle">
-                <div class="modal-body-pad" style="max-height: 70vh; overflow-y: auto;">
+                <div class="modal-body-pad">
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
                         <div class="form-group-item">
                             <label for="addBundleName">Nama Paket Hemat *</label>
@@ -1729,7 +1729,7 @@
                 </div>
                 <div class="modal-footer-row">
                     <button type="button" class="btn-modal-cancel">Batal</button>
-                    <button type="submit" class="btn-primary-blue">Simpan Paket ke Database</button>
+                    <button type="submit" class="btn-primary-blue">Simpan Paket</button>
                 </div>
             </form>
         </div>
@@ -1754,7 +1754,7 @@
             </div>
             <form id="formEditBundle">
                 <input type="hidden" id="editBundleId">
-                <div class="modal-body-pad" style="max-height: 70vh; overflow-y: auto;">
+                <div class="modal-body-pad">
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
                         <div class="form-group-item">
                             <label for="editBundleName">Nama Paket Hemat *</label>

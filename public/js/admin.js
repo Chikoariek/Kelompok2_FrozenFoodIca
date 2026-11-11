@@ -2896,7 +2896,27 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(updateDashboardSalesChart, 100);
   }
 
-  // --- 10. Handler Penutup Semua Jendela Modal Dialog ---
+  // --- 10. Handler Penutup Semua Jendela Modal Dialog & Scroll Lock Halaman ---
+  function syncModalBodyLock() {
+    const hasOpenModal = Boolean(document.querySelector('.admin-modal-backdrop.open'));
+    if (hasOpenModal) {
+      if (!document.body.classList.contains('admin-modal-open')) {
+        const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
+        document.body.style.paddingRight = scrollbarW > 0 ? `${scrollbarW}px` : '';
+        document.body.classList.add('admin-modal-open');
+      }
+    } else {
+      document.body.classList.remove('admin-modal-open');
+      document.body.style.paddingRight = '';
+    }
+  }
+
+  const modalClassObserver = new MutationObserver(syncModalBodyLock);
+  document.querySelectorAll('.admin-modal-backdrop').forEach((backdrop) => {
+    modalClassObserver.observe(backdrop, { attributes: true, attributeFilter: ['class'] });
+  });
+  syncModalBodyLock();
+
   document.querySelectorAll('.btn-modal-close, .btn-modal-cancel').forEach((btn) => {
     btn.addEventListener('click', function () {
       document.querySelectorAll('.admin-modal-backdrop').forEach((m) => m.classList.remove('open'));
