@@ -451,6 +451,16 @@ document.addEventListener('DOMContentLoaded', function () {
     reader.readAsDataURL(file);
   });
 
+  // Dukungan scroll horizontal halus menggunakan mouse wheel untuk semua toolbar filter pills
+  document.querySelectorAll('.toolbar-filters-group').forEach((grp) => {
+    grp.addEventListener('wheel', (e) => {
+      if (e.deltaY !== 0 && grp.scrollWidth > grp.clientWidth) {
+        e.preventDefault();
+        grp.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+  });
+
   // --- 5. Manajemen Pesanan, Status Transaksi & Cetak Nota (Tab Orders) ---
   const orderFilterBtns = document.querySelectorAll('.order-filter-btn');
   const orderSearchInput = document.getElementById('orderSearchInput');
@@ -1191,6 +1201,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   btnOpenAddBundleModal?.addEventListener('click', function () {
     formAddBundle?.reset();
+    const badgeRight = document.getElementById('addBundleBadgeRight');
+    if (badgeRight) {
+      badgeRight.value = '';
+      delete badgeRight.dataset.manual;
+    }
     document.querySelectorAll('.cb-bundle-prod').forEach((cb) => {
       cb.checked = false;
       const qtyInput = document.querySelector(`.qty-bundle-prod[data-id="${cb.getAttribute('data-id')}"]`);
@@ -1230,10 +1245,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const priceInput = document.getElementById('addBundlePrice');
     const badgeRightInput = document.getElementById('addBundleBadgeRight');
-    if (priceInput && priceInput.value && badgeRightInput && !badgeRightInput.dataset.manual) {
+    if (priceInput && badgeRightInput && (!badgeRightInput.dataset.manual || badgeRightInput.value.trim() === '')) {
       const p = parseInt(priceInput.value || '0', 10);
-      if (totalNormal > p) {
+      if (totalNormal > p && p > 0) {
         badgeRightInput.value = `Hemat Rp ${(totalNormal - p).toLocaleString('id-ID')}`;
+      } else if (p >= totalNormal && !badgeRightInput.dataset.manual) {
+        badgeRightInput.value = '';
       }
     }
   }
@@ -1257,13 +1274,30 @@ document.addEventListener('DOMContentLoaded', function () {
     const badgeRightInput = document.getElementById('addBundleBadgeRight');
     const totalNormal = parseInt(document.getElementById('addBundleOriginalPrice')?.value || '0', 10);
     const p = parseInt(this.value || '0', 10);
-    if (badgeRightInput && !badgeRightInput.dataset.manual && totalNormal > p) {
-      badgeRightInput.value = `Hemat Rp ${(totalNormal - p).toLocaleString('id-ID')}`;
+    if (badgeRightInput && (!badgeRightInput.dataset.manual || badgeRightInput.value.trim() === '')) {
+      if (totalNormal > p && p > 0) {
+        badgeRightInput.value = `Hemat Rp ${(totalNormal - p).toLocaleString('id-ID')}`;
+      } else if (p >= totalNormal && !badgeRightInput.dataset.manual) {
+        badgeRightInput.value = '';
+      }
     }
   });
 
   document.getElementById('addBundleBadgeRight')?.addEventListener('input', function () {
-    this.dataset.manual = 'true';
+    if (this.value.trim() === '') {
+      delete this.dataset.manual;
+      updateAddBundleCalculations();
+    } else {
+      this.dataset.manual = 'true';
+    }
+  });
+
+  document.getElementById('btnAutoCalcAddBadge')?.addEventListener('click', function () {
+    const badge = document.getElementById('addBundleBadgeRight');
+    if (badge) {
+      delete badge.dataset.manual;
+      updateAddBundleCalculations();
+    }
   });
 
   // Upload Foto Paket Baru
@@ -1410,6 +1444,15 @@ document.addEventListener('DOMContentLoaded', function () {
         ? `${selectedCount} produk terpilih (Total Normal: Rp ${totalNormal.toLocaleString('id-ID')})`
         : 'Pilih minimal 1 produk';
     }
+
+    if (editBundlePrice && editBundleBadgeRight && (!editBundleBadgeRight.dataset.manual || editBundleBadgeRight.value.trim() === '')) {
+      const p = parseInt(editBundlePrice.value || '0', 10);
+      if (totalNormal > p && p > 0) {
+        editBundleBadgeRight.value = `Hemat Rp ${(totalNormal - p).toLocaleString('id-ID')}`;
+      } else if (p >= totalNormal && !editBundleBadgeRight.dataset.manual) {
+        editBundleBadgeRight.value = '';
+      }
+    }
   }
 
   document.querySelectorAll('.cb-edit-bundle-prod').forEach((cb) => {
@@ -1427,6 +1470,34 @@ document.addEventListener('DOMContentLoaded', function () {
     qty.addEventListener('input', updateEditBundleCalculations);
   });
 
+  editBundlePrice?.addEventListener('input', function () {
+    const totalNormal = parseInt(editBundleOriginalPrice?.value || '0', 10);
+    const p = parseInt(this.value || '0', 10);
+    if (editBundleBadgeRight && (!editBundleBadgeRight.dataset.manual || editBundleBadgeRight.value.trim() === '')) {
+      if (totalNormal > p && p > 0) {
+        editBundleBadgeRight.value = `Hemat Rp ${(totalNormal - p).toLocaleString('id-ID')}`;
+      } else if (p >= totalNormal && !editBundleBadgeRight.dataset.manual) {
+        editBundleBadgeRight.value = '';
+      }
+    }
+  });
+
+  editBundleBadgeRight?.addEventListener('input', function () {
+    if (this.value.trim() === '') {
+      delete this.dataset.manual;
+      updateEditBundleCalculations();
+    } else {
+      this.dataset.manual = 'true';
+    }
+  });
+
+  document.getElementById('btnAutoCalcEditBadge')?.addEventListener('click', function () {
+    if (editBundleBadgeRight) {
+      delete editBundleBadgeRight.dataset.manual;
+      updateEditBundleCalculations();
+    }
+  });
+
   document.addEventListener('click', function (e) {
     const btnEdit = e.target.closest('.btn-edit-bundle');
     if (btnEdit) {
@@ -1436,7 +1507,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (editBundleId) editBundleId.value = bundle.id;
         if (editBundleName) editBundleName.value = bundle.name;
         if (editBundleBadgeLeft) editBundleBadgeLeft.value = bundle.badge_left || '';
-        if (editBundleBadgeRight) editBundleBadgeRight.value = bundle.badge_right || '';
+        if (editBundleBadgeRight) {
+          const badgeVal = bundle.badge_right || '';
+          editBundleBadgeRight.value = badgeVal;
+          // Jika kosong atau diawali "Hemat Rp", biarkan auto-calc tetap aktif saat diedit
+          if (!badgeVal || /^hemat\s*rp/i.test(badgeVal.trim())) {
+            delete editBundleBadgeRight.dataset.manual;
+          } else {
+            editBundleBadgeRight.dataset.manual = 'true';
+          }
+        }
         if (editBundleDesc) editBundleDesc.value = bundle.description || '';
         if (editBundlePrice) editBundlePrice.value = bundle.bundle_price;
         if (editBundleOriginalPrice) editBundleOriginalPrice.value = bundle.original_price;

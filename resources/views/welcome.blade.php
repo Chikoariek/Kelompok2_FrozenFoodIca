@@ -108,6 +108,16 @@
                     <!-- Right Action Icons: Cart & Login -->
                     <div class="navbar-right-actions">
 
+                        <!-- Mobile Search Toggle Button (Sejajar dengan Keranjang & Hamburger) -->
+                        <button id="btnMobileSearchToggle" class="btn-mobile-search-toggle" aria-label="Buka Pencarian"
+                            type="button" title="Cari produk makanan beku">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                        </button>
+
                         <!-- Cart Button (Hanya Icon & Badge Jumlah Item) -->
                         <button id="btnOpenCart" class="btn-open-cart-box" title="Buka Keranjang Belanja"
                             aria-label="Buka Keranjang Belanja">
@@ -235,8 +245,8 @@
 
                 </div>
 
-                <!-- Mobile Search Input Bar -->
-                <div class="mobile-search-row">
+                <!-- Mobile Search Input Bar (Expandable via icon search navbar) -->
+                <div class="mobile-search-row" id="mobileSearchRow" style="display: none;">
                     <div class="search-input-box">
                         <input type="text" id="mobileSearchInput" class="search-input-field"
                             placeholder="Cari dimsum, nugget, seafood...">
@@ -245,6 +255,22 @@
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
+                        <button id="btnClearMobileSearch" class="search-clear-btn" style="display: none;"
+                            type="button" title="Hapus pencarian">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                        <button id="btnCloseMobileSearch" class="btn-close-mobile-search" type="button"
+                            title="Tutup pencarian" aria-label="Tutup pencarian">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -722,13 +748,15 @@
                                             {{ number_format($prod->price, 0, ',', '.') }}</span>
                                     </div>
                                     <button class="btn-card-add-cart" {{ $prod->stock <= 0 ? 'disabled' : '' }}
-                                        onclick="window.addToCartById('{{ $prod->id }}', 1)">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        onclick="window.addToCartById('{{ $prod->id }}', 1)"
+                                        aria-label="Tambah {{ $prod->name }} ke Keranjang"
+                                        title="Tambah ke Keranjang">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                             stroke-width="2.5">
                                             <line x1="12" y1="5" x2="12" y2="19" />
                                             <line x1="5" y1="12" x2="19" y2="12" />
                                         </svg>
-                                        <span>Keranjang</span>
+                                        <span class="btn-card-add-text">Keranjang</span>
                                     </button>
                                 </div>
                             </div>

@@ -1272,8 +1272,8 @@
 
                 <!-- Filter Toolbar: Pemilihan Rentang Waktu (7 Hari, 30 Hari, Bulan Ini, Semua) -->
                 <div class="admin-toolbar-card">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-right: 0.25rem;">Periode Analisis:</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; min-width: 0; max-width: 100%;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-right: 0.25rem; flex-shrink: 0;">Periode Analisis:</span>
                         <div class="toolbar-filters-group">
                             <button type="button" class="filter-btn-pill active report-range-btn" data-range="7">7 Hari Terakhir</button>
                             <button type="button" class="filter-btn-pill report-range-btn" data-range="30">30 Hari Terakhir</button>
@@ -1696,7 +1696,10 @@
 
                     <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
                         <div class="form-group-item">
-                            <label for="addBundleBadgeRight">Label Diskon Kanan</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                <label for="addBundleBadgeRight" style="margin-bottom: 0;">Label Diskon Kanan</label>
+                                <button type="button" id="btnAutoCalcAddBadge" style="font-size: 11px; color: var(--soft-blue); background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: 600;">✨ Hitung Otomatis Diskon</button>
+                            </div>
                             <input type="text" id="addBundleBadgeRight" placeholder="Kosongkan untuk otomatis dihitung: Hemat Rp X">
                         </div>
                     </div>
@@ -1811,7 +1814,10 @@
 
                     <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
                         <div class="form-group-item">
-                            <label for="editBundleBadgeRight">Label Diskon Kanan</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                <label for="editBundleBadgeRight" style="margin-bottom: 0;">Label Diskon Kanan</label>
+                                <button type="button" id="btnAutoCalcEditBadge" style="font-size: 11px; color: var(--soft-blue); background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: 600;">✨ Hitung Otomatis Diskon</button>
+                            </div>
                             <input type="text" id="editBundleBadgeRight" placeholder="Kosongkan untuk otomatis dihitung: Hemat Rp X">
                         </div>
                     </div>

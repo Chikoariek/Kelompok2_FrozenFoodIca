@@ -612,6 +612,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const searchInput = document.getElementById('searchInput');
   const mobileSearchInput = document.getElementById('mobileSearchInput');
   const btnClearSearch = document.getElementById('btnClearSearch');
+  const btnMobileSearchToggle = document.getElementById('btnMobileSearchToggle');
+  const mobileSearchRow = document.getElementById('mobileSearchRow');
+  const btnClearMobileSearch = document.getElementById('btnClearMobileSearch');
+  const btnCloseMobileSearch = document.getElementById('btnCloseMobileSearch');
   const catalogGrid = document.getElementById('catalogGrid');
   const catalogCountText = document.getElementById('catalogCountText');
   const categoryPillContainer = document.getElementById('categoryPillContainer');
@@ -777,6 +781,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (searchInput) searchInput.value = val;
     if (mobileSearchInput) mobileSearchInput.value = val;
     if (btnClearSearch) btnClearSearch.style.display = val ? 'flex' : 'none';
+    if (btnClearMobileSearch) btnClearMobileSearch.style.display = val ? 'flex' : 'none';
+
+    if (val && val.trim().length > 0) {
+      btnMobileSearchToggle?.classList.add('has-query');
+    } else {
+      btnMobileSearchToggle?.classList.remove('has-query');
+    }
+
     filterCatalog(true); // Reset ke batch pertama saat mencari
 
     // Gulir otomatis ke bagian katalog saat pengguna sedang mencari produk
@@ -822,6 +834,43 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   if (btnClearSearch) {
     btnClearSearch.addEventListener('click', () => handleSearchInput(''));
+  }
+
+  // Toggle & Controls untuk Mobile Search Bar yang Sejajar di Navbar
+  if (btnMobileSearchToggle && mobileSearchRow) {
+    btnMobileSearchToggle.addEventListener('click', function () {
+      const isOpen = mobileSearchRow.classList.contains('open');
+      if (isOpen) {
+        mobileSearchRow.classList.remove('open');
+        mobileSearchRow.style.display = 'none';
+        btnMobileSearchToggle.classList.remove('active');
+      } else {
+        mobileSearchRow.style.display = 'block';
+        mobileSearchRow.classList.add('open');
+        btnMobileSearchToggle.classList.add('active');
+        if (mobileSearchInput) {
+          mobileSearchInput.focus();
+          if (mobileSearchInput.value) {
+            mobileSearchInput.select();
+          }
+        }
+      }
+    });
+  }
+
+  if (btnCloseMobileSearch && mobileSearchRow) {
+    btnCloseMobileSearch.addEventListener('click', function () {
+      mobileSearchRow.classList.remove('open');
+      mobileSearchRow.style.display = 'none';
+      btnMobileSearchToggle?.classList.remove('active');
+    });
+  }
+
+  if (btnClearMobileSearch) {
+    btnClearMobileSearch.addEventListener('click', function () {
+      handleSearchInput('');
+      mobileSearchInput?.focus();
+    });
   }
 
   // Category Navigation: Mode Ringkas (1 Baris Scroll) vs Mode Tersebar/Dijabarkan (Expand)
@@ -988,6 +1037,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (searchInput) searchInput.value = '';
       if (mobileSearchInput) mobileSearchInput.value = '';
       if (btnClearSearch) btnClearSearch.style.display = 'none';
+      if (btnClearMobileSearch) btnClearMobileSearch.style.display = 'none';
+      btnMobileSearchToggle?.classList.remove('has-query');
 
       selectedCategory = 'Semua';
       if (categoryPillContainer) {
