@@ -30,6 +30,7 @@ class Order extends Model
         'ice_fee',
         'total',
         'is_paid',
+        'payment_proof',
         'channel',
     ];
 

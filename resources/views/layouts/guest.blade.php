@@ -289,11 +289,78 @@
                 background: #fff0f0;
                 border: 1px solid #fed7d7;
                 color: #c53030;
-                padding: 0.65rem 1rem;
-                border-radius: 10px;
+                padding: 0.65rem 0.85rem;
+                border-radius: 12px;
                 font-size: 0.8rem;
+                line-height: 1.45;
                 margin-bottom: 1rem;
                 text-align: left;
+                display: flex;
+                align-items: flex-start;
+                gap: 0.625rem;
+            }
+
+            .alert-success {
+                background: #ecfdf5;
+                border: 1px solid #a7f3d0;
+                color: #065f46;
+                padding: 0.65rem 0.85rem;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                line-height: 1.45;
+                margin-bottom: 1rem;
+                text-align: left;
+                display: flex;
+                align-items: flex-start;
+                gap: 0.625rem;
+            }
+
+            .alert-warning {
+                background: #fffbeb;
+                border: 1px solid #fde68a;
+                color: #92400e;
+                padding: 0.65rem 0.85rem;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                line-height: 1.45;
+                margin-bottom: 1rem;
+                text-align: left;
+                display: flex;
+                align-items: flex-start;
+                gap: 0.625rem;
+            }
+
+            .alert-icon-badge {
+                width: 26px;
+                height: 26px;
+                border-radius: 7px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                margin-top: 1px;
+            }
+
+            .alert-warning .alert-icon-badge {
+                background: rgba(217, 119, 6, 0.14);
+                color: #b45309;
+            }
+
+            .alert-success .alert-icon-badge {
+                background: rgba(16, 185, 129, 0.15);
+                color: #059669;
+            }
+
+            .alert-error .alert-icon-badge {
+                background: rgba(239, 68, 68, 0.14);
+                color: #dc2626;
+            }
+
+            .alert-content {
+                flex: 1;
+                min-width: 0;
             }
 
             /* Adaptif Layar Laptop / Tinggi Viewport Terbatas */

@@ -32,6 +32,21 @@
             }
         });
     </script>
+    <script>
+        (function() {
+            try {
+                var p = new URLSearchParams(window.location.search);
+                var sub = p.get('subtab') || sessionStorage.getItem('ica_inventory_subtab');
+                if (sub === 'bundles') {
+                    document.documentElement.classList.add('init-subtab-bundles');
+                }
+            } catch(e) {}
+        })();
+    </script>
+    <style>
+        html.init-subtab-bundles #subtabContentProducts { display: none !important; }
+        html.init-subtab-bundles #subtabContentBundles { display: block !important; }
+    </style>
 </head>
 <body>
     @php
@@ -40,13 +55,17 @@
         if (!$activeTab || !in_array($activeTab, $validTabs)) {
             $activeTab = 'dashboard';
         }
+        $activeSubtab = request('subtab', 'products');
+        if (!in_array($activeSubtab, ['products', 'bundles'])) {
+            $activeSubtab = 'products';
+        }
         $tabMetaServer = [
-            'dashboard' => ['title' => 'Dashboard Overview', 'sub' => 'Ringkasan data operasional, stok freezer, dan transaksi toko'],
-            'profile' => ['title' => 'Profil Administrator', 'sub' => 'Kelola informasi akun administrator toko, foto profil, dan kata sandi'],
-            'orders' => ['title' => 'Proses Pesanan Pelanggan', 'sub' => 'Pantau transaksi online & kasir walk-in, validasi pembayaran, dan cetak struk kasir.'],
-            'inventory' => ['title' => 'Data Produk & Inventaris Freezer', 'sub' => 'Kelola stok freezer, tambah produk baru, dan pantau ketersediaan barang'],
-            'categories' => ['title' => 'Manajemen Kategori Produk', 'sub' => 'Kelola master kategori produk untuk mengelompokkan etalase beku'],
-            'reports' => ['title' => 'Laporan Penjualan & Analisis Toko', 'sub' => 'Pantau grafik tren omzet pendapatan, performa transaksi harian, dan analisis performa toko'],
+            'dashboard' => ['title' => 'Dashboard Overview', 'sub' => 'Ringkasan operasional toko & stok freezer'],
+            'profile' => ['title' => 'Profil Administrator', 'sub' => 'Kelola informasi akun & kata sandi'],
+            'orders' => ['title' => 'Pesanan Pelanggan', 'sub' => 'Validasi pembayaran & kelola pesanan'],
+            'inventory' => ['title' => 'Inventaris Produk', 'sub' => 'Kelola stok freezer & etalase makanan beku'],
+            'categories' => ['title' => 'Kategori Produk', 'sub' => 'Kelola master kategori etalase'],
+            'reports' => ['title' => 'Laporan Penjualan', 'sub' => 'Rekap omzet & performa transaksi'],
         ];
     @endphp
 
@@ -74,29 +93,58 @@
             </button>
             <button class="sidebar-nav-btn {{ $activeTab === 'orders' ? 'active' : '' }}" data-tab="orders">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                <span>Proses Pesanan</span>
+                <span>Pesanan</span>
             </button>
             <button class="sidebar-nav-btn {{ $activeTab === 'inventory' ? 'active' : '' }}" data-tab="inventory">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
-                <span>Data Produk</span>
+                <span>Produk</span>
             </button>
             <button class="sidebar-nav-btn {{ $activeTab === 'categories' ? 'active' : '' }}" data-tab="categories">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
-                <span>Kategori Produk</span>
+                <span>Kategori</span>
             </button>
             <button class="sidebar-nav-btn {{ $activeTab === 'reports' ? 'active' : '' }}" data-tab="reports">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="4" height="12" x="2" y="9" rx="1"/><rect width="4" height="18" x="10" y="3" rx="1"/><rect width="4" height="8" x="18" y="13" rx="1"/></svg>
-                <span>Laporan Penjualan</span>
+                <span>Laporan</span>
             </button>
         </nav>
 
-        <!-- Sidebar Footer Status Toko (Tombol logout dipindahkan ke menu dropdown profil kanan atas) -->
-        <div class="sidebar-footer-info" style="padding: 1.25rem 1.25rem 0; margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.15);">
-            <div class="sidebar-footer-row" style="display: flex; align-items: center; gap: 0.5rem;">
-                <span class="sidebar-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;"></span>
-                <span class="sidebar-footer-title" style="font-size: 0.8125rem; font-weight: 800; color: #FFFFFF;">Operasional Aktif</span>
+        <!-- Sidebar Footer Status Toko (Opsi B: Seamless Native Sidebar) -->
+        @php $isOpen = (bool)($storeStatus['is_open'] ?? true); @endphp
+        <div class="sidebar-footer-info">
+            <div class="store-control-seamless">
+                <div class="store-control-header">
+                    <span class="store-control-title">Operasional Toko</span>
+                    <span id="sidebarStatusBadge" class="store-status-pill {{ $isOpen ? 'is-open' : 'is-closed' }}">
+                        {{ $isOpen ? 'Buka' : 'Tutup' }}
+                    </span>
+                </div>
+
+                <!-- Segmented Control Buka / Tutup Native -->
+                <div class="store-segmented-control" role="group" aria-label="Status Operasional Toko">
+                    <button type="button" 
+                            id="btnSetStoreOpen" 
+                            class="store-seg-btn {{ $isOpen ? 'active-open' : '' }}" 
+                            title="Buka Toko: Menerima Pesanan Pelanggan"
+                            {{ $isOpen ? 'disabled' : '' }}>
+                        <span class="seg-dot dot-open"></span>
+                        <span>Buka</span>
+                    </button>
+                    <button type="button" 
+                            id="btnSetStoreClosed" 
+                            class="store-seg-btn {{ !$isOpen ? 'active-closed' : '' }}" 
+                            title="Tutup Toko: Hentikan Pesanan Sementara"
+                            {{ !$isOpen ? 'disabled' : '' }}>
+                        <span class="seg-dot dot-closed"></span>
+                        <span>Tutup</span>
+                    </button>
+                </div>
+
+                <p id="sidebarStatusFootnote" class="store-control-footnote">
+                    {{ $isOpen ? 'Menerima pesanan online' : 'Toko tutup sementara' }}
+                </p>
             </div>
-            <p class="sidebar-footer-sub" style="font-size: 0.6875rem; color: rgba(255, 255, 255, 0.65); margin: 0.35rem 0 0;">Sistem Ica Frozen Food v1.0</p>
+            <p class="sidebar-footer-version">Sistem Ica Frozen Food v1.0</p>
         </div>
     </aside>
 
@@ -137,8 +185,8 @@
                             @endif
                         </div>
                         <div class="topbar-profile-details">
-                            <p id="topbarAdminName" class="topbar-profile-name">{{ $user->name ?? 'Administrator' }}</p>
-                            <p class="topbar-profile-role">Administrator Toko</p>
+                            <p id="topbarAdminName" class="topbar-profile-name">{{ strlen($user->name ?? '') > 16 ? 'Admin Ica' : ($user->name ?? 'Administrator') }}</p>
+                            <p class="topbar-profile-role">Administrator</p>
                         </div>
                         <svg id="topbarChevron" class="topbar-chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
@@ -152,14 +200,14 @@
                         </div>
                         <div class="profile-dropdown-menu">
                             <!-- Link Pintas ke Homepage / Katalog Toko -->
-                            <a href="{{ route('home') }}" class="dropdown-menu-item" style="text-decoration: none; color: #0284C7; font-weight: 700;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            <a href="{{ route('home') }}" class="dropdown-menu-item" style="text-decoration: none;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                                 <span>Lihat Toko (Homepage)</span>
                             </a>
 
                             <!-- Link ke Tab Kelola Profil -->
                             <button id="btnSwitchToProfile" class="dropdown-menu-item" type="button">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                 <span>Kelola Profil &amp; Password</span>
                             </button>
                             
@@ -309,15 +357,23 @@
                                 <tbody>
                                     @forelse($orders->take(5) as $order)
                                         @php
-                                             $badgeClass = 'menunggu';
-                                             $statusLabel = 'Menunggu';
-                                             if ($order->status === 'Selesai') {
-                                                 $badgeClass = 'selesai';
-                                                 $statusLabel = 'Dikirim';
-                                             } elseif ($order->status === 'Diproses') {
-                                                 $badgeClass = 'diproses';
-                                                 $statusLabel = 'Diproses';
-                                             }
+                                            $isWaitingPay = in_array($order->status, ['Menunggu Bayar', 'Menunggu Pembayaran', 'Menunggu Konfirmasi Admin']) || (!$order->is_paid && $order->status !== 'Dibatalkan' && $order->status !== 'Selesai');
+                                            if ($order->status === 'Selesai') {
+                                                $badgeClass = 'selesai';
+                                                $statusLabel = 'Selesai';
+                                            } elseif ($order->status === 'Diproses') {
+                                                $badgeClass = 'diproses';
+                                                $statusLabel = 'Diproses';
+                                            } elseif ($order->status === 'Dibatalkan') {
+                                                $badgeClass = 'dibatalkan';
+                                                $statusLabel = 'Dibatalkan';
+                                            } elseif ($isWaitingPay) {
+                                                $badgeClass = 'menunggu-pembayaran';
+                                                $statusLabel = 'Menunggu Pembayaran';
+                                            } else {
+                                                $statusLabel = $order->status ?: 'Menunggu Pembayaran';
+                                                $badgeClass = strtolower(str_replace(' ', '-', $statusLabel));
+                                            }
                                         @endphp
                                         <tr>
                                             <td style="font-family: monospace; color: var(--soft-blue); font-weight: 700;">
@@ -607,7 +663,7 @@
                     <div class="panel-header-actions">
                         <a href="{{ route('admin.export.orders') }}" id="btnExportOrdersExcel" class="btn-excel-green" title="Download Rekap Transaksi Penjualan Excel/CSV">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg>
-                            <span>Export Laporan Penjualan</span>
+                            <span>Export Data Pesanan</span>
                         </a>
                         <button id="btnOpenOfflineOrderModal" class="btn-primary-blue" type="button" title="Tambah Pesanan Kasir Walk-in / Offline">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -629,9 +685,10 @@
                             Filter:
                         </span>
                         <button class="filter-btn-pill active order-filter-btn" data-status="Semua" type="button">Semua</button>
-                        <button class="filter-btn-pill order-filter-btn" data-status="Menunggu Pembayaran" type="button">Menunggu Pembayaran</button>
+                        <button class="filter-btn-pill order-filter-btn" data-status="Menunggu Pembayaran" type="button">Menunggu Bayar</button>
                         <button class="filter-btn-pill order-filter-btn" data-status="Diproses" type="button">Diproses</button>
                         <button class="filter-btn-pill order-filter-btn" data-status="Selesai" type="button">Selesai</button>
+                        <button class="filter-btn-pill order-filter-btn" data-status="Dibatalkan" type="button">Dibatalkan</button>
                     </div>
 
                     <!-- Search Box (Ukuran 20rem konsisten) -->
@@ -659,10 +716,12 @@
                             <tbody id="ordersTableBody">
                                 @forelse($orders as $order)
                                     @php
-                                        $statusSlug = strtolower(str_replace(' ', '-', $order->status));
+                                        $isWaitingPay = in_array($order->status, ['Menunggu Bayar', 'Menunggu Pembayaran', 'Menunggu Konfirmasi Admin']) || (!$order->is_paid && $order->status !== 'Dibatalkan' && $order->status !== 'Selesai');
+                                        $statusDisplay = $isWaitingPay ? 'Menunggu Pembayaran' : $order->status;
+                                        $statusSlug = strtolower(str_replace(' ', '-', $statusDisplay));
                                         $itemsList = is_array($order->items) ? $order->items : json_decode($order->items, true);
                                     @endphp
-                                    <tr data-order-row="{{ $order->id }}" data-status="{{ $order->status }}">
+                                    <tr data-order-row="{{ $order->id }}" data-status="{{ $statusDisplay }}">
                                         <!-- ID & Date -->
                                         <td class="order-id-cell">
                                             <div class="order-id-code">{{ $order->id }}</div>
@@ -760,25 +819,31 @@
                                         <!-- Status -->
                                         <td>
                                             <span class="badge-status-pill status-pill-{{ $statusSlug }} status-badge-target">
-                                                {{ $order->status }}
+                                                {{ $statusDisplay }}
                                             </span>
                                         </td>
 
                                         <!-- Action Buttons -->
                                         <td style="text-align: center;">
                                             <div class="order-actions-flex">
-                                                @if(!$order->is_paid && $order->status === 'Menunggu Pembayaran')
-                                                    <button class="btn-action-validate-pay btn-validate-order" data-order-id="{{ $order->id }}" type="button" title="Validasi Pembayaran Pelanggan">
-                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                                                @if($order->payment_proof)
+                                                    <button class="btn-action-view-proof btn-view-payment-proof" data-order-id="{{ $order->id }}" data-proof-url="{{ asset($order->payment_proof) }}" data-cust-name="{{ $order->customer_name }}" data-total="Rp {{ number_format($order->total, 0, ',', '.') }}" data-is-paid="{{ $order->is_paid ? '1' : '0' }}" type="button" title="Lihat Bukti Transfer Pelanggan" style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE;">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                        <span>Bukti Bayar</span>
+                                                    </button>
+                                                @endif
+                                                @if($isWaitingPay)
+                                                    <button class="btn-action-validate-pay btn-validate-order" data-order-id="{{ $order->id }}" type="button" title="Validasi Pembayaran: Set Lunas &amp; Mulai Proses Pesanan">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
                                                         <span>Validasi Bayar</span>
                                                     </button>
                                                 @elseif($order->status === 'Diproses')
-                                                    <button class="btn-action-ready-order btn-ready-order" data-order-id="{{ $order->id }}" type="button" title="Selesaikan & Tandai Pesanan Siap">
+                                                    <button class="btn-action-ready-order btn-ready-order" data-order-id="{{ $order->id }}" type="button" title="Selesaikan &amp; Tandai Pesanan Siap">
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                                         <span>Pesanan Siap</span>
                                                     </button>
                                                 @endif
-                                                <button class="btn-action-print-receipt btn-open-receipt" data-order-id="{{ $order->id }}" type="button" title="Buka & Cetak Struk Belanja">
+                                                <button class="btn-action-print-receipt btn-open-receipt" data-order-id="{{ $order->id }}" type="button" title="Buka &amp; Cetak Struk Belanja">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--soft-blue)" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                                                     <span>Cetak Struk</span>
                                                 </button>
@@ -786,12 +851,33 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="7" style="text-align: center; color: #9CA3AF; padding: 2.5rem;">
-                                            Tidak ada data pesanan pelanggan.
+                                    <tr id="ordersEmptyInitialRow">
+                                        <td colspan="7" class="admin-table-empty-td">
+                                            <div class="admin-table-empty-box">
+                                                <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                                <h4 class="admin-empty-title">Belum Ada Pesanan Masuk</h4>
+                                                <p class="admin-empty-desc">Belum ada transaksi pelanggan saat ini. Pesanan online maupun kasir walk-in akan otomatis tercatat di sini.</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
+                                <!-- Filter Empty State (Muncul saat filter / pencarian tidak menemukan data) -->
+                                <tr id="ordersEmptyFilterRow" style="display: none;">
+                                    <td colspan="7" class="admin-table-empty-td">
+                                        <div class="admin-table-empty-box">
+                                            <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                            <h4 class="admin-empty-title" id="ordersEmptyTitle">Tidak Ada Pesanan</h4>
+                                            <p class="admin-empty-desc" id="ordersEmptyDesc">Tidak ada data transaksi yang cocok dengan kriteria filter saat ini.</p>
+                                            <button type="button" class="btn-admin-reset-filter" id="btnResetOrderFilter">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                                    <path d="M3 3v5h5"/>
+                                                </svg>
+                                                <span>Reset Filter &amp; Pencarian</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -806,7 +892,7 @@
                 @endphp
 
                 <!-- Sub-tab 1: Produk Satuan -->
-                <div id="subtabContentProducts" class="inv-subtab-content">
+                <div id="subtabContentProducts" class="inv-subtab-content" style="{{ $activeSubtab === 'bundles' ? 'display: none;' : '' }}">
                     <!-- Top Header Card -->
                 <div class="panel-top-header-card">
                     <div>
@@ -950,12 +1036,33 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="6" style="text-align: center; color: #9CA3AF; padding: 2.5rem;">
-                                            Belum ada data produk di freezer.
+                                    <tr id="inventoryEmptyInitialRow">
+                                        <td colspan="6" class="admin-table-empty-td">
+                                            <div class="admin-table-empty-box">
+                                                <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                                <h4 class="admin-empty-title">Belum Ada Data Produk</h4>
+                                                <p class="admin-empty-desc">Belum ada produk di etalase freezer. Silakan tambahkan produk baru untuk mulai berjualan.</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
+                                <!-- Filter Empty State Inventaris -->
+                                <tr id="inventoryEmptyFilterRow" style="display: none;">
+                                    <td colspan="6" class="admin-table-empty-td">
+                                        <div class="admin-table-empty-box">
+                                            <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                            <h4 class="admin-empty-title" id="inventoryEmptyTitle">Produk Tidak Ditemukan</h4>
+                                            <p class="admin-empty-desc" id="inventoryEmptyDesc">Tidak ada produk yang cocok dengan pencarian atau filter stok saat ini.</p>
+                                            <button type="button" class="btn-admin-reset-filter" id="btnResetInventoryFilter">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                                    <path d="M3 3v5h5"/>
+                                                </svg>
+                                                <span>Reset Filter &amp; Pencarian</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -963,7 +1070,7 @@
                 </div> <!-- /#subtabContentProducts -->
 
                 <!-- Sub-tab 2: Paket Hemat Promosi (Bundling) -->
-                <div id="subtabContentBundles" class="inv-subtab-content" style="display: none;">
+                <div id="subtabContentBundles" class="inv-subtab-content" style="{{ $activeSubtab === 'bundles' ? 'display: block;' : 'display: none;' }}">
                     <!-- Top Header Card Paket Hemat -->
                     <div class="panel-top-header-card">
                         <div>
@@ -1090,12 +1197,33 @@
                                             </td>
                                         </tr>
                                     @empty
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; color: #9CA3AF; padding: 2.5rem;">
-                                                Belum ada paket hemat promo. Klik tombol <strong>Tambah Paket Hemat</strong> untuk membuat paket baru.
+                                        <tr id="bundlesEmptyInitialRow">
+                                            <td colspan="6" class="admin-table-empty-td">
+                                                <div class="admin-table-empty-box">
+                                                    <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                                    <h4 class="admin-empty-title">Belum Ada Paket Promo</h4>
+                                                    <p class="admin-empty-desc">Belum ada paket bundling yang aktif. Klik tombol <strong>Tambah Paket Hemat</strong> untuk membuat paket promo baru.</p>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforelse
+                                    <!-- Filter Empty State Paket Hemat -->
+                                    <tr id="bundlesEmptyFilterRow" style="display: none;">
+                                        <td colspan="6" class="admin-table-empty-td">
+                                            <div class="admin-table-empty-box">
+                                                <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                                <h4 class="admin-empty-title" id="bundlesEmptyTitle">Paket Hemat Tidak Ditemukan</h4>
+                                                <p class="admin-empty-desc" id="bundlesEmptyDesc">Tidak ada paket hemat yang sesuai dengan kata kunci pencarian Anda.</p>
+                                                <button type="button" class="btn-admin-reset-filter" id="btnResetBundleFilter">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                                        <path d="M3 3v5h5"/>
+                                                    </svg>
+                                                    <span>Reset Pencarian</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1200,12 +1328,33 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="4" style="text-align: center; color: #9CA3AF; padding: 2.5rem;">
-                                            Belum ada kategori yang dibuat.
+                                    <tr id="categoriesEmptyInitialRow">
+                                        <td colspan="4" class="admin-table-empty-td">
+                                            <div class="admin-table-empty-box">
+                                                <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                                <h4 class="admin-empty-title">Belum Ada Kategori</h4>
+                                                <p class="admin-empty-desc">Belum ada kategori produk. Klik tombol Tambah Kategori untuk mengelompokkan produk Anda.</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
+                                <!-- Filter Empty State Kategori Table -->
+                                <tr id="categoriesEmptyFilterRow" style="display: none;">
+                                    <td colspan="4" class="admin-table-empty-td">
+                                        <div class="admin-table-empty-box">
+                                            <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                            <h4 class="admin-empty-title" id="categoriesEmptyTitle">Kategori Tidak Ditemukan</h4>
+                                            <p class="admin-empty-desc" id="categoriesEmptyDesc">Tidak ada kategori yang cocok dengan kata kunci pencarian Anda.</p>
+                                            <button type="button" class="btn-admin-reset-filter" id="btnResetCategoryFilter">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                                    <path d="M3 3v5h5"/>
+                                                </svg>
+                                                <span>Reset Pencarian</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -1239,10 +1388,29 @@
                             </p>
                         </div>
                     @empty
-                        <div style="grid-column: 1 / -1; text-align: center; color: #9CA3AF; padding: 2.5rem;">
-                            Belum ada kategori yang dibuat.
+                        <div style="grid-column: 1 / -1; padding: 3rem 1.5rem; background: #FAFAF8; border-radius: 16px;">
+                            <div class="admin-table-empty-box">
+                                <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                                <h4 class="admin-empty-title">Belum Ada Kategori</h4>
+                                <p class="admin-empty-desc">Belum ada kategori produk. Klik tombol Tambah Kategori untuk mulai mengelompokkan produk Anda.</p>
+                            </div>
                         </div>
                     @endforelse
+                    <!-- Filter Empty State Kategori Grid View -->
+                    <div id="categoriesGridEmptyFilterBox" style="grid-column: 1 / -1; display: none; padding: 3rem 1.5rem; background: #FAFAF8; border-radius: 16px;">
+                        <div class="admin-table-empty-box">
+                            <img src="{{ asset('images/ica_logo.png') }}" alt="Ica Frozen Food" class="admin-empty-watermark-logo" aria-hidden="true">
+                            <h4 class="admin-empty-title" id="categoriesGridEmptyTitle">Kategori Tidak Ditemukan</h4>
+                            <p class="admin-empty-desc" id="categoriesGridEmptyDesc">Tidak ada kategori yang cocok dengan kata kunci pencarian Anda.</p>
+                            <button type="button" class="btn-admin-reset-filter" id="btnResetCategoryGridFilter">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                </svg>
+                                <span>Reset Pencarian</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1261,18 +1429,22 @@
                         </p>
                     </div>
 
-                    <!-- Tombol Ekspor Spreadsheet -->
+                    <!-- Tombol Aksi Laporan: Export Excel & Cetak PDF (Konsisten) -->
                     <div class="panel-header-actions">
-                        <a href="{{ route('admin.export.orders') }}" class="btn-excel-green" title="Download Rekap Transaksi Penjualan Excel/CSV">
+                        <a href="{{ route('admin.export.orders') }}" class="btn-excel-green" title="Download Excel Laporan Penjualan">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg>
-                            <span>Export Laporan Penjualan</span>
+                            <span>Export Excel</span>
                         </a>
+                        <button type="button" id="btnPrintSalesReportPdf" class="btn-primary-blue" title="Cetak / Simpan Dokumen Laporan PDF">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                            <span>Cetak Laporan PDF</span>
+                        </button>
                     </div>
                 </div>
 
                 <!-- Filter Toolbar: Pemilihan Rentang Waktu (7 Hari, 30 Hari, Bulan Ini, Semua) -->
                 <div class="admin-toolbar-card">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; min-width: 0; max-width: 100%;">
+                    <div class="report-filters-wrapper">
                         <span style="font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-right: 0.25rem; flex-shrink: 0;">Periode Analisis:</span>
                         <div class="toolbar-filters-group">
                             <button type="button" class="filter-btn-pill active report-range-btn" data-range="7">7 Hari Terakhir</button>
@@ -1283,6 +1455,69 @@
                     </div>
                     <div id="reportActiveRangeText" style="font-size: 0.75rem; font-weight: 700; color: #64748B; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0.45rem 0.85rem; border-radius: var(--radius-md);">
                         Rentang: Memuat data...
+                    </div>
+                </div>
+
+                <!-- Dokumen Khusus Cetak / Simpan PDF Resmi (Tampil saat window.print) -->
+                <div id="printableSalesReportDoc">
+                    <div class="print-header-letterhead">
+                        <div>
+                            <h1 class="print-store-title">ICA FROZEN FOOD</h1>
+                            <p class="print-store-subtitle">Pusat Makanan Beku Berkualitas, Olahan Daging &amp; Dimsum Pilihan</p>
+                            <p class="print-store-subtitle">Jl. KH Wahid Hasyim, Sananwetan, Kota Blitar | Telp/WA: 0878-5451-3770</p>
+                        </div>
+                        <div class="print-doc-badge">
+                            <h2>LAPORAN PENJUALAN RESMI</h2>
+                            <p id="printDocDate">Dicetak pada: {{ date('d/m/Y H:i') }} WIB</p>
+                            <p id="printDocPeriod">Periode: 7 Hari Terakhir</p>
+                        </div>
+                    </div>
+
+                    <div class="print-stats-summary">
+                        <div class="print-stat-box">
+                            <p class="print-stat-label">Total Omzet Penjualan</p>
+                            <p class="print-stat-val" id="printTotalRevenue">Rp 0</p>
+                        </div>
+                        <div class="print-stat-box">
+                            <p class="print-stat-label">Transaksi Berhasil</p>
+                            <p class="print-stat-val" id="printTotalOrders">0 Pesanan</p>
+                        </div>
+                        <div class="print-stat-box">
+                            <p class="print-stat-label">Rata-rata Transaksi (AOV)</p>
+                            <p class="print-stat-val" id="printAverageOrder">Rp 0</p>
+                        </div>
+                    </div>
+
+                    <h4 style="font-size: 10pt; font-weight: 700; margin-bottom: 8px; color: #0F172A;">RINGKASAN TRANSAKSI PENJUALAN</h4>
+                    <table class="print-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 14%;">No. Order</th>
+                                <th style="width: 18%;">Tanggal &amp; Waktu</th>
+                                <th style="width: 22%;">Pelanggan</th>
+                                <th style="width: 16%;">Metode Bayar</th>
+                                <th style="width: 14%;">Status</th>
+                                <th style="width: 16%; text-align: right;">Total Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody id="printOrdersTableBody">
+                            <!-- Diisi via admin.js -->
+                        </tbody>
+                    </table>
+
+                    <div class="print-signatures">
+                        <div class="print-sig-col">
+                            <p>Penanggung Jawab POS,</p>
+                            <div class="print-sig-space"></div>
+                            <span class="print-sig-name">{{ Auth::user()->name ?? 'Admin Kasir' }}</span>
+                            <p style="font-size: 8pt; color: #64748B; margin-top: 3px;">Staff Administrasi / POS</p>
+                        </div>
+                        <div class="print-sig-col">
+                            <p>Mengetahui &amp; Menyetujui,</p>
+                            <div class="print-sig-space"></div>
+                            <span class="print-sig-name">Siti Munawaroh (Ibu Ica)</span>
+                            <p style="font-size: 8pt; color: #64748B; margin-top: 3px;">Pemilik Toko Ica Frozen Food</p>
+                        </div>
                     </div>
                 </div>
 
@@ -1662,9 +1897,16 @@
                             <label style="margin: 0; font-weight: 700;">Pilih Produk Relasional (Isi Paket) *</label>
                             <span style="font-size: 0.75rem; color: #0284C7; font-weight: 700;" id="addBundleCalcNote">Pilih minimal 1 produk</span>
                         </div>
+
+                        <!-- Search Box Produk Paket -->
+                        <div style="position: relative; margin-bottom: 0.45rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="searchAddBundleProdInput" placeholder="Cari nama produk untuk dimasukkan ke paket..." style="width: 100%; padding: 0.45rem 0.65rem 0.45rem 2rem; font-size: 0.78rem; border: 1px solid #CBD5E1; border-radius: 8px; background: #FFFFFF;">
+                        </div>
+
                         <div class="bundle-products-selector" style="border: 1px solid #E2E8F0; border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 0.5rem; background: #F8FAFC;">
                             @foreach($products as $p)
-                                <div class="bundle-prod-choice-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.5rem; border-radius: 6px; margin-bottom: 4px; background: #FFFFFF; border: 1px solid #E2E8F0;">
+                                <div class="bundle-prod-choice-row" data-prod-name="{{ strtolower($p->name) }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.5rem; border-radius: 6px; margin-bottom: 4px; background: #FFFFFF; border: 1px solid #E2E8F0;">
                                     <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; flex: 1; font-weight: 500; font-size: 0.8125rem;">
                                         <input type="checkbox" class="cb-bundle-prod" data-id="{{ $p->id }}" data-price="{{ $p->price }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #0284C7;">
                                         <img src="{{ $p->image }}" alt="{{ $p->name }}" style="width: 28px; height: 28px; border-radius: 4px; object-fit: cover;" onerror="this.src='/images/products/nugget.png'">
@@ -1698,7 +1940,7 @@
                         <div class="form-group-item">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                                 <label for="addBundleBadgeRight" style="margin-bottom: 0;">Label Diskon Kanan</label>
-                                <button type="button" id="btnAutoCalcAddBadge" style="font-size: 11px; color: var(--soft-blue); background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: 600;">✨ Hitung Otomatis Diskon</button>
+                                <button type="button" id="btnAutoCalcAddBadge" style="font-size: 11px; color: var(--soft-blue); background: #F1F5F9; border: 1px solid #E2E8F0; cursor: pointer; text-decoration: none; font-weight: 700; padding: 2px 8px; border-radius: 6px; transition: all 0.15s ease;">Hitung Otomatis Diskon</button>
                             </div>
                             <input type="text" id="addBundleBadgeRight" placeholder="Kosongkan untuk otomatis dihitung: Hemat Rp X">
                         </div>
@@ -1780,9 +2022,16 @@
                             <label style="margin: 0; font-weight: 700;">Pilih Produk Relasional (Isi Paket) *</label>
                             <span style="font-size: 0.75rem; color: #0284C7; font-weight: 700;" id="editBundleCalcNote">Pilih minimal 1 produk</span>
                         </div>
+
+                        <!-- Search Box Produk Paket (Edit) -->
+                        <div style="position: relative; margin-bottom: 0.45rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="searchEditBundleProdInput" placeholder="Cari nama produk untuk dimasukkan ke paket..." style="width: 100%; padding: 0.45rem 0.65rem 0.45rem 2rem; font-size: 0.78rem; border: 1px solid #CBD5E1; border-radius: 8px; background: #FFFFFF;">
+                        </div>
+
                         <div class="bundle-products-selector" id="editBundleProductsContainer" style="border: 1px solid #E2E8F0; border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 0.5rem; background: #F8FAFC;">
                             @foreach($products as $p)
-                                <div class="bundle-prod-choice-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.5rem; border-radius: 6px; margin-bottom: 4px; background: #FFFFFF; border: 1px solid #E2E8F0;">
+                                <div class="bundle-prod-choice-row" data-prod-name="{{ strtolower($p->name) }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.5rem; border-radius: 6px; margin-bottom: 4px; background: #FFFFFF; border: 1px solid #E2E8F0;">
                                     <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer; flex: 1; font-weight: 500; font-size: 0.8125rem;">
                                         <input type="checkbox" class="cb-edit-bundle-prod" data-id="{{ $p->id }}" data-price="{{ $p->price }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #0284C7;">
                                         <img src="{{ $p->image }}" alt="{{ $p->name }}" style="width: 28px; height: 28px; border-radius: 4px; object-fit: cover;" onerror="this.src='/images/products/nugget.png'">
@@ -1816,7 +2065,7 @@
                         <div class="form-group-item">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                                 <label for="editBundleBadgeRight" style="margin-bottom: 0;">Label Diskon Kanan</label>
-                                <button type="button" id="btnAutoCalcEditBadge" style="font-size: 11px; color: var(--soft-blue); background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: 600;">✨ Hitung Otomatis Diskon</button>
+                                <button type="button" id="btnAutoCalcEditBadge" style="font-size: 11px; color: var(--soft-blue); background: #F1F5F9; border: 1px solid #E2E8F0; cursor: pointer; text-decoration: none; font-weight: 700; padding: 2px 8px; border-radius: 6px; transition: all 0.15s ease;">Hitung Otomatis Diskon</button>
                             </div>
                             <input type="text" id="editBundleBadgeRight" placeholder="Kosongkan untuk otomatis dihitung: Hemat Rp X">
                         </div>
@@ -1910,9 +2159,9 @@
                 <p style="margin: 2px 0 0;">Simpan struk ini sebagai bukti pembayaran resmi.</p>
             </div>
 
-            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <div class="receipt-actions-row" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                 <button type="button" class="btn-modal-cancel" style="flex: 1;" onclick="document.getElementById('modalReceipt').classList.remove('open')">Tutup</button>
-                <button type="button" class="btn-primary-blue" style="flex: 1; justify-content: center;" onclick="window.print()">
+                <button type="button" class="btn-primary-blue" style="flex: 1; justify-content: center;" onclick="window.printThermalReceipt ? window.printThermalReceipt() : window.print()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                     <span>Cetak Struk</span>
                 </button>
@@ -2019,7 +2268,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                     </div>
                     <div>
-                        <h3 class="pos-header-title">Kasir POS - Tambah Pesanan Walk-in</h3>
+                        <h3 class="pos-header-title">Kasir POS - Tambah Pesanan</h3>
                         <p class="pos-header-sub">Catat transaksi langsung pelanggan toko, potong stok otomatis, dan cetak struk kasir.</p>
                     </div>
                 </div>
@@ -2155,7 +2404,113 @@
             </div>
         </div>
     </div>
+        <!-- Modal Validasi Bukti Pembayaran -->
+    <div id="modalViewPaymentProof" class="admin-modal-backdrop">
+        <div class="admin-modal-box" style="max-width: 500px;">
+            <div class="modal-header-row">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #EFF6FF; display: flex; align-items: center; justify-content: center; color: #2563EB;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="modal-header-title" id="proofModalTitle">Validasi Bukti Pembayaran</h3>
+                        <p id="proofModalSubtitle" style="font-size: 11px; color: #64748B; margin: 0;">Verifikasi keaslian transfer pelanggan</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-modal-close" onclick="document.getElementById('modalViewPaymentProof').classList.remove('open')" aria-label="Tutup" title="Tutup">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body-pad">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 1rem;">
+                    <div>
+                        <span style="display: block; font-size: 11px; color: #64748B; font-weight: 600;">Pelanggan & Nominal</span>
+                        <strong id="proofCustomerName" style="font-size: 0.875rem; color: #1E293B;">-</strong>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="display: block; font-size: 11px; color: #64748B; font-weight: 600;">Total Belanja</span>
+                        <strong id="proofTotalAmount" style="font-size: 1rem; color: #059669; font-weight: 800;">Rp 0</strong>
+                    </div>
+                </div>
+
+                <!-- Foto Bukti Transfer -->
+                <div style="text-align: center; background: #0F172A; border-radius: 12px; padding: 0.5rem; overflow: hidden; min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                    <img id="proofPreviewImg" src="" alt="Bukti Transfer Pelanggan" style="max-height: 380px; max-width: 100%; object-fit: contain; border-radius: 8px;">
+                </div>
+
+                <!-- Action Buttons: Verifikasi / Tolak -->
+                <div style="display: flex; gap: 0.65rem; margin-top: 1.25rem;">
+                    <button type="button" id="btnRejectPaymentProof" class="btn-modal-cancel" style="flex: 1; padding: 0.65rem 1rem; color: #EF4444; border-color: #FECACA; background: #FEF2F2; font-weight: 700;">
+                        Tolak Bukti
+                    </button>
+                    <button type="button" id="btnAcceptPaymentProof" class="btn-excel-green" style="flex: 2; justify-content: center; padding: 0.65rem 1rem; font-weight: 700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Terima &amp; Set Lunas</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Admin Mobile Bottom Navigation Bar (Berdasarkan Menu Profil & Operasional Toko) -->
+    <nav class="admin-mobile-bottom-nav" id="adminBottomNav" aria-label="Navigasi Bawah Admin">
+        <!-- 1. Lihat Toko (Homepage) -->
+        <a href="{{ route('home') }}" class="admin-bottom-nav-item" aria-label="Lihat Toko (Homepage)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>Toko</span>
+        </a>
+
+        <!-- 2. Menu Operasional Lengkap (Buka Sidebar Drawer) -->
+        <button type="button" class="admin-bottom-nav-item" id="adminBottomBtnMenu" aria-label="Buka Menu Lengkap">
+            <div class="admin-bottom-nav-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="6" x2="20" y2="6"/>
+                    <line x1="4" y1="12" x2="20" y2="12"/>
+                    <line x1="4" y1="18" x2="20" y2="18"/>
+                </svg>
+                <span id="adminBottomOrdersBadge" class="admin-bottom-nav-badge" style="display: none;">0</span>
+            </div>
+            <span>Menu</span>
+        </button>
+
+        <!-- 3. Kasir POS (Pusat Aksi Cepat) -->
+        <button type="button" class="admin-bottom-nav-item" id="adminBottomBtnPos" aria-label="Kasir POS">
+            <div class="admin-bottom-pos-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+            </div>
+            <span style="font-weight: 800; color: var(--navy);">Kasir POS</span>
+        </button>
+
+        <!-- 4. Profil Admin (Kelola Profil & Password) -->
+        <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'profile' ? 'active' : '' }}" data-tab="profile" id="adminBottomBtnProfile" aria-label="Kelola Profil Administrator">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>Profil</span>
+        </button>
+
+        <!-- 5. Keluar (Logout) -->
+        <form method="POST" action="{{ route('logout') }}" onsubmit="try{sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}" style="flex: 1; display: flex; margin: 0; height: 100%;">
+            @csrf
+            <button type="submit" class="admin-bottom-nav-item" aria-label="Keluar dari sesi admin" style="width: 100%; border: none; background: transparent; cursor: pointer;" onclick="return confirm('Apakah Anda yakin ingin keluar dari sesi admin?');">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span style="color: #EF4444;">Keluar</span>
+            </button>
+        </form>
+    </nav>
+
     <script>
+        window.__STORE_STATUS__ = @json($storeStatus ?? ['is_open' => true]);
         window.__BASE_URL__ = "{{ url('/') }}";
         window.__API_URL__ = "{{ url('api') }}";
         window.__ADMIN_PRODUCTS__ = @json($products ?? \App\Models\Product::all());

@@ -18,16 +18,18 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, string $role): Response
     {
         if (!auth()->check()) {
-            abort(403, 'Akses ditolak. Anda tidak memiliki hak akses halaman ini.');
+            return redirect()->route('login');
         }
 
         $user = auth()->user();
-        $hasRole = ($role === 'admin') 
-            ? ($user->role === 'admin' || $user->isAdmin())
-            : ($user->role === $role);
+        $isAdmin = ($user->role === 'admin' || $user->isAdmin());
+        $hasRole = ($role === 'admin') ? $isAdmin : ($user->role === $role || $isAdmin);
 
         if (!$hasRole) {
-            abort(403, 'Akses ditolak. Anda tidak memiliki hak akses halaman ini.');
+            if ($role === 'admin') {
+                return redirect()->route('home')->with('error', 'Akses ditolak. Halaman ini khusus untuk administrator.');
+            }
+            return redirect()->route('admin.dashboard');
         }
 
         return $next($request);

@@ -25,3 +25,5 @@ ngrok.exe
 .ngrok.exe*
 *.exe
 *.pdf
+/public/uploads/*
+!/public/uploads/proofs/.gitkeep

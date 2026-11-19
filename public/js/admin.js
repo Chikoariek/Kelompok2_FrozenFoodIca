@@ -18,6 +18,17 @@ document.addEventListener('DOMContentLoaded', function () {
   let orders = window.__ADMIN_ORDERS__ || [];
   let user = window.__ADMIN_USER__ || {};
 
+  setTimeout(() => {
+    const bottomOrdersBadge = document.getElementById('adminBottomOrdersBadge');
+    if (bottomOrdersBadge && orders) {
+      const pendingCount = orders.filter(o => o.status === 'Menunggu Bayar' || o.status === 'Menunggu Konfirmasi Admin' || o.status === 'Diproses').length;
+      if (pendingCount > 0) {
+        bottomOrdersBadge.textContent = pendingCount;
+        bottomOrdersBadge.style.display = 'flex';
+      }
+    }
+  }, 100);
+
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
   // --- 1. Notifikasi Pesan Popup (Toast) ---
@@ -33,20 +44,81 @@ document.addEventListener('DOMContentLoaded', function () {
     const toast = document.createElement('div');
     toast.className = `toast-msg ${type}`;
     let iconSvg = '';
+    const isLogoutMsg = message && (message.toLowerCase().includes('keluar') || message.toLowerCase().includes('logout'));
+
     if (type === 'error') {
-      iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+      iconSvg = `
+        <div class="toast-icon-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>`;
+    } else if (type === 'warning') {
+      iconSvg = `
+        <div class="toast-icon-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </div>`;
+    } else if (isLogoutMsg) {
+      iconSvg = `
+        <div class="toast-icon-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </div>`;
+    } else if (type === 'info') {
+      iconSvg = `
+        <div class="toast-icon-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </div>`;
     } else {
-      iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+      iconSvg = `
+        <div class="toast-icon-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="16 9 10.5 14.5 8 12"></polyline>
+          </svg>
+        </div>`;
     }
 
-    toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+    toast.innerHTML = `${iconSvg}<span>${message}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(15px)';
       setTimeout(() => toast.remove(), 300);
-    }, 3200);
+    }, 3500);
+  };
+
+  // Interceptor Otomatis: Tangani Sesi Habis (Session Expired 401/419) pada Pemanggilan Fetch API
+  const originalAdminFetch = window.fetch;
+  window.fetch = async function (...args) {
+    try {
+      const response = await originalAdminFetch.apply(this, args);
+      if (response && (response.status === 401 || response.status === 419)) {
+        if (typeof window.showToast === 'function') {
+          window.showToast('Sesi Anda telah berakhir demi keamanan. Mengalihkan ke login...', 'warning');
+        }
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      }
+      return response;
+    } catch (err) {
+      throw err;
+    }
   };
 
   // --- 2. Navigasi Sidebar Mobile & Dropdown Profil Admin ---
@@ -110,27 +182,27 @@ document.addEventListener('DOMContentLoaded', function () {
   const tabMeta = {
     dashboard: {
       title: 'Dashboard Overview',
-      subtitle: 'Ringkasan data operasional, stok freezer, dan transaksi toko',
+      subtitle: 'Ringkasan operasional toko & stok freezer',
     },
     profile: {
       title: 'Profil Administrator',
-      subtitle: 'Kelola informasi akun administrator toko, foto profil, dan kata sandi',
+      subtitle: 'Kelola informasi akun & kata sandi',
     },
     orders: {
-      title: 'Proses Pesanan Pelanggan',
-      subtitle: 'Pantau transaksi pembayaran, status pengiriman kurir, dan kelola pesanan',
+      title: 'Pesanan Pelanggan',
+      subtitle: 'Validasi pembayaran & kelola pesanan',
     },
     inventory: {
-      title: 'Data Produk & Inventaris Freezer',
-      subtitle: 'Kelola stok di freezer, pembaruan harga berkala, dan detail kemasan produk',
+      title: 'Inventaris Produk',
+      subtitle: 'Kelola stok freezer & etalase makanan beku',
     },
     categories: {
-      title: 'Manajemen Kategori Produk',
-      subtitle: 'Kelola pengelompokan jenis makanan beku pada katalog etalase belanja pelanggan',
+      title: 'Kategori Produk',
+      subtitle: 'Kelola master kategori etalase',
     },
     reports: {
-      title: 'Laporan Penjualan & Analisis Toko',
-      subtitle: 'Pantau grafik tren omzet pendapatan, performa transaksi harian, dan analisis performa toko',
+      title: 'Laporan Penjualan',
+      subtitle: 'Rekap omzet & performa transaksi',
     },
   };
 
@@ -141,6 +213,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!tabMeta[tabId]) return;
 
       sidebarBtns.forEach((btn) => {
+          btn.classList.toggle(
+              "active",
+              btn.getAttribute("data-tab") === tabId,
+          );
+      });
+
+      // Sync Admin Mobile Bottom Nav
+      document.querySelectorAll('.admin-bottom-nav-item[data-tab]').forEach((btn) => {
           btn.classList.toggle(
               "active",
               btn.getAttribute("data-tab") === tabId,
@@ -196,6 +276,26 @@ document.addEventListener('DOMContentLoaded', function () {
       const tab = this.getAttribute('data-tab');
       if (tab) switchTab(tab);
     });
+  });
+
+  // Admin Mobile Bottom Nav Click Handlers
+  document.querySelectorAll('.admin-bottom-nav-item[data-tab]').forEach((btn) => {
+    btn.addEventListener('click', function () {
+      const tab = this.getAttribute('data-tab');
+      if (tab) {
+        closeMobileSidebar();
+        switchTab(tab);
+      }
+    });
+  });
+
+  document.getElementById('adminBottomBtnPos')?.addEventListener('click', () => {
+    closeMobileSidebar();
+    document.getElementById('btnOpenOfflineOrder')?.click();
+  });
+
+  document.getElementById('adminBottomBtnMenu')?.addEventListener('click', () => {
+    openMobileSidebar();
   });
 
   // Quick cross-tab links
@@ -465,20 +565,65 @@ document.addEventListener('DOMContentLoaded', function () {
   const orderFilterBtns = document.querySelectorAll('.order-filter-btn');
   const orderSearchInput = document.getElementById('orderSearchInput');
   const orderRows = document.querySelectorAll('#ordersTableBody tr[data-order-row]');
+  const ordersEmptyFilterRow = document.getElementById('ordersEmptyFilterRow');
+  const ordersEmptyTitle = document.getElementById('ordersEmptyTitle');
+  const ordersEmptyDesc = document.getElementById('ordersEmptyDesc');
+  const btnResetOrderFilter = document.getElementById('btnResetOrderFilter');
   let activeOrderStatusFilter = 'Semua';
 
   function filterOrders() {
     const q = (orderSearchInput?.value || '').toLowerCase().trim();
+    let visibleCount = 0;
 
     orderRows.forEach((row) => {
-      const status = row.getAttribute('data-status') || '';
+      let status = row.getAttribute('data-status') || '';
+      if (status === 'Menunggu Bayar' || status === 'Menunggu Konfirmasi Admin') {
+        status = 'Menunggu Pembayaran';
+      }
       const text = row.textContent.toLowerCase();
 
       const matchStatus = activeOrderStatusFilter === 'Semua' || status === activeOrderStatusFilter;
       const matchSearch = !q || text.includes(q);
 
-      row.style.display = matchStatus && matchSearch ? '' : 'none';
+      if (matchStatus && matchSearch) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
     });
+
+    if (ordersEmptyFilterRow) {
+      if (visibleCount === 0 && orderRows.length > 0) {
+        ordersEmptyFilterRow.style.display = '';
+        if (ordersEmptyTitle && ordersEmptyDesc) {
+          if (q && activeOrderStatusFilter !== 'Semua') {
+            ordersEmptyTitle.textContent = `Tidak Ada Pesanan ${activeOrderStatusFilter}`;
+            ordersEmptyDesc.textContent = `Tidak ditemukan pesanan berstatus "${activeOrderStatusFilter}" dengan pencarian "${q}".`;
+          } else if (q) {
+            ordersEmptyTitle.textContent = 'Pesanan Tidak Ditemukan';
+            ordersEmptyDesc.textContent = `Tidak ditemukan transaksi dengan kata kunci "${q}". Silakan periksa kembali no. order atau nama pelanggan.`;
+          } else if (activeOrderStatusFilter === 'Dibatalkan') {
+            ordersEmptyTitle.textContent = 'Tidak Ada Pesanan Dibatalkan';
+            ordersEmptyDesc.textContent = 'Hebat! Belum ada riwayat transaksi pelanggan yang dibatalkan.';
+          } else if (activeOrderStatusFilter === 'Menunggu Pembayaran') {
+            ordersEmptyTitle.textContent = 'Tidak Ada Antrean Pembayaran';
+            ordersEmptyDesc.textContent = 'Semua pesanan saat ini sudah terbayar atau belum ada tagihan tertunda.';
+          } else if (activeOrderStatusFilter === 'Diproses') {
+            ordersEmptyTitle.textContent = 'Tidak Ada Pesanan Sedang Diproses';
+            ordersEmptyDesc.textContent = 'Semua pesanan operasional saat ini sudah disiapkan.';
+          } else if (activeOrderStatusFilter === 'Selesai') {
+            ordersEmptyTitle.textContent = 'Belum Ada Pesanan Selesai';
+            ordersEmptyDesc.textContent = 'Pesanan yang telah diserahkan atau selesai akan tercatat di sini.';
+          } else {
+            ordersEmptyTitle.textContent = `Tidak Ada Pesanan (${activeOrderStatusFilter})`;
+            ordersEmptyDesc.textContent = 'Tidak ada transaksi yang cocok dengan kriteria filter yang dipilih.';
+          }
+        }
+      } else {
+        ordersEmptyFilterRow.style.display = 'none';
+      }
+    }
   }
 
   orderFilterBtns.forEach((btn) => {
@@ -491,6 +636,19 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   orderSearchInput?.addEventListener('input', filterOrders);
+
+  btnResetOrderFilter?.addEventListener('click', function () {
+    if (orderSearchInput) orderSearchInput.value = '';
+    orderFilterBtns.forEach((b) => {
+      if (b.getAttribute('data-status') === 'Semua') {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+    activeOrderStatusFilter = 'Semua';
+    filterOrders();
+  });
 
   // Handle Action Buttons in Orders Table -> Langsung tersimpan di database
   document.addEventListener('click', async function (e) {
@@ -755,17 +913,30 @@ document.addEventListener('DOMContentLoaded', function () {
     if (receiptGrandTotal) receiptGrandTotal.textContent = `Rp ${grand.toLocaleString('id-ID')}`;
 
     if (receiptPayStatus) {
-      if (order.status === 'Selesai' || order.is_paid) {
+      if (order.status === 'Dibatalkan') {
+        receiptPayStatus.textContent = 'DIBATALKAN';
+        receiptPayStatus.style.color = '#DC2626';
+      } else if (order.status === 'Selesai' || order.is_paid) {
         receiptPayStatus.textContent = 'LUNAS (SELESAI)';
         receiptPayStatus.style.color = '#059669';
       } else {
-        receiptPayStatus.textContent = `STATUS: ${order.status.toUpperCase()}`;
-        receiptPayStatus.style.color = '#F59E0B';
+        receiptPayStatus.textContent = `STATUS: ${(order.status || 'Menunggu Pembayaran').toUpperCase()}`;
+        receiptPayStatus.style.color = '#D97706';
       }
     }
 
     modalReceipt?.classList.add('open');
   };
+
+  window.printThermalReceipt = function () {
+    document.body.classList.remove('is-printing-report');
+    document.body.classList.add('is-printing-receipt');
+    window.print();
+  };
+
+  window.addEventListener('afterprint', () => {
+    document.body.classList.remove('is-printing-report', 'is-printing-receipt');
+  });
 
   document.addEventListener('click', function (e) {
     const btnReceipt = e.target.closest('.btn-open-receipt');
@@ -779,10 +950,15 @@ document.addEventListener('DOMContentLoaded', function () {
   const inventorySearchInput = document.getElementById('inventorySearchInput');
   const prodFilterBtns = document.querySelectorAll('.prod-filter-btn');
   const inventoryRows = document.querySelectorAll('#inventoryTableBody tr[data-prod-row]');
+  const inventoryEmptyFilterRow = document.getElementById('inventoryEmptyFilterRow');
+  const inventoryEmptyTitle = document.getElementById('inventoryEmptyTitle');
+  const inventoryEmptyDesc = document.getElementById('inventoryEmptyDesc');
+  const btnResetInventoryFilter = document.getElementById('btnResetInventoryFilter');
   let activeInventoryFilter = 'all';
 
   function filterInventory() {
     const q = (inventorySearchInput?.value || '').toLowerCase().trim();
+    let visibleCount = 0;
 
     inventoryRows.forEach((row) => {
       const stock = parseInt(row.getAttribute('data-stock') || '0', 10);
@@ -791,8 +967,36 @@ document.addEventListener('DOMContentLoaded', function () {
       const matchFilter = activeInventoryFilter === 'all' || stock <= 5;
       const matchSearch = !q || text.includes(q);
 
-      row.style.display = matchFilter && matchSearch ? '' : 'none';
+      if (matchFilter && matchSearch) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
     });
+
+    if (inventoryEmptyFilterRow) {
+      if (visibleCount === 0 && inventoryRows.length > 0) {
+        inventoryEmptyFilterRow.style.display = '';
+        if (inventoryEmptyTitle && inventoryEmptyDesc) {
+          if (q && activeInventoryFilter === 'low') {
+            inventoryEmptyTitle.textContent = 'Tidak Ada Produk Stok Menipis';
+            inventoryEmptyDesc.textContent = `Tidak ditemukan produk berstok menipis yang sesuai dengan kata kunci "${q}".`;
+          } else if (q) {
+            inventoryEmptyTitle.textContent = 'Produk Tidak Ditemukan';
+            inventoryEmptyDesc.textContent = `Tidak ada produk yang cocok dengan kata kunci "${q}". Silakan periksa kembali nama produk atau barcode.`;
+          } else if (activeInventoryFilter === 'low') {
+            inventoryEmptyTitle.textContent = 'Semua Stok Aman';
+            inventoryEmptyDesc.textContent = 'Hebat! Saat ini tidak ada produk dengan stok menipis (<= 5).';
+          } else {
+            inventoryEmptyTitle.textContent = 'Produk Tidak Ditemukan';
+            inventoryEmptyDesc.textContent = 'Tidak ada produk yang memenuhi kriteria pencarian saat ini.';
+          }
+        }
+      } else {
+        inventoryEmptyFilterRow.style.display = 'none';
+      }
+    }
   }
 
   prodFilterBtns.forEach((btn) => {
@@ -805,6 +1009,19 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   inventorySearchInput?.addEventListener('input', filterInventory);
+
+  btnResetInventoryFilter?.addEventListener('click', function () {
+    if (inventorySearchInput) inventorySearchInput.value = '';
+    prodFilterBtns.forEach((b) => {
+      if (b.getAttribute('data-filter') === 'all') {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+    activeInventoryFilter = 'all';
+    filterInventory();
+  });
 
   // Stock Steppers (+ / -) -> Langsung tersimpan di database
   document.addEventListener('click', async function (e) {
@@ -1162,6 +1379,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (subtabContentProducts) subtabContentProducts.style.display = isBundles ? 'none' : 'block';
     if (subtabContentBundles) subtabContentBundles.style.display = isBundles ? 'block' : 'none';
+    document.documentElement.classList.toggle('init-subtab-bundles', isBundles);
     sessionStorage.setItem('ica_inventory_subtab', isBundles ? 'bundles' : 'products');
   }
 
@@ -1181,16 +1399,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Filter / Search Paket Hemat di Tabel
   const bundleSearchInput = document.getElementById('bundleSearchInput');
-  bundleSearchInput?.addEventListener('input', function () {
-    const q = this.value.toLowerCase().trim();
-    document.querySelectorAll('.bundle-row-item').forEach((row) => {
+  const bundlesEmptyFilterRow = document.getElementById('bundlesEmptyFilterRow');
+  const btnResetBundleFilter = document.getElementById('btnResetBundleFilter');
+
+  function filterBundles() {
+    const q = (bundleSearchInput?.value || '').toLowerCase().trim();
+    const bundleRows = document.querySelectorAll('.bundle-row-item');
+    let visibleCount = 0;
+
+    bundleRows.forEach((row) => {
       const name = (row.getAttribute('data-name') || '').toLowerCase();
       const id = (row.getAttribute('data-id') || '').toLowerCase();
       if (!q || name.includes(q) || id.includes(q)) {
         row.style.display = '';
+        visibleCount++;
       } else {
         row.style.display = 'none';
       }
+    });
+
+    if (bundlesEmptyFilterRow) {
+      if (visibleCount === 0 && bundleRows.length > 0) {
+        bundlesEmptyFilterRow.style.display = '';
+      } else {
+        bundlesEmptyFilterRow.style.display = 'none';
+      }
+    }
+  }
+
+  bundleSearchInput?.addEventListener('input', filterBundles);
+  btnResetBundleFilter?.addEventListener('click', function () {
+    if (bundleSearchInput) {
+      bundleSearchInput.value = '';
+      filterBundles();
+    }
+  });
+
+  // Search Produk di Modal Tambah & Edit Paket Hemat
+  const searchAddBundleProdInput = document.getElementById('searchAddBundleProdInput');
+  searchAddBundleProdInput?.addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('#modalAddBundle .bundle-prod-choice-row').forEach((row) => {
+      const name = (row.getAttribute('data-prod-name') || row.textContent).toLowerCase();
+      row.style.display = !q || name.includes(q) ? 'flex' : 'none';
+    });
+  });
+
+  const searchEditBundleProdInput = document.getElementById('searchEditBundleProdInput');
+  searchEditBundleProdInput?.addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('#modalEditBundle .bundle-prod-choice-row').forEach((row) => {
+      const name = (row.getAttribute('data-prod-name') || row.textContent).toLowerCase();
+      row.style.display = !q || name.includes(q) ? 'flex' : 'none';
     });
   });
 
@@ -1201,6 +1461,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   btnOpenAddBundleModal?.addEventListener('click', function () {
     formAddBundle?.reset();
+    if (searchAddBundleProdInput) {
+      searchAddBundleProdInput.value = '';
+      document.querySelectorAll('#modalAddBundle .bundle-prod-choice-row').forEach((r) => r.style.display = 'flex');
+    }
     const badgeRight = document.getElementById('addBundleBadgeRight');
     if (badgeRight) {
       badgeRight.value = '';
@@ -1384,7 +1648,9 @@ document.addEventListener('DOMContentLoaded', function () {
         showToast('Paket hemat berhasil dibuat dan langsung tampil di homepage!');
         modalAddBundle?.classList.remove('open');
         sessionStorage.setItem('ica_inventory_subtab', 'bundles');
-        setTimeout(() => window.location.reload(), 600);
+        setTimeout(() => {
+          window.location.href = `${window.location.pathname}?tab=inventory&subtab=bundles`;
+        }, 350);
       } else {
         showToast(data.message || 'Gagal menyimpan paket hemat.', 'error');
       }
@@ -1544,6 +1810,11 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         });
 
+        if (searchEditBundleProdInput) {
+          searchEditBundleProdInput.value = '';
+          document.querySelectorAll('#modalEditBundle .bundle-prod-choice-row').forEach((r) => r.style.display = 'flex');
+        }
+
         updateEditBundleCalculations();
         modalEditBundle?.classList.add('open');
       }
@@ -1602,7 +1873,9 @@ document.addEventListener('DOMContentLoaded', function () {
         showToast('Paket hemat berhasil diperbarui!');
         modalEditBundle?.classList.remove('open');
         sessionStorage.setItem('ica_inventory_subtab', 'bundles');
-        setTimeout(() => window.location.reload(), 600);
+        setTimeout(() => {
+          window.location.href = `${window.location.pathname}?tab=inventory&subtab=bundles`;
+        }, 350);
       } else {
         showToast(data.message || 'Gagal memperbarui paket.', 'error');
       }
@@ -1628,7 +1901,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (res.ok && data.success) {
           showToast(data.message || 'Status paket berhasil diubah!');
           sessionStorage.setItem('ica_inventory_subtab', 'bundles');
-          setTimeout(() => window.location.reload(), 500);
+          setTimeout(() => {
+            window.location.href = `${window.location.pathname}?tab=inventory&subtab=bundles`;
+          }, 350);
         } else {
           showToast(data.message || 'Gagal mengubah status paket.', 'error');
         }
@@ -1660,7 +1935,9 @@ document.addEventListener('DOMContentLoaded', function () {
           const row = document.querySelector(`.bundle-row-item[data-id="${id}"]`);
           if (row) row.remove();
           sessionStorage.setItem('ica_inventory_subtab', 'bundles');
-          setTimeout(() => window.location.reload(), 500);
+          setTimeout(() => {
+            window.location.href = `${window.location.pathname}?tab=inventory&subtab=bundles`;
+          }, 350);
         } else {
           showToast(data.message || 'Gagal menghapus paket.', 'error');
         }
@@ -1701,23 +1978,53 @@ document.addEventListener('DOMContentLoaded', function () {
     setCategoryView('grid');
   }
 
-  categorySearchInput?.addEventListener('input', function () {
-    const q = this.value.toLowerCase().trim();
+  const categoriesEmptyFilterRow = document.getElementById('categoriesEmptyFilterRow');
+  const btnResetCategoryFilter = document.getElementById('btnResetCategoryFilter');
+  const categoriesGridEmptyFilterBox = document.getElementById('categoriesGridEmptyFilterBox');
+  const btnResetCategoryGridFilter = document.getElementById('btnResetCategoryGridFilter');
+
+  function filterCategories() {
+    const q = (categorySearchInput?.value || '').toLowerCase().trim();
     
     // Filter Card Grid
     const categoryCards = document.querySelectorAll('.category-item-card');
+    let visibleCards = 0;
     categoryCards.forEach((card) => {
       const name = (card.getAttribute('data-cat-name') || '').toLowerCase();
-      card.style.display = !q || name.includes(q) ? '' : 'none';
+      const match = !q || name.includes(q);
+      card.style.display = match ? '' : 'none';
+      if (match) visibleCards++;
     });
+
+    if (categoriesGridEmptyFilterBox) {
+      categoriesGridEmptyFilterBox.style.display = (visibleCards === 0 && categoryCards.length > 0) ? 'block' : 'none';
+    }
 
     // Filter List Table Rows
     const categoryRows = document.querySelectorAll('#categoriesTableBody tr[data-cat-row]');
+    let visibleRows = 0;
     categoryRows.forEach((row) => {
       const name = (row.getAttribute('data-cat-name') || '').toLowerCase();
-      row.style.display = !q || name.includes(q) ? '' : 'none';
+      const match = !q || name.includes(q);
+      row.style.display = match ? '' : 'none';
+      if (match) visibleRows++;
     });
-  });
+
+    if (categoriesEmptyFilterRow) {
+      categoriesEmptyFilterRow.style.display = (visibleRows === 0 && categoryRows.length > 0) ? '' : 'none';
+    }
+  }
+
+  categorySearchInput?.addEventListener('input', filterCategories);
+
+  function resetCategorySearch() {
+    if (categorySearchInput) {
+      categorySearchInput.value = '';
+      filterCategories();
+    }
+  }
+  btnResetCategoryFilter?.addEventListener('click', resetCategorySearch);
+  btnResetCategoryGridFilter?.addEventListener('click', resetCategorySearch);
 
   // Tombol "Simpan Perubahan" Kategori -> Bulk Sync ke Database
   document.getElementById('btnSyncCategories')?.addEventListener('click', async function () {
@@ -2933,10 +3240,21 @@ document.addEventListener('DOMContentLoaded', function () {
       } else {
         let rows = '';
         periodOrders.slice(0, 15).forEach((o) => {
-          const isPaid = o.is_paid || o.status === 'Selesai';
-          const statusBadge = isPaid
-            ? `<span class="badge-status selesai">Selesai</span>`
-            : `<span class="badge-status ${o.status === 'Diproses' ? 'diproses' : 'menunggu'}">${o.status || 'Menunggu'}</span>`;
+          let badgeClass = 'menunggu-pembayaran';
+          let badgeLabel = 'Menunggu Pembayaran';
+          if (o.status === 'Selesai') {
+            badgeClass = 'selesai';
+            badgeLabel = 'Selesai';
+          } else if (o.status === 'Diproses') {
+            badgeClass = 'diproses';
+            badgeLabel = 'Diproses';
+          } else if (o.status === 'Dibatalkan') {
+            badgeClass = 'dibatalkan';
+            badgeLabel = 'Dibatalkan';
+          } else if (o.status && o.status !== 'Menunggu Bayar' && o.status !== 'Menunggu Konfirmasi Admin') {
+            badgeLabel = o.status;
+          }
+          const statusBadge = `<span class="badge-status ${badgeClass}">${badgeLabel}</span>`;
 
           rows += `
             <tr>
@@ -3010,6 +3328,282 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+
+  // --- 11. Audio Chime Notifikasi Pesanan Baru (Web Audio API) ---
+  window.playOrderAlertChime = function () {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      const now = ctx.currentTime;
+
+      // Nada 1: E5 (659.25 Hz)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.2, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.3);
+
+      // Nada 2: B5 (987.77 Hz) - Chime Lonceng Kasir
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(987.77, now + 0.12);
+      gain2.gain.setValueAtTime(0.25, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.5);
+    } catch (e) {
+      console.log('Audio chime error:', e);
+    }
+  };
+
+  // Background Order Polling (Memeriksa pesanan baru tiap 20 detik)
+  let lastKnownOrdersCount = null;
+  async function pollNewOrders() {
+    try {
+      const res = await fetch('/api/orders');
+      if (!res.ok) return;
+      const data = await res.json();
+      const orders = Array.isArray(data) ? data : (data.orders || []);
+      const count = orders.length;
+
+      if (lastKnownOrdersCount !== null && count > lastKnownOrdersCount) {
+        window.playOrderAlertChime();
+        if (typeof window.showToast === 'function') {
+          window.showToast(`Pesanan baru masuk! Total: ${count} pesanan`, 'success');
+        }
+        const badge = document.getElementById('orderCountBadge');
+        if (badge) badge.textContent = `${count} Pesanan`;
+      }
+      const pendingCount = orders.filter(o => o.status === 'Menunggu Bayar' || o.status === 'Menunggu Konfirmasi Admin' || o.status === 'Diproses').length;
+      const bottomOrdersBadge = document.getElementById('adminBottomOrdersBadge');
+      if (bottomOrdersBadge) {
+        if (pendingCount > 0) {
+          bottomOrdersBadge.textContent = pendingCount;
+          bottomOrdersBadge.style.display = 'flex';
+        } else {
+          bottomOrdersBadge.style.display = 'none';
+        }
+      }
+      lastKnownOrdersCount = count;
+    } catch (err) {}
+  }
+  setInterval(pollNewOrders, 20000);
+  setTimeout(pollNewOrders, 2000);
+
+  // --- 12. Pengontrol Status Operasional Toko (Segmented Control Buka / Tutup) ---
+  const btnSetStoreOpen = document.getElementById('btnSetStoreOpen');
+  const btnSetStoreClosed = document.getElementById('btnSetStoreClosed');
+  const sidebarStatusBadge = document.getElementById('sidebarStatusBadge');
+  const sidebarStatusFootnote = document.getElementById('sidebarStatusFootnote');
+
+  async function updateStoreOperationalStatus(targetOpen) {
+    if (btnSetStoreOpen) btnSetStoreOpen.disabled = true;
+    if (btnSetStoreClosed) btnSetStoreClosed.disabled = true;
+
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const res = await fetch('/api/store-status/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ is_open: targetOpen }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const isOpen = Boolean(data.store_status && data.store_status.is_open);
+
+        // Update Segmented Control Buttons
+        if (btnSetStoreOpen) {
+          btnSetStoreOpen.classList.toggle('active-open', isOpen);
+          btnSetStoreOpen.disabled = isOpen;
+        }
+        if (btnSetStoreClosed) {
+          btnSetStoreClosed.classList.toggle('active-closed', !isOpen);
+          btnSetStoreClosed.disabled = !isOpen;
+        }
+
+        // Update Badge & Footnote di sidebar
+        if (sidebarStatusBadge) {
+          sidebarStatusBadge.className = `store-status-pill ${isOpen ? 'is-open' : 'is-closed'}`;
+          sidebarStatusBadge.textContent = isOpen ? 'Buka' : 'Tutup';
+        }
+        if (sidebarStatusFootnote) {
+          sidebarStatusFootnote.textContent = isOpen ? 'Menerima pesanan online' : 'Toko tutup sementara';
+        }
+
+        if (typeof window.showToast === 'function') {
+          window.showToast(data.message);
+        }
+      }
+    } catch (e) {
+      console.error('Update store status error:', e);
+      if (typeof window.showToast === 'function') {
+        window.showToast('Gagal mengubah status toko. Coba lagi.', 'error');
+      }
+    } finally {
+      // Re-enable tombol yang tidak aktif
+      const curOpen = btnSetStoreOpen?.classList.contains('active-open');
+      if (btnSetStoreOpen) btnSetStoreOpen.disabled = curOpen;
+      if (btnSetStoreClosed) btnSetStoreClosed.disabled = !curOpen;
+    }
+  }
+
+  btnSetStoreOpen?.addEventListener('click', () => updateStoreOperationalStatus(true));
+  btnSetStoreClosed?.addEventListener('click', () => updateStoreOperationalStatus(false));
+
+  // --- 13. Cetak Laporan Penjualan Resmi (PDF) ---
+  const btnPrintSalesReportPdf = document.getElementById('btnPrintSalesReportPdf');
+  if (btnPrintSalesReportPdf) {
+    btnPrintSalesReportPdf.addEventListener('click', () => {
+      document.body.classList.add('is-printing-report');
+      document.body.classList.remove('is-printing-receipt');
+      const repRev = document.getElementById('reportTotalRevenue')?.textContent || 'Rp 0';
+      const repOrders = document.getElementById('reportTotalOrders')?.textContent || '0 Pesanan';
+      const repAov = document.getElementById('reportAverageOrderValue')?.textContent || 'Rp 0';
+      const repRangeText = document.getElementById('reportActiveRangeText')?.textContent || 'Rentang Aktif';
+
+      const pRev = document.getElementById('printTotalRevenue');
+      const pOrders = document.getElementById('printTotalOrders');
+      const pAov = document.getElementById('printAverageOrder');
+      const pPeriod = document.getElementById('printDocPeriod');
+      const pDate = document.getElementById('printDocDate');
+      const pTableBody = document.getElementById('printOrdersTableBody');
+
+      if (pRev) pRev.textContent = repRev;
+      if (pOrders) pOrders.textContent = repOrders;
+      if (pAov) pAov.textContent = repAov;
+      if (pPeriod) pPeriod.textContent = repRangeText.replace('Rentang: ', 'Periode: ');
+      if (pDate) {
+        const now = new Date();
+        pDate.textContent = `Dicetak pada: ${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`;
+      }
+
+      // Salin data tabel dari tabel rincian transaksi periode terpilih (reportTransactionsTableBody)
+      const reportRows = document.querySelectorAll('#reportTransactionsTableBody tr');
+      if (pTableBody) {
+        if (reportRows.length > 0) {
+          pTableBody.innerHTML = Array.from(reportRows).map((tr) => {
+            const tds = tr.querySelectorAll('td');
+            if (tds.length < 5) return '';
+            return `
+              <tr>
+                <td>${tds[0]?.textContent?.trim() || '-'}</td>
+                <td>${tds[1]?.textContent?.trim() || '-'}</td>
+                <td>${tds[2]?.textContent?.trim() || '-'}</td>
+                <td>${tds[3]?.textContent?.trim() || '-'}</td>
+                <td>${tds[4]?.textContent?.trim() || '-'}</td>
+                <td style="text-align: right; font-weight: 700;">${tds[5]?.textContent?.trim() || '-'}</td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          pTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94A3B8; padding: 1.5rem;">Tidak ada transaksi pada periode ini</td></tr>';
+        }
+      }
+
+      window.print();
+    });
+  }
+
+  // --- 14. Modal Validasi Bukti Pembayaran Pelanggan ---
+  const modalViewPaymentProof = document.getElementById('modalViewPaymentProof');
+  const proofPreviewImg = document.getElementById('proofPreviewImg');
+  const proofCustomerName = document.getElementById('proofCustomerName');
+  const proofTotalAmount = document.getElementById('proofTotalAmount');
+  const proofModalTitle = document.getElementById('proofModalTitle');
+  const btnAcceptPaymentProof = document.getElementById('btnAcceptPaymentProof');
+  const btnRejectPaymentProof = document.getElementById('btnRejectPaymentProof');
+  let activeProofOrderId = null;
+
+  document.addEventListener('click', (e) => {
+    const proofBtn = e.target.closest('.btn-view-payment-proof');
+    if (proofBtn) {
+      activeProofOrderId = proofBtn.getAttribute('data-order-id');
+      const proofUrl = proofBtn.getAttribute('data-proof-url');
+      const custName = proofBtn.getAttribute('data-cust-name') || '-';
+      const total = proofBtn.getAttribute('data-total') || 'Rp 0';
+
+      if (proofPreviewImg) proofPreviewImg.src = proofUrl;
+      if (proofCustomerName) proofCustomerName.textContent = custName;
+      if (proofTotalAmount) proofTotalAmount.textContent = total;
+      if (proofModalTitle) proofModalTitle.textContent = `Validasi Bukti #${activeProofOrderId}`;
+
+      if (modalViewPaymentProof) modalViewPaymentProof.classList.add('open');
+    }
+  });
+
+  async function handleVerifyPaymentProof(action) {
+    if (!activeProofOrderId) return;
+    const btn = action === 'accept' ? btnAcceptPaymentProof : btnRejectPaymentProof;
+    if (btn) btn.disabled = true;
+
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const res = await fetch(`/api/orders/${activeProofOrderId}/verify-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (modalViewPaymentProof) modalViewPaymentProof.classList.remove('open');
+        if (typeof window.showToast === 'function') {
+          window.showToast(data.message);
+        }
+
+        // Update baris tabel terkait di DOM
+        const targetRow = document.querySelector(`tr[data-order-row="${activeProofOrderId}"]`);
+        if (targetRow) {
+          const statusBadge = targetRow.querySelector('.status-badge-target');
+          if (statusBadge) {
+            statusBadge.textContent = action === 'accept' ? 'Diproses' : 'Menunggu Pembayaran';
+            statusBadge.className = `badge-status-pill status-pill-${action === 'accept' ? 'diproses' : 'menunggu-pembayaran'} status-badge-target`;
+          }
+          const paidStatus = targetRow.querySelector('.order-paid-status');
+          if (paidStatus) {
+            paidStatus.className = `order-paid-status ${action === 'accept' ? 'paid' : 'unpaid'}`;
+            paidStatus.textContent = action === 'accept' ? '✓ Lunas' : 'Belum Lunas';
+          }
+          const validateBtn = targetRow.querySelector('.btn-validate-order');
+          if (validateBtn && action === 'accept') {
+            validateBtn.remove();
+          }
+        }
+      } else {
+        alert(data.message || 'Gagal memproses verifikasi');
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat memproses verifikasi');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  if (btnAcceptPaymentProof) {
+    btnAcceptPaymentProof.addEventListener('click', () => handleVerifyPaymentProof('accept'));
+  }
+  if (btnRejectPaymentProof) {
+    btnRejectPaymentProof.addEventListener('click', () => handleVerifyPaymentProof('reject'));
+  }
 });
 
   // Mode Ujian: Cegah klik Lihat Toko hanya jika EXAM_MODE aktif di .env

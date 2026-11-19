@@ -16,12 +16,16 @@ Route::get('/', function () {
         'categories' => \App\Models\Category::all(),
         'orders' => \App\Models\Order::all(),
         'bundles' => \App\Models\Bundle::with('items.product')->where('is_active', true)->get(),
+        'storeStatus' => \App\Http\Controllers\AdminDataController::getStoreStatusArray(),
     ]);
 })->name('home');
 
-// --- 2. Rute Pelanggan (Khusus role:user yang sudah login) ---
-Route::middleware(['auth', 'verified', 'role:user', 'prevent-back-history'])->group(function () {
+// --- 2. Rute Pelanggan & Dasbor Universal (Pengalihan cerdas berbasis peran pengguna) ---
+Route::middleware(['auth', 'prevent-back-history'])->group(function () {
     Route::get('/dashboard', function () {
+        if (Auth::user()->role === 'admin' || Auth::user()->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
         return redirect()->route('home');
     })->name('dashboard');
 
@@ -43,6 +47,7 @@ Route::middleware(['auth', 'role:admin', 'prevent-back-history'])->prefix('admin
             'categories' => $categories,
             'orders' => $orders,
             'bundles' => \App\Models\Bundle::with('items.product')->get(),
+            'storeStatus' => \App\Http\Controllers\AdminDataController::getStoreStatusArray(),
         ]);
     })->name('dashboard');
 
@@ -86,6 +91,14 @@ Route::prefix('api')->group(function () {
     // Simpan pesanan baru & perbarui status pesanan
     Route::post('/orders', [\App\Http\Controllers\AdminDataController::class, 'storeOrder']);
     Route::patch('/orders/{id}/status', [\App\Http\Controllers\AdminDataController::class, 'updateOrderStatus']);
+
+    // Sakelar Status Buka/Tutup Toko
+    Route::get('/store-status', [\App\Http\Controllers\AdminDataController::class, 'getStoreStatus']);
+    Route::post('/store-status/toggle', [\App\Http\Controllers\AdminDataController::class, 'toggleStoreStatus']);
+
+    // Upload & Verifikasi Bukti Pembayaran
+    Route::post('/orders/{id}/payment-proof', [\App\Http\Controllers\AdminDataController::class, 'uploadPaymentProof']);
+    Route::post('/orders/{id}/verify-payment', [\App\Http\Controllers\AdminDataController::class, 'verifyPayment']);
 
     // Operasi CRUD Kategori Produk
     Route::post('/categories', [\App\Http\Controllers\AdminDataController::class, 'storeCategory']);

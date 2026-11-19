@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
 
         // 3. Logika Multi-Role: Arahkan ke dashboard yang sesuai hak aksesnya
         if ($request->user()->role === 'admin' || $request->user()->isAdmin()) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
+            return redirect()->route('admin.dashboard');
         }
 
         // Pengguna biasa diarahkan langsung ke homepage (dengan status login & profil aktif di navbar)
@@ -56,10 +56,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        if (env('EXAM_MODE', true)) {
-            return redirect()->route('login');
-        }
-
-        return redirect('/');
+        // Seluruh pengguna (baik Admin maupun Pelanggan) diarahkan ke landing page dengan toast notifikasi yang ramah
+        return redirect('/')->with('toast_message', 'Anda berhasil keluar. Sampai jumpa lagi!')->with('toast_type', 'info');
     }
 }

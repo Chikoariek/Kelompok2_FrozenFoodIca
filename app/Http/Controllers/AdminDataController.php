@@ -931,6 +931,9 @@ class AdminDataController extends Controller
                 'iceFee'        => $order->shipping_fee ?? $order->ice_fee ?? 0,
                 'total'         => $order->total,
                 'isPaid'        => (bool) $order->is_paid,
+                'is_paid'       => (bool) $order->is_paid,
+                'paymentProof'  => $order->payment_proof ? asset($order->payment_proof) : null,
+                'payment_proof' => $order->payment_proof ? asset($order->payment_proof) : null,
                 'channel'       => $order->channel,
             ];
         });
@@ -951,32 +954,59 @@ class AdminDataController extends Controller
         $date = $request->input('date') ?: ($request->input('order_date') ?: now()->timezone('Asia/Makassar')->format('Y-m-d H:i'));
         $method = $request->input('method') ?: 'Ambil di Toko / Self Pick-up';
         $payMethod = $request->input('paymentMethod') ?: ($request->input('payment_method') ?: 'QRIS Instan');
-        $status = $request->input('status') ?: 'Diproses';
-        $items = $request->input('items') ?: [];
+        $status = $request->input('status') ?: (stripos($payMethod, 'tunai') !== false ? 'Menunggu Bayar' : 'Menunggu Konfirmasi Admin');
+        $rawItems = $request->input('items') ?: [];
+        if (is_string($rawItems)) {
+            $items = json_decode($rawItems, true) ?: [];
+        } else {
+            $items = is_array($rawItems) ? $rawItems : [];
+        }
         $subtotal = (int) ($request->input('subtotal') ?: 0);
         $shippingFee = (int) ($request->input('shipping_fee') ?: ($request->input('shippingFee') ?: ($request->input('iceFee') ?: ($request->input('ice_fee') ?: 0))));
         $total = (int) ($request->input('total') ?: ($subtotal + $shippingFee));
         $isPaid = $request->has('isPaid') ? $request->boolean('isPaid') : ($request->has('is_paid') ? $request->boolean('is_paid') : false);
         $channel = $request->input('channel') ?: 'Online';
 
-        $order = Order::updateOrCreate(
-            ['id' => $id],
-            [
-                'customer_name'  => $custName,
-                'customer_phone' => $custPhone,
-                'address'        => $address,
-                'order_date'     => $date,
-                'method'         => $method,
-                'payment_method' => $payMethod,
-                'status'         => $status,
-                'items'          => $items,
-                'subtotal'       => $subtotal,
-                'shipping_fee'   => $shippingFee,
-                'total'          => $total,
-                'is_paid'        => $isPaid,
-                'channel'        => $channel,
-            ]
-        );
+        $proofPath = null;
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $uploadDir = public_path('uploads/proofs');
+            if (!file_exists($uploadDir)) {
+                @mkdir($uploadDir, 0755, true);
+            }
+            $fileName = 'proof_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $id) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadDir, $fileName);
+            $proofPath = 'uploads/proofs/' . $fileName;
+            $status = 'Menunggu Konfirmasi Admin';
+            $isPaid = false;
+        }
+
+        // Pesanan baru berstatus belum diverifikasi atau belum bayar wajib is_paid = false
+        if ($status === 'Menunggu Konfirmasi Admin' || $status === 'Menunggu Bayar' || $status === 'Menunggu Pembayaran') {
+            $isPaid = false;
+        }
+
+        $orderData = [
+            'customer_name'  => $custName,
+            'customer_phone' => $custPhone,
+            'address'        => $address,
+            'order_date'     => $date,
+            'method'         => $method,
+            'payment_method' => $payMethod,
+            'status'         => $status,
+            'items'          => $items,
+            'subtotal'       => $subtotal,
+            'shipping_fee'   => $shippingFee,
+            'total'          => $total,
+            'is_paid'        => $isPaid,
+            'channel'        => $channel,
+        ];
+
+        if ($proofPath) {
+            $orderData['payment_proof'] = $proofPath;
+        }
+
+        $order = Order::updateOrCreate(['id' => $id], $orderData);
 
         // Deduct stock for each item ordered
         if (is_array($items)) {
@@ -1010,6 +1040,9 @@ class AdminDataController extends Controller
                 'iceFee'        => $order->shipping_fee ?? $order->ice_fee ?? 0,
                 'total'         => $order->total,
                 'isPaid'        => (bool) $order->is_paid,
+                'is_paid'       => (bool) $order->is_paid,
+                'paymentProof'  => $order->payment_proof ? asset($order->payment_proof) : null,
+                'payment_proof' => $order->payment_proof ? asset($order->payment_proof) : null,
                 'channel'       => $order->channel,
             ],
         ]);
@@ -1033,6 +1066,8 @@ class AdminDataController extends Controller
             $order->is_paid = $request->boolean('is_paid');
         } elseif ($validated['status'] === 'Diproses' || $validated['status'] === 'Selesai') {
             $order->is_paid = true;
+        } elseif ($validated['status'] === 'Menunggu Konfirmasi Admin' || $validated['status'] === 'Menunggu Bayar' || $validated['status'] === 'Menunggu Pembayaran' || $validated['status'] === 'Dibatalkan') {
+            $order->is_paid = false;
         }
         $order->save();
 
@@ -1054,7 +1089,135 @@ class AdminDataController extends Controller
                 'iceFee'        => $order->shipping_fee ?? $order->ice_fee ?? 0,
                 'total'         => $order->total,
                 'isPaid'        => (bool) $order->is_paid,
+                'is_paid'       => (bool) $order->is_paid,
+                'paymentProof'  => $order->payment_proof ? asset($order->payment_proof) : null,
+                'payment_proof' => $order->payment_proof ? asset($order->payment_proof) : null,
                 'channel'       => $order->channel,
+            ],
+        ]);
+    }
+
+    // --- 4. Sakelar Buka/Tutup Toko (Store Status) ---
+
+    public static function getStoreStatusArray()
+    {
+        $statusFile = storage_path('app/store_status.json');
+        if (file_exists($statusFile)) {
+            $data = json_decode(file_get_contents($statusFile), true);
+            if (is_array($data)) {
+                return [
+                    'is_open' => (bool) ($data['is_open'] ?? true),
+                    'message' => $data['message'] ?? 'Toko Buka (08.00 - 20.00 WIB)',
+                ];
+            }
+        }
+        return [
+            'is_open' => true,
+            'message' => 'Toko Buka (08.00 - 20.00 WIB)',
+        ];
+    }
+
+    public function getStoreStatus()
+    {
+        return response()->json([
+            'success' => true,
+            'store_status' => self::getStoreStatusArray(),
+        ]);
+    }
+
+    public function toggleStoreStatus(Request $request)
+    {
+        $statusFile = storage_path('app/store_status.json');
+        $current = self::getStoreStatusArray();
+        $newStatus = $request->has('is_open') ? $request->boolean('is_open') : !($current['is_open']);
+        
+        $data = [
+            'is_open' => $newStatus,
+            'message' => $request->input('message') ?: ($newStatus ? 'Toko Buka (08.00 - 20.00 WIB)' : 'Toko Sedang Tutup. Pesanan online akan diproses saat toko buka.'),
+            'updated_at' => now()->toIso8601String(),
+        ];
+
+        if (!file_exists(dirname($statusFile))) {
+            @mkdir(dirname($statusFile), 0755, true);
+        }
+        file_put_contents($statusFile, json_encode($data, JSON_PRETTY_PRINT));
+
+        return response()->json([
+            'success' => true,
+            'message' => $newStatus ? 'Toko berhasil dibuka! Pelanggan dapat memesan normal.' : 'Toko berhasil ditutup! Banner toko tutup akan ditampilkan ke pelanggan.',
+            'store_status' => $data,
+        ]);
+    }
+
+    // --- 5. Upload & Validasi Bukti Pembayaran (Payment Proof) ---
+
+    public function uploadPaymentProof(Request $request, $id)
+    {
+        $request->validate([
+            'proof' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $order = Order::find($id);
+        if (!$order) {
+            return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan'], 404);
+        }
+
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $uploadDir = public_path('uploads/proofs');
+            if (!file_exists($uploadDir)) {
+                @mkdir($uploadDir, 0755, true);
+            }
+            $fileName = 'proof_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $id) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadDir, $fileName);
+            
+            $order->payment_proof = 'uploads/proofs/' . $fileName;
+            $order->status = 'Menunggu Konfirmasi Admin';
+            $order->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bukti pembayaran berhasil diunggah! Menunggu validasi admin toko.',
+                'payment_proof' => asset('uploads/proofs/' . $fileName),
+                'status' => $order->status,
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'File gambar bukti tidak ditemukan'], 422);
+    }
+
+    public function verifyPayment(Request $request, $id)
+    {
+        $request->validate([
+            'action' => 'required|in:accept,reject',
+        ]);
+
+        $order = Order::find($id);
+        if (!$order) {
+            return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan'], 404);
+        }
+
+        $action = $request->input('action');
+        if ($action === 'accept') {
+            $order->is_paid = true;
+            $order->status = 'Diproses';
+            $order->save();
+            $msg = "Pembayaran pesanan {$id} berhasil diverifikasi dan disetujui!";
+        } else {
+            $order->is_paid = false;
+            $order->status = 'Menunggu Pembayaran';
+            $order->save();
+            $msg = "Bukti pembayaran pesanan {$id} ditolak. Status pesanan dikembalikan ke Menunggu Pembayaran.";
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $msg,
+            'order' => [
+                'id' => $order->id,
+                'isPaid' => (bool) $order->is_paid,
+                'status' => $order->status,
+                'paymentProof' => $order->payment_proof ? asset($order->payment_proof) : null,
             ],
         ]);
     }

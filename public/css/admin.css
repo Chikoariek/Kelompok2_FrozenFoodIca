@@ -220,34 +220,156 @@ a {
 }
 
 .sidebar-footer-info {
-  padding: 1.25rem 1.25rem 0;
+  padding: 1rem 1rem 1.25rem;
+  margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.sidebar-footer-row {
+/* Opsi B: Seamless Native Sidebar (Tanpa Card Wrapper, Menyatu Alami) */
+.store-control-seamless {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.store-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+  padding: 0 0.15rem;
+}
+
+.store-control-title {
+  font-size: 0.725rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* Badge status pill di kanan header (Sangat minimalis & menyatu) */
+.store-status-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.store-status-pill.is-open {
+  background: rgba(16, 185, 129, 0.2);
+  color: #A7F3D0;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.store-status-pill.is-closed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #FECACA;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+/* Segmented Control Track: Inset Flat yang Menyatu Alami dengan Sidebar */
+.store-segmented-control {
+  display: flex;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 2.5px;
+  gap: 3px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.store-seg-btn {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 29px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  user-select: none;
+  font-family: inherit;
 }
 
-.sidebar-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--emerald);
-  box-shadow: 0 0 8px var(--emerald);
-}
-
-.sidebar-footer-title {
-  font-size: 0.8125rem;
-  font-weight: 800;
+.store-seg-btn:hover:not(:disabled) {
   color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.sidebar-footer-sub {
-  font-size: 0.6875rem;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0.35rem 0 0;
+/* Dot kecil status di dalam tombol */
+.seg-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.dot-open {
+  background: #34D399;
+}
+
+.dot-closed {
+  background: #F87171;
+}
+
+/* Keadaan Tombol Buka Aktif (Solid Emerald Khas Website) */
+.store-seg-btn.active-open {
+  background: #059669 !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: default;
+}
+
+.store-seg-btn.active-open .seg-dot {
+  background: #FFFFFF;
+}
+
+/* Keadaan Tombol Tutup Aktif (Solid Ruby Khas Website) */
+.store-seg-btn.active-closed {
+  background: #DC2626 !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: default;
+}
+
+.store-seg-btn.active-closed .seg-dot {
+  background: #FFFFFF;
+}
+
+/* Footnote Keterangan di Bawah Segmented Control */
+.store-control-footnote {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.sidebar-footer-version {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.38);
+  text-align: center;
+  margin: 1rem 0 0.15rem;
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
 /* ==========================================
@@ -264,7 +386,7 @@ a {
 /* Global Topbar Header */
 .admin-topbar {
   background: #FFFFFF;
-  padding: 0.875rem 1.25rem;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -464,14 +586,24 @@ a {
   background: transparent;
   color: var(--navy);
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s;
+  transition: all 0.15s ease;
 }
 
 .dropdown-menu-item:hover {
-  background: #F3F4F6;
+  background: var(--bg-cream, #F1F0E8);
+  color: var(--navy);
+}
+
+.dropdown-menu-item svg {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.dropdown-menu-item:hover svg {
+  transform: scale(1.08);
 }
 
 .dropdown-menu-item.logout {
@@ -480,7 +612,8 @@ a {
 }
 
 .dropdown-menu-item.logout:hover {
-  background: var(--red-bg);
+  background: var(--red-bg, #FEF2F2);
+  color: var(--red);
 }
 
 .dropdown-divider {
@@ -776,22 +909,22 @@ a {
    ========================================== */
 .panel-top-header-card {
   background: #FFFFFF;
-  border-radius: 24px;
-  padding: 1.5rem 1.75rem;
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.875rem;
+  margin-bottom: 1.25rem;
 }
 
 @media (min-width: 640px) {
   .panel-top-header-card {
     flex-direction: row;
     align-items: center;
-    padding: 1.75rem 2rem;
+    padding: 1.25rem 1.75rem;
   }
 }
 
@@ -799,18 +932,18 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.65rem;
   border-radius: var(--radius-full);
   background: var(--soft-blue-15);
   color: var(--soft-blue);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .panel-header-title {
-  font-size: 1.5rem;
-  font-weight: 900;
+  font-size: 1.35rem;
+  font-weight: 800;
   color: var(--navy);
   letter-spacing: -0.02em;
 }
@@ -818,7 +951,7 @@ a {
 .panel-header-desc {
   font-size: 0.75rem;
   color: var(--text-gray-500);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
 .panel-header-actions {
@@ -1367,16 +1500,47 @@ a {
   gap: 0.5rem;
   overflow-x: auto;
   white-space: nowrap;
-  padding: 0.35rem 0.25rem 0.5rem;
+  padding: 0.4rem 0.25rem 0.85rem;
   min-width: 0;
   max-width: 100%;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE / Edge */
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE / Edge */
   -webkit-overflow-scrolling: touch;
 }
 
 .toolbar-filters-group::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+@media (max-width: 768px) {
+  .toolbar-filters-group {
+    padding-top: 0.35rem;
+    padding-bottom: 0.95rem;
+    margin-bottom: -0.25rem;
+    width: 100%;
+  }
+}
+
+/* Report Filters Wrapper for Mobile Spacing */
+.report-filters-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .report-filters-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+    width: 100%;
+  }
 }
 
 .filter-btn-pill {
@@ -1498,31 +1662,117 @@ a {
   background-color: #F9FAFB;
 }
 
+/* Table Empty State with Branded Mascot Watermark */
+.admin-table-empty-td {
+  padding: 3.5rem 1.5rem !important;
+  text-align: center !important;
+  background-color: #FAFAF8 !important;
+  border-bottom: none !important;
+}
+
+.admin-table-empty-box {
+  max-width: 440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.admin-empty-watermark-logo {
+  width: 105px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  filter: grayscale(100%) contrast(1.08);
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  user-select: none;
+  pointer-events: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.admin-empty-title {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.015em;
+  margin: 0 0 0.35rem 0;
+}
+
+.admin-empty-desc {
+  font-size: 0.8125rem;
+  color: #64748B;
+  max-width: 24rem;
+  margin: 0 auto 1.25rem auto;
+  line-height: 1.55;
+}
+
+.btn-admin-reset-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.2rem;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  color: var(--navy);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.btn-admin-reset-filter:hover {
+  background: var(--soft-blue);
+  color: #FFFFFF;
+  border-color: var(--soft-blue);
+  box-shadow: 0 4px 12px rgba(103, 125, 158, 0.25);
+  transform: translateY(-1px);
+}
+
+
 /* Status Badges */
 .badge-status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
   border-radius: var(--radius-full);
   padding: 3px 12px;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 
-.badge-status.selesai {
-  background: var(--emerald-bg);
-  color: var(--emerald-text);
+.badge-status.menunggu,
+.badge-status.menunggu-pembayaran,
+.badge-status.menunggu-bayar,
+.badge-status.menunggu-konfirmasi-admin {
+  background: #FEF3C7;
+  color: #92400E;
+  border-color: #FDE68A;
 }
 
 .badge-status.diproses {
-  background: var(--amber-bg);
-  color: var(--amber-text);
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
 }
 
-.badge-status.menunggu {
-  background: var(--purple-bg);
-  color: var(--purple-text);
+.badge-status.selesai {
+  background: #ECFDF5;
+  color: #065F46;
+  border-color: #A7F3D0;
+}
+
+.badge-status.dibatalkan {
+  background: #FEF2F2;
+  color: #991B1B;
+  border-color: #FECACA;
 }
 
 /* Action Buttons inside Table */
@@ -1954,21 +2204,49 @@ body.admin-modal-open {
 .toast-msg {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.75rem 1.25rem;
-  background: #FFFFFF;
-  color: var(--navy);
+  gap: 0.75rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 12px;
   font-size: 0.8125rem;
-  font-weight: 700;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  border-left: 4px solid var(--emerald);
-  animation: toastIn 0.25s ease-out;
-  transition: all 0.3s;
+  font-weight: 600;
+  color: var(--navy);
+  background-color: #FFFFFF;
+  box-shadow: 0 12px 28px -4px rgba(44, 62, 80, 0.12), 0 4px 10px rgba(44, 62, 80, 0.04);
+  border: 1px solid rgba(166, 177, 195, 0.45);
+  animation: toastIn 0.2s ease-out;
+  transition: all 0.25s ease;
 }
 
-.toast-msg.error {
-  border-left-color: var(--red);
+.toast-msg .toast-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--soft-blue-light);
+  color: var(--soft-blue);
+}
+
+.toast-msg.success .toast-icon-wrap {
+  background: #ECFDF5;
+  color: var(--emerald);
+}
+
+.toast-msg.error .toast-icon-wrap {
+  background: #FEF2F2;
+  color: var(--red);
+}
+
+.toast-msg.info .toast-icon-wrap {
+  background: var(--soft-blue-light);
+  color: var(--soft-blue);
+}
+
+.toast-msg.warning .toast-icon-wrap {
+  background: #FFFBEB;
+  color: var(--amber-dark);
 }
 
 @keyframes toastIn {
@@ -2009,6 +2287,118 @@ body.admin-modal-open {
   .topbar-date-pill {
     display: none;
   }
+
+  .admin-main-wrap {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .admin-mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+    box-shadow: 0 -4px 20px rgba(44, 62, 80, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 40;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .admin-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 100%;
+    padding: 6px 2px 4px;
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+  }
+
+  .admin-bottom-nav-item svg {
+    transition: transform 0.18s ease, stroke 0.18s ease;
+  }
+
+  .admin-bottom-nav-item span {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: inherit;
+  }
+
+  .admin-bottom-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  .admin-bottom-nav-item.active {
+    color: var(--soft-blue);
+  }
+
+  .admin-bottom-nav-item.active svg {
+    transform: translateY(-1px);
+    stroke: var(--soft-blue);
+  }
+
+  .admin-bottom-nav-icon-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-bottom-nav-badge {
+    position: absolute;
+    top: -6px;
+    right: -9px;
+    background-color: var(--amber);
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 900;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  .admin-bottom-pos-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--soft-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(103, 125, 158, 0.35);
+    transition: all 0.18s ease;
+  }
+
+  .admin-bottom-nav-item:active .admin-bottom-pos-btn {
+    transform: scale(0.92);
+  }
+}
+
+/* Base style for desktop (hidden) */
+.admin-mobile-bottom-nav {
+  display: none;
 }
 
 /* ==========================================
@@ -2220,22 +2610,30 @@ body.admin-modal-open {
   white-space: nowrap;
 }
 
-.status-pill-menunggu-pembayaran {
+.status-pill-menunggu-pembayaran,
+.status-pill-menunggu-bayar,
+.status-pill-menunggu-konfirmasi-admin {
   background: #FEF3C7;
   color: #92400E;
-  border-color: #FCD34D;
+  border-color: #FDE68A;
 }
 
 .status-pill-diproses {
-  background: #E0F2FE;
-  color: #0369A1;
-  border-color: #BAE6FD;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
 }
 
 .status-pill-selesai {
-  background: #D1FAE5;
+  background: #ECFDF5;
   color: #065F46;
   border-color: #A7F3D0;
+}
+
+.status-pill-dibatalkan {
+  background: #FEF2F2;
+  color: #991B1B;
+  border-color: #FECACA;
 }
 
 /* Operational Action Buttons */
@@ -3384,6 +3782,371 @@ body.admin-modal-open {
 .bundle-products-selector::-webkit-scrollbar-thumb {
   background: #CBD5E1;
   border-radius: 9999px;
+}
+
+/* ==========================================
+   DROPDOWN MENU EKSPOR LAPORAN
+   (Menyatukan Excel & Cetak PDF tanpa menambah tombol baru)
+   ========================================== */
+.export-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 260px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 0.4rem;
+  z-index: 100;
+  animation: fadeInDown 0.18s ease-out;
+}
+
+.export-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.export-dropdown-item:hover {
+  background: #F8FAFC;
+}
+
+.export-item-title {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #1E293B;
+  line-height: 1.25;
+}
+
+.export-item-desc {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #64748B;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+/* ==========================================
+   PRINT STYLES: DOKUMEN CETAK RESMI LAPORAN PENJUALAN
+   ========================================== */
+#printableSalesReportDoc {
+  display: none;
+}
+
+@media print {
+  /* Hilangkan margin default browser & set background putih murni */
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Sembunyikan elemen dashboard yang tidak relevan saat cetak */
+  .admin-sidebar,
+  .admin-header,
+  .admin-toolbar-card,
+  .panel-header-actions,
+  .export-dropdown-wrapper,
+  #tab-dashboard,
+  #tab-inventory,
+  #tab-orders,
+  #tab-bundles,
+  #tab-qris,
+  #tab-profile,
+  .panel-header-desc,
+  .admin-nav-item,
+  .modal-overlay,
+  .toast-container,
+  .btn-modal-close,
+  .btn-action-view-proof,
+  .admin-data-table th:last-child,
+  .admin-data-table td:last-child {
+    display: none !important;
+  }
+
+  .admin-main-wrap,
+  .admin-scroll-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  /* ================================================================
+     KASUS A: CETAK STRUK THERMAL KASIR (Default / Saat Modal Struk Terbuka)
+     ================================================================ */
+  body:not(.is-printing-report) #printableSalesReportDoc {
+    display: none !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    visibility: visible !important;
+    overflow: visible !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-paper-box {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 72mm !important; /* Pas untuk ukuran thermal 58mm maupun 80mm */
+    margin: 0 auto !important;
+    padding: 3mm 2mm !important;
+    background: #FFFFFF !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 8.5pt !important;
+    line-height: 1.25 !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Sembunyikan tombol aksi modal di dalam struk fisik */
+  body:not(.is-printing-report) #modalReceipt .btn-modal-cancel,
+  body:not(.is-printing-report) #modalReceipt .btn-primary-blue,
+  body:not(.is-printing-report) #modalReceipt .receipt-actions-row,
+  body:not(.is-printing-report) #modalReceipt button {
+    display: none !important;
+  }
+
+  /* Kontras tinggi monokrom hitam pekat untuk pin thermal printer */
+  body:not(.is-printing-report) #modalReceipt .receipt-paper-box * {
+    color: #000000 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-header-center {
+    border-bottom: 1px dashed #000000 !important;
+    padding-bottom: 3px !important;
+    margin-bottom: 5px !important;
+    text-align: center !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-header-center h2 {
+    font-size: 11pt !important;
+    font-weight: 900 !important;
+    color: #000000 !important;
+    margin: 0 !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-header-center p {
+    font-size: 7.5pt !important;
+    color: #000000 !important;
+    margin: 1px 0 !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-divider-dash {
+    border-top: 1px dashed #000000 !important;
+    margin: 4px 0 !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-items-table {
+    width: 100% !important;
+    font-size: 8pt !important;
+    margin: 3px 0 !important;
+    border-collapse: collapse !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-items-table th,
+  body:not(.is-printing-report) #modalReceipt .receipt-items-table td {
+    padding: 2px 0 !important;
+    color: #000000 !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-items-table tr {
+    border-bottom: 1px dashed #000000 !important;
+  }
+
+  body:not(.is-printing-report) #modalReceipt .receipt-total-row {
+    font-size: 9.5pt !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    margin: 2px 0 !important;
+  }
+
+  /* ================================================================
+     KASUS B: CETAK LAPORAN PENJUALAN RESMI (Format A4 Dokumen)
+     ================================================================ */
+  body.is-printing-report #modalReceipt {
+    display: none !important;
+  }
+
+  body.is-printing-report #printableSalesReportDoc {
+    display: block !important;
+    width: 100% !important;
+    padding: 1.2cm !important;
+    background: #FFFFFF !important;
+  }
+
+  .print-header-letterhead {
+    border-bottom: 2px solid #0F172A;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .print-store-title {
+    font-size: 18pt;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+  }
+
+  .print-store-subtitle {
+    font-size: 9pt;
+    color: #475569;
+    margin: 0;
+  }
+
+  .print-doc-badge {
+    text-align: right;
+  }
+
+  .print-doc-badge h2 {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #2563EB;
+    margin: 0 0 2px 0;
+  }
+
+  .print-doc-badge p {
+    font-size: 8.5pt;
+    color: #64748B;
+    margin: 0;
+  }
+
+  .print-stats-summary {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .print-stat-box {
+    flex: 1;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    padding: 10px 14px;
+    background: #F8FAFC;
+  }
+
+  .print-stat-label {
+    font-size: 8pt;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+    margin: 0 0 4px 0;
+  }
+
+  .print-stat-val {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    font-size: 9pt;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #CBD5E1;
+    padding: 7px 10px;
+    text-align: left;
+  }
+
+  .print-table th {
+    background: #F1F5F9;
+    font-weight: 700;
+    color: #1E293B;
+  }
+
+  .print-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    page-break-inside: avoid;
+  }
+
+  .print-sig-col {
+    width: 200px;
+    text-align: center;
+    font-size: 9pt;
+  }
+
+  .print-sig-space {
+    height: 65px;
+  }
+
+  .print-sig-name {
+    font-weight: 700;
+    border-bottom: 1px solid #0F172A;
+    display: inline-block;
+    min-width: 150px;
+    padding-bottom: 2px;
+  }
+}
+
+.btn-action-view-proof {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-action-view-proof:hover {
+  background: #DBEAFE !important;
 }
 
 
