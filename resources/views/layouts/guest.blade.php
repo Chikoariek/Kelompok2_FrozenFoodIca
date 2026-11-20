@@ -289,63 +289,62 @@
                 background: #fff0f0;
                 border: 1px solid #fed7d7;
                 color: #c53030;
-                padding: 0.65rem 0.85rem;
+                padding: 0.75rem 1rem;
                 border-radius: 12px;
-                font-size: 0.8rem;
+                font-size: 0.8125rem;
                 line-height: 1.45;
-                margin-bottom: 1rem;
+                margin-bottom: 1.25rem;
                 text-align: left;
                 display: flex;
-                align-items: flex-start;
-                gap: 0.625rem;
+                align-items: center;
+                gap: 0.75rem;
             }
 
             .alert-success {
                 background: #ecfdf5;
                 border: 1px solid #a7f3d0;
                 color: #065f46;
-                padding: 0.65rem 0.85rem;
+                padding: 0.75rem 1rem;
                 border-radius: 12px;
-                font-size: 0.8rem;
+                font-size: 0.8125rem;
                 font-weight: 600;
                 line-height: 1.45;
-                margin-bottom: 1rem;
+                margin-bottom: 1.25rem;
                 text-align: left;
                 display: flex;
-                align-items: flex-start;
-                gap: 0.625rem;
+                align-items: center;
+                gap: 0.75rem;
             }
 
             .alert-warning {
-                background: #fffbeb;
-                border: 1px solid #fde68a;
-                color: #92400e;
-                padding: 0.65rem 0.85rem;
+                background: rgba(103, 125, 158, 0.08);
+                border: 1px solid rgba(103, 125, 158, 0.22);
+                color: var(--navy);
+                padding: 0.75rem 1rem;
                 border-radius: 12px;
-                font-size: 0.8rem;
+                font-size: 0.8125rem;
                 font-weight: 600;
                 line-height: 1.45;
-                margin-bottom: 1rem;
+                margin-bottom: 1.25rem;
                 text-align: left;
                 display: flex;
-                align-items: flex-start;
-                gap: 0.625rem;
+                align-items: center;
+                gap: 0.75rem;
             }
 
             .alert-icon-badge {
-                width: 26px;
-                height: 26px;
-                border-radius: 7px;
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 flex-shrink: 0;
-                margin-top: 1px;
             }
 
             .alert-warning .alert-icon-badge {
-                background: rgba(217, 119, 6, 0.14);
-                color: #b45309;
+                background: rgba(103, 125, 158, 0.16);
+                color: var(--soft-blue);
             }
 
             .alert-success .alert-icon-badge {

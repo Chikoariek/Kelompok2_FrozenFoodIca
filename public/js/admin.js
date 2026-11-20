@@ -291,7 +291,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.getElementById('adminBottomBtnPos')?.addEventListener('click', () => {
     closeMobileSidebar();
-    document.getElementById('btnOpenOfflineOrder')?.click();
+    const btn = document.getElementById('btnOpenOfflineOrderModal');
+    if (btn) {
+      btn.click();
+    } else {
+      const modal = document.getElementById('modalOfflineOrder');
+      if (modal) {
+        if (typeof resetPosFilters === 'function') resetPosFilters();
+        if (typeof renderPosCart === 'function') renderPosCart();
+        modal.classList.add('open');
+      }
+    }
   });
 
   document.getElementById('adminBottomBtnMenu')?.addEventListener('click', () => {
@@ -3526,6 +3536,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const proofCustomerName = document.getElementById('proofCustomerName');
   const proofTotalAmount = document.getElementById('proofTotalAmount');
   const proofModalTitle = document.getElementById('proofModalTitle');
+  const proofActionButtonsWrap = document.getElementById('proofActionButtonsWrap');
+  const proofVerifiedBadgeWrap = document.getElementById('proofVerifiedBadgeWrap');
+  const proofRejectedBadgeWrap = document.getElementById('proofRejectedBadgeWrap');
+  const proofVerifiedDesc = document.getElementById('proofVerifiedDesc');
   const btnAcceptPaymentProof = document.getElementById('btnAcceptPaymentProof');
   const btnRejectPaymentProof = document.getElementById('btnRejectPaymentProof');
   let activeProofOrderId = null;
@@ -3537,11 +3551,36 @@ document.addEventListener('DOMContentLoaded', function () {
       const proofUrl = proofBtn.getAttribute('data-proof-url');
       const custName = proofBtn.getAttribute('data-cust-name') || '-';
       const total = proofBtn.getAttribute('data-total') || 'Rp 0';
+      const isPaid = proofBtn.getAttribute('data-is-paid') === '1';
+      const status = proofBtn.getAttribute('data-status') || '';
 
       if (proofPreviewImg) proofPreviewImg.src = proofUrl;
       if (proofCustomerName) proofCustomerName.textContent = custName;
       if (proofTotalAmount) proofTotalAmount.textContent = total;
-      if (proofModalTitle) proofModalTitle.textContent = `Validasi Bukti #${activeProofOrderId}`;
+
+      // State-Aware Dynamic Footer
+      if (status === 'Dibatalkan') {
+        if (proofModalTitle) proofModalTitle.textContent = `Bukti Transfer (Ditolak) #${activeProofOrderId}`;
+        if (proofActionButtonsWrap) proofActionButtonsWrap.style.display = 'none';
+        if (proofVerifiedBadgeWrap) proofVerifiedBadgeWrap.style.display = 'none';
+        if (proofRejectedBadgeWrap) proofRejectedBadgeWrap.style.display = 'flex';
+      } else if (isPaid || status === 'Diproses' || status === 'Selesai') {
+        if (proofModalTitle) proofModalTitle.textContent = `Bukti Transfer (Lunas) #${activeProofOrderId}`;
+        if (proofActionButtonsWrap) proofActionButtonsWrap.style.display = 'none';
+        if (proofRejectedBadgeWrap) proofRejectedBadgeWrap.style.display = 'none';
+        if (proofVerifiedBadgeWrap) proofVerifiedBadgeWrap.style.display = 'flex';
+        if (proofVerifiedDesc) {
+          proofVerifiedDesc.textContent = status === 'Selesai'
+            ? 'Pesanan telah selesai dan pembayaran telah diverifikasi.'
+            : 'Pesanan telah divalidasi dan sedang diproses toko.';
+        }
+      } else {
+        // Pending status (Menunggu Pembayaran / Menunggu Konfirmasi Admin)
+        if (proofModalTitle) proofModalTitle.textContent = `Validasi Bukti #${activeProofOrderId}`;
+        if (proofActionButtonsWrap) proofActionButtonsWrap.style.display = 'flex';
+        if (proofVerifiedBadgeWrap) proofVerifiedBadgeWrap.style.display = 'none';
+        if (proofRejectedBadgeWrap) proofRejectedBadgeWrap.style.display = 'none';
+      }
 
       if (modalViewPaymentProof) modalViewPaymentProof.classList.add('open');
     }
@@ -3586,6 +3625,13 @@ document.addEventListener('DOMContentLoaded', function () {
           const validateBtn = targetRow.querySelector('.btn-validate-order');
           if (validateBtn && action === 'accept') {
             validateBtn.remove();
+          }
+
+          // Sinkronisasi data-attributes tombol bukti bayar agar modal langsung State-Aware tanpa reload
+          const viewProofBtn = targetRow.querySelector('.btn-view-payment-proof');
+          if (viewProofBtn) {
+            viewProofBtn.setAttribute('data-is-paid', action === 'accept' ? '1' : '0');
+            viewProofBtn.setAttribute('data-status', action === 'accept' ? 'Diproses' : 'Menunggu Pembayaran');
           }
         }
       } else {

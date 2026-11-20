@@ -109,6 +109,26 @@
             </button>
         </nav>
 
+        <!-- Mobile-Only Drawer Actions (Profil Admin, Lihat Toko & Logout Khusus Drawer Mobile) -->
+        <div class="sidebar-mobile-user-section">
+            <div class="sidebar-section-divider"></div>
+            <a href="{{ route('home') }}" class="sidebar-nav-btn" style="text-decoration: none;" title="Buka Halaman Utama Toko">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Lihat Toko</span>
+            </a>
+            <button class="sidebar-nav-btn {{ $activeTab === 'profile' ? 'active' : '' }}" data-tab="profile" type="button" title="Kelola Profil Administrator">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Profil Admin</span>
+            </button>
+            <form method="POST" action="{{ route('logout') }}" onsubmit="try{sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}" style="margin: 0; width: 100%;">
+                @csrf
+                <button type="submit" class="sidebar-nav-btn sidebar-logout-btn" title="Keluar dari sesi admin" onclick="return confirm('Apakah Anda yakin ingin keluar dari sesi admin?');">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span style="color: #EF4444;">Keluar</span>
+                </button>
+            </form>
+        </div>
+
         <!-- Sidebar Footer Status Toko (Opsi B: Seamless Native Sidebar) -->
         @php $isOpen = (bool)($storeStatus['is_open'] ?? true); @endphp
         <div class="sidebar-footer-info">
@@ -185,7 +205,7 @@
                             @endif
                         </div>
                         <div class="topbar-profile-details">
-                            <p id="topbarAdminName" class="topbar-profile-name">{{ strlen($user->name ?? '') > 16 ? 'Admin Ica' : ($user->name ?? 'Administrator') }}</p>
+                            <p id="topbarAdminName" class="topbar-profile-name" title="{{ $user->name ?? 'Administrator' }}">{{ $user->name ?? 'Administrator' }}</p>
                             <p class="topbar-profile-role">Administrator</p>
                         </div>
                         <svg id="topbarChevron" class="topbar-chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
@@ -731,7 +751,7 @@
                                         </td>
 
                                         <!-- Customer -->
-                                        <td>
+                                        <td class="order-cust-cell">
                                             <p class="order-cust-name">{{ $order->customer_name }}</p>
                                             @php
                                                 $rawPhone = $order->customer_phone ?? '';
@@ -759,7 +779,7 @@
                                         </td>
 
                                         <!-- Method -->
-                                        <td>
+                                        <td class="order-method-cell">
                                             <div class="order-pickup-row">
                                                 @if(str_contains(strtolower($order->method ?? ''), 'kurir'))
                                                     <span class="motor-delivery-icon" style="width: 14px; height: 14px; color: var(--soft-blue); display: inline-flex;"></span>
@@ -807,7 +827,7 @@
                                         </td>
 
                                         <!-- Total -->
-                                        <td>
+                                        <td class="order-total-cell">
                                             <span class="order-total-amount">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
                                             @if($order->is_paid)
                                                 <span class="order-paid-status paid">✓ Lunas</span>
@@ -817,17 +837,17 @@
                                         </td>
 
                                         <!-- Status -->
-                                        <td>
+                                        <td class="order-status-cell">
                                             <span class="badge-status-pill status-pill-{{ $statusSlug }} status-badge-target">
                                                 {{ $statusDisplay }}
                                             </span>
                                         </td>
 
                                         <!-- Action Buttons -->
-                                        <td style="text-align: center;">
+                                        <td class="order-action-cell" style="text-align: center;">
                                             <div class="order-actions-flex">
                                                 @if($order->payment_proof)
-                                                    <button class="btn-action-view-proof btn-view-payment-proof" data-order-id="{{ $order->id }}" data-proof-url="{{ asset($order->payment_proof) }}" data-cust-name="{{ $order->customer_name }}" data-total="Rp {{ number_format($order->total, 0, ',', '.') }}" data-is-paid="{{ $order->is_paid ? '1' : '0' }}" type="button" title="Lihat Bukti Transfer Pelanggan" style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE;">
+                                                    <button class="btn-action-view-proof btn-view-payment-proof" data-order-id="{{ $order->id }}" data-proof-url="{{ asset($order->payment_proof) }}" data-cust-name="{{ $order->customer_name }}" data-total="Rp {{ number_format($order->total, 0, ',', '.') }}" data-is-paid="{{ $order->is_paid ? '1' : '0' }}" data-status="{{ $order->status }}" type="button" title="Lihat Bukti Transfer Pelanggan">
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                                         <span>Bukti Bayar</span>
                                                     </button>
@@ -2438,8 +2458,8 @@
                     <img id="proofPreviewImg" src="" alt="Bukti Transfer Pelanggan" style="max-height: 380px; max-width: 100%; object-fit: contain; border-radius: 8px;">
                 </div>
 
-                <!-- Action Buttons: Verifikasi / Tolak -->
-                <div style="display: flex; gap: 0.65rem; margin-top: 1.25rem;">
+                <!-- 1. Action Buttons: Verifikasi / Tolak (Hanya tampil saat status belum lunas) -->
+                <div id="proofActionButtonsWrap" style="display: flex; gap: 0.65rem; margin-top: 1.25rem;">
                     <button type="button" id="btnRejectPaymentProof" class="btn-modal-cancel" style="flex: 1; padding: 0.65rem 1rem; color: #EF4444; border-color: #FECACA; background: #FEF2F2; font-weight: 700;">
                         Tolak Bukti
                     </button>
@@ -2448,22 +2468,92 @@
                         <span>Terima &amp; Set Lunas</span>
                     </button>
                 </div>
+
+                <!-- 2. State Banner: Lunas / Terverifikasi (Tampil saat status sudah lunas / diproses / selesai) -->
+                <div id="proofVerifiedBadgeWrap" style="display: none; margin-top: 1.25rem; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 12px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46;">
+                        <div style="width: 28px; height: 28px; border-radius: 7px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #059669; flex-shrink: 0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 0.8125rem; font-weight: 800; margin: 0; color: #065F46;">Pembayaran Telah Diterima</p>
+                            <p id="proofVerifiedDesc" style="font-size: 0.7rem; margin: 2px 0 0; color: #047857;">Pesanan telah divalidasi dan berstatus lunas.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-modal-cancel" style="width: 100%; justify-content: center; padding: 0.65rem 1rem; border-radius: 10px; font-weight: 700;" onclick="document.getElementById('modalViewPaymentProof').classList.remove('open')">
+                        Tutup Pratinjau
+                    </button>
+                </div>
+
+                <!-- 3. State Banner: Dibatalkan / Ditolak (Tampil saat status dibatalkan) -->
+                <div id="proofRejectedBadgeWrap" style="display: none; margin-top: 1.25rem; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 12px; background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B;">
+                        <div style="width: 28px; height: 28px; border-radius: 7px; background: rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 0.8125rem; font-weight: 800; margin: 0; color: #991B1B;">Bukti Pembayaran Ditolak</p>
+                            <p style="font-size: 0.7rem; margin: 2px 0 0; color: #B91C1C;">Pesanan ini telah dibatalkan atau bukti tidak valid.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-modal-cancel" style="width: 100%; justify-content: center; padding: 0.65rem 1rem; border-radius: 10px; font-weight: 700;" onclick="document.getElementById('modalViewPaymentProof').classList.remove('open')">
+                        Tutup Pratinjau
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 8. Admin Mobile Bottom Navigation Bar (Berdasarkan Menu Profil & Operasional Toko) -->
+    <!-- 8. Admin Mobile Bottom Navigation Bar (Impeccable Seller-App Pattern: Dashboard, Pesanan, Kasir POS, Produk, Menu) -->
     <nav class="admin-mobile-bottom-nav" id="adminBottomNav" aria-label="Navigasi Bawah Admin">
-        <!-- 1. Lihat Toko (Homepage) -->
-        <a href="{{ route('home') }}" class="admin-bottom-nav-item" aria-label="Lihat Toko (Homepage)">
+        <!-- 1. Dashboard Overview -->
+        <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'dashboard' ? 'active' : '' }}" data-tab="dashboard" aria-label="Dashboard Ringkasan">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
+                <rect width="7" height="9" x="3" y="3" rx="1"/>
+                <rect width="7" height="5" x="14" y="3" rx="1"/>
+                <rect width="7" height="9" x="14" y="12" rx="1"/>
+                <rect width="7" height="5" x="3" y="16" rx="1"/>
             </svg>
-            <span>Toko</span>
-        </a>
+            <span>Dashboard</span>
+        </button>
 
-        <!-- 2. Menu Operasional Lengkap (Buka Sidebar Drawer) -->
+        <!-- 2. Pesanan Pelanggan (Ikon Bersih Tanpa Badge Pajangan) -->
+        <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'orders' ? 'active' : '' }}" data-tab="orders" aria-label="Pesanan Masuk">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <span>Pesanan</span>
+        </button>
+
+        <!-- 3. Kasir Toko / Input Pesanan Cepat (Hero Floating Action Button) -->
+        <button type="button" class="admin-bottom-nav-item admin-bottom-nav-center" id="adminBottomBtnPos" aria-label="Input Pesanan Kasir Toko">
+            <div class="admin-bottom-pos-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="13" rx="2"/>
+                    <path d="M6 8h12"/>
+                    <circle cx="7" cy="12" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="12" cy="12" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="17" cy="12" r="0.8" fill="#FFFFFF"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+            </div>
+            <span class="admin-bottom-pos-label">Kasir Toko</span>
+        </button>
+
+        <!-- 4. Inventaris Produk & Stok Freezer -->
+        <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'inventory' ? 'active' : '' }}" data-tab="inventory" aria-label="Inventaris Produk">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+            </svg>
+            <span>Produk</span>
+        </button>
+
+        <!-- 5. Menu Lengkap & Pengaturan (Buka Drawer Sidebar) -->
         <button type="button" class="admin-bottom-nav-item" id="adminBottomBtnMenu" aria-label="Buka Menu Lengkap">
             <div class="admin-bottom-nav-icon-wrap">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2471,42 +2561,9 @@
                     <line x1="4" y1="12" x2="20" y2="12"/>
                     <line x1="4" y1="18" x2="20" y2="18"/>
                 </svg>
-                <span id="adminBottomOrdersBadge" class="admin-bottom-nav-badge" style="display: none;">0</span>
             </div>
             <span>Menu</span>
         </button>
-
-        <!-- 3. Kasir POS (Pusat Aksi Cepat) -->
-        <button type="button" class="admin-bottom-nav-item" id="adminBottomBtnPos" aria-label="Kasir POS">
-            <div class="admin-bottom-pos-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-            </div>
-            <span style="font-weight: 800; color: var(--navy);">Kasir POS</span>
-        </button>
-
-        <!-- 4. Profil Admin (Kelola Profil & Password) -->
-        <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'profile' ? 'active' : '' }}" data-tab="profile" id="adminBottomBtnProfile" aria-label="Kelola Profil Administrator">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-            </svg>
-            <span>Profil</span>
-        </button>
-
-        <!-- 5. Keluar (Logout) -->
-        <form method="POST" action="{{ route('logout') }}" onsubmit="try{sessionStorage.removeItem('ica_admin_active_tab');}catch(e){}" style="flex: 1; display: flex; margin: 0; height: 100%;">
-            @csrf
-            <button type="submit" class="admin-bottom-nav-item" aria-label="Keluar dari sesi admin" style="width: 100%; border: none; background: transparent; cursor: pointer;" onclick="return confirm('Apakah Anda yakin ingin keluar dari sesi admin?');">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-                <span style="color: #EF4444;">Keluar</span>
-            </button>
-        </form>
     </nav>
 
     <script>
