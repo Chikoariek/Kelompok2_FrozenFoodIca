@@ -38,7 +38,6 @@
                     </svg>
                 </span>
             </div>
-            <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
         </div>
 
         <!-- Email -->
@@ -62,7 +61,6 @@
                     </svg>
                 </span>
             </div>
-            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
         </div>
 
         <!-- Password -->
@@ -97,7 +95,6 @@
                     </svg>
                 </button>
             </div>
-            <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
         </div>
 
         <!-- Confirm Password -->
@@ -132,7 +129,6 @@
                     </svg>
                 </button>
             </div>
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1.5" />
         </div>
 
         <!-- Submit Button -->
