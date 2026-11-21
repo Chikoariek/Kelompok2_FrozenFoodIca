@@ -970,12 +970,21 @@ class AdminDataController extends Controller
         $proofPath = null;
         if ($request->hasFile('proof')) {
             $file = $request->file('proof');
-            $uploadDir = public_path('uploads/proofs');
-            if (!file_exists($uploadDir)) {
-                @mkdir($uploadDir, 0755, true);
-            }
+            $uploadDir = self::getProofUploadDir();
             $fileName = 'proof_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $id) . '_' . time() . '.' . $file->getClientOriginalExtension();
             $file->move($uploadDir, $fileName);
+            @chmod($uploadDir . '/' . $fileName, 0644);
+
+            // Simpan salinan ke public_path jika berbeda (antisipasi struktur folder terpisah)
+            $altDir = public_path('uploads/proofs');
+            if ($altDir !== $uploadDir) {
+                if (!file_exists($altDir)) {
+                    @mkdir($altDir, 0755, true);
+                }
+                @copy($uploadDir . '/' . $fileName, $altDir . '/' . $fileName);
+                @chmod($altDir . '/' . $fileName, 0644);
+            }
+
             $proofPath = 'uploads/proofs/' . $fileName;
             $status = 'Menunggu Konfirmasi Admin';
             $isPaid = false;
@@ -1099,6 +1108,24 @@ class AdminDataController extends Controller
 
     // --- 4. Sakelar Buka/Tutup Toko (Store Status) ---
 
+    // Helper lokasi direktori upload bukti transfer tahan banting (support shared hosting & local)
+    public static function getProofUploadDir(): string
+    {
+        $publicHtml = dirname(base_path()) . '/public_html';
+        if (is_dir($publicHtml)) {
+            $dir = $publicHtml . '/uploads/proofs';
+        } else {
+            $dir = public_path('uploads/proofs');
+        }
+
+        if (!file_exists($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        @chmod($dir, 0755);
+
+        return $dir;
+    }
+
     public static function getStoreStatusArray()
     {
         $statusFile = storage_path('app/store_status.json');
@@ -1164,12 +1191,19 @@ class AdminDataController extends Controller
 
         if ($request->hasFile('proof')) {
             $file = $request->file('proof');
-            $uploadDir = public_path('uploads/proofs');
-            if (!file_exists($uploadDir)) {
-                @mkdir($uploadDir, 0755, true);
-            }
+            $uploadDir = self::getProofUploadDir();
             $fileName = 'proof_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $id) . '_' . time() . '.' . $file->getClientOriginalExtension();
             $file->move($uploadDir, $fileName);
+            @chmod($uploadDir . '/' . $fileName, 0644);
+
+            $altDir = public_path('uploads/proofs');
+            if ($altDir !== $uploadDir) {
+                if (!file_exists($altDir)) {
+                    @mkdir($altDir, 0755, true);
+                }
+                @copy($uploadDir . '/' . $fileName, $altDir . '/' . $fileName);
+                @chmod($altDir . '/' . $fileName, 0644);
+            }
             
             $order->payment_proof = 'uploads/proofs/' . $fileName;
             $order->status = 'Menunggu Konfirmasi Admin';
