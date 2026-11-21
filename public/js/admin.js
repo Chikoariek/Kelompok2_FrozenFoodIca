@@ -3554,7 +3554,23 @@ document.addEventListener('DOMContentLoaded', function () {
       const isPaid = proofBtn.getAttribute('data-is-paid') === '1';
       const status = proofBtn.getAttribute('data-status') || '';
 
-      if (proofPreviewImg) proofPreviewImg.src = proofUrl;
+      if (proofPreviewImg) {
+        const fallbackMsg = document.getElementById('proofFallbackMsg');
+        const extLink = document.getElementById('proofExternalLink');
+        if (extLink) extLink.href = proofUrl;
+        if (fallbackMsg) fallbackMsg.style.display = 'none';
+
+        proofPreviewImg.style.display = 'block';
+        proofPreviewImg.onerror = () => {
+          proofPreviewImg.style.display = 'none';
+          if (fallbackMsg) fallbackMsg.style.display = 'flex';
+        };
+        proofPreviewImg.onload = () => {
+          proofPreviewImg.style.display = 'block';
+          if (fallbackMsg) fallbackMsg.style.display = 'none';
+        };
+        proofPreviewImg.src = proofUrl;
+      }
       if (proofCustomerName) proofCustomerName.textContent = custName;
       if (proofTotalAmount) proofTotalAmount.textContent = total;
 

@@ -2454,8 +2454,14 @@
                 </div>
 
                 <!-- Foto Bukti Transfer -->
-                <div style="text-align: center; background: #0F172A; border-radius: 12px; padding: 0.5rem; overflow: hidden; min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; background: #0F172A; border-radius: 12px; padding: 0.5rem; overflow: hidden; min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
                     <img id="proofPreviewImg" src="" alt="Bukti Transfer Pelanggan" style="max-height: 380px; max-width: 100%; object-fit: contain; border-radius: 8px;">
+                    <div id="proofFallbackMsg" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; color: #94A3B8; text-align: center;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" style="margin-bottom: 0.75rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <p style="margin: 0 0 0.5rem; color: #F1F5F9; font-weight: 600; font-size: 0.875rem;">Gambar Bukti Tidak Ditemukan di Server</p>
+                        <p style="margin: 0; font-size: 0.75rem; color: #64748B; max-width: 320px;">File gambar ini mungkin pesanan riwayat dari localhost dan belum diunggah ke hosting.</p>
+                        <a id="proofExternalLink" href="#" target="_blank" rel="noopener noreferrer" style="margin-top: 0.75rem; font-size: 0.75rem; color: #38BDF8; text-decoration: underline;">Buka Tautan Gambar di Tab Baru</a>
+                    </div>
                 </div>
 
                 <!-- 1. Action Buttons: Verifikasi / Tolak (Hanya tampil saat status belum lunas) -->
