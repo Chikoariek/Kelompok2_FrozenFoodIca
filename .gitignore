@@ -28,4 +28,5 @@ ngrok.exe
 *.sql
 *.zip
 /public/uploads/*
+!/public/uploads/.htaccess
 !/public/uploads/proofs/.gitkeep

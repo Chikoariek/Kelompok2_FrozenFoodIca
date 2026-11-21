@@ -1121,9 +1121,41 @@ class AdminDataController extends Controller
         if (!file_exists($dir)) {
             @mkdir($dir, 0755, true);
         }
+        @chmod(dirname($dir), 0755);
         @chmod($dir, 0755);
 
         return $dir;
+    }
+
+    // Streaming bukti pembayaran langsung via PHP (bebas blokir 403 Apache shared hosting)
+    public function showPaymentProof($id)
+    {
+        $order = Order::find($id);
+        if (!$order || !$order->payment_proof) {
+            abort(404, 'Bukti pembayaran tidak ditemukan');
+        }
+
+        $filename = basename($order->payment_proof);
+
+        $possiblePaths = [
+            dirname(base_path()) . '/public_html/uploads/proofs/' . $filename,
+            public_path('uploads/proofs/' . $filename),
+            base_path('public/uploads/proofs/' . $filename),
+            dirname(base_path()) . '/icafrozenfood/public/uploads/proofs/' . $filename,
+            storage_path('app/public/uploads/proofs/' . $filename),
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $mime = mime_content_type($path) ?: 'image/jpeg';
+                return response()->file($path, [
+                    'Content-Type'  => $mime,
+                    'Cache-Control' => 'public, max-age=86400',
+                ]);
+            }
+        }
+
+        abort(404, 'File bukti transfer fisik tidak ditemukan di server');
     }
 
     public static function getStoreStatusArray()

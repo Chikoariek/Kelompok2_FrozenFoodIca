@@ -2188,12 +2188,14 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
 
-        <div style="padding: 0.875rem; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; display: flex; flex-direction: column; gap: 0.5rem;">
-          <div style="font-size: 11.5px; color: #334155; line-height: 1.45;">
-            📍 <strong>Lokasi Pengambilan:</strong> Outlet Ica Frozen Food, Loktabat Utara Banjarbaru (Buka 08.00 - 21.00 WITA).
+        <div style="padding: 0.875rem 1rem; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; display: flex; flex-direction: column; gap: 0.65rem;">
+          <div style="font-size: 11.5px; color: #334155; line-height: 1.45; display: flex; align-items: flex-start; gap: 0.55rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1.5px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div><strong>Lokasi Pengambilan:</strong> Outlet Ica Frozen Food, Loktabat Utara Banjarbaru (Buka 08.00 - 21.00 WITA).</div>
           </div>
-          <div style="font-size: 11px; color: #0284C7; background: #F0F9FF; border: 1px solid #BAE6FD; padding: 6px 10px; border-radius: 8px; line-height: 1.4;">
-            💵 Harap siapkan uang pas sesuai <strong>Total Tagihan</strong> di atas saat pengambilan pesanan di kasir toko.
+          <div style="font-size: 11.5px; color: #0369A1; background: #F0F9FF; border: 1px solid #BAE6FD; padding: 0.6rem 0.75rem; border-radius: 8px; line-height: 1.45; display: flex; align-items: flex-start; gap: 0.55rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1.5px;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            <div>Harap siapkan uang pas sesuai <strong>Total Tagihan</strong> di atas saat pengambilan pesanan di kasir toko.</div>
           </div>
         </div>
 

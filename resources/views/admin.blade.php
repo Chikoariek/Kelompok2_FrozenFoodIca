@@ -847,7 +847,7 @@
                                         <td class="order-action-cell" style="text-align: center;">
                                             <div class="order-actions-flex">
                                                 @if($order->payment_proof)
-                                                    <button class="btn-action-view-proof btn-view-payment-proof" data-order-id="{{ $order->id }}" data-proof-url="{{ asset($order->payment_proof) }}" data-cust-name="{{ $order->customer_name }}" data-total="Rp {{ number_format($order->total, 0, ',', '.') }}" data-is-paid="{{ $order->is_paid ? '1' : '0' }}" data-status="{{ $order->status }}" type="button" title="Lihat Bukti Transfer Pelanggan">
+                                                    <button class="btn-action-view-proof btn-view-payment-proof" data-order-id="{{ $order->id }}" data-proof-url="{{ route('order.proof', $order->id) }}" data-cust-name="{{ $order->customer_name }}" data-total="Rp {{ number_format($order->total, 0, ',', '.') }}" data-is-paid="{{ $order->is_paid ? '1' : '0' }}" data-status="{{ $order->status }}" type="button" title="Lihat Bukti Transfer Pelanggan">
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                                         <span>Bukti Bayar</span>
                                                     </button>

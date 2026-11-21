@@ -117,13 +117,16 @@ Route::prefix('api')->group(function () {
 // --- 6. Rute Autentikasi Laravel Breeze (Login, Register, Logout) ---
 require __DIR__.'/auth.php';
 
-// --- 7. Fallback Serving untuk File Upload di Shared Hosting ---
+// --- 7. Rute Streaming & Fallback untuk File Upload di Shared Hosting ---
+Route::get('/order-proof/{id}', [\App\Http\Controllers\AdminDataController::class, 'showPaymentProof'])->name('order.proof');
+
 Route::get('/uploads/proofs/{filename}', function ($filename) {
     $paths = [
         dirname(base_path()) . '/public_html/uploads/proofs/' . $filename,
         public_path('uploads/proofs/' . $filename),
         base_path('public/uploads/proofs/' . $filename),
         dirname(base_path()) . '/icafrozenfood/public/uploads/proofs/' . $filename,
+        storage_path('app/public/uploads/proofs/' . $filename),
     ];
 
     foreach ($paths as $path) {
@@ -137,5 +140,6 @@ Route::get('/uploads/proofs/{filename}', function ($filename) {
     }
 
     abort(404);
-})->where('filename', '[a-zA-Z0-9_.-]+');
+})->where('filename', '.*');
+
 
