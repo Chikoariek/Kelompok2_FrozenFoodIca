@@ -2536,14 +2536,17 @@
         <!-- 3. Kasir Toko / Input Pesanan Cepat (Hero Floating Action Button) -->
         <button type="button" class="admin-bottom-nav-item admin-bottom-nav-center" id="adminBottomBtnPos" aria-label="Input Pesanan Kasir Toko">
             <div class="admin-bottom-pos-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="4" width="20" height="13" rx="2"/>
-                    <path d="M6 8h12"/>
-                    <circle cx="7" cy="12" r="0.8" fill="#FFFFFF"/>
-                    <circle cx="12" cy="12" r="0.8" fill="#FFFFFF"/>
-                    <circle cx="17" cy="12" r="0.8" fill="#FFFFFF"/>
-                    <line x1="8" y1="21" x2="16" y2="21"/>
-                    <line x1="12" y1="17" x2="12" y2="21"/>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="5" rx="1.5"/>
+                    <line x1="8" y1="4.5" x2="16" y2="4.5"/>
+                    <path d="M4 7h16a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 4 7Z"/>
+                    <circle cx="7.5" cy="11.5" r="0.75" fill="#FFFFFF"/>
+                    <circle cx="12" cy="11.5" r="0.75" fill="#FFFFFF"/>
+                    <circle cx="16.5" cy="11.5" r="0.75" fill="#FFFFFF"/>
+                    <circle cx="7.5" cy="15" r="0.75" fill="#FFFFFF"/>
+                    <circle cx="12" cy="15" r="0.75" fill="#FFFFFF"/>
+                    <circle cx="16.5" cy="15" r="0.75" fill="#FFFFFF"/>
+                    <line x1="7" y1="18.5" x2="17" y2="18.5"/>
                 </svg>
             </div>
             <span class="admin-bottom-pos-label">Kasir Toko</span>
@@ -2560,7 +2563,7 @@
         </button>
 
         <!-- 5. Menu Lengkap & Pengaturan (Buka Drawer Sidebar) -->
-        <button type="button" class="admin-bottom-nav-item" id="adminBottomBtnMenu" aria-label="Buka Menu Lengkap">
+        <button type="button" class="admin-bottom-nav-item {{ !in_array($activeTab, ['dashboard', 'orders', 'inventory']) ? 'active' : '' }}" id="adminBottomBtnMenu" aria-label="Buka Menu Lengkap">
             <div class="admin-bottom-nav-icon-wrap">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="4" y1="6" x2="20" y2="6"/>

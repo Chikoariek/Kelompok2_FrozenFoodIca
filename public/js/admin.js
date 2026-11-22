@@ -220,12 +220,17 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       // Sync Admin Mobile Bottom Nav
+      const mainBottomTabs = ['dashboard', 'orders', 'inventory'];
       document.querySelectorAll('.admin-bottom-nav-item[data-tab]').forEach((btn) => {
           btn.classList.toggle(
               "active",
               btn.getAttribute("data-tab") === tabId,
           );
       });
+      const bottomMenuBtn = document.getElementById('adminBottomBtnMenu');
+      if (bottomMenuBtn) {
+          bottomMenuBtn.classList.toggle('active', !mainBottomTabs.includes(tabId));
+      }
 
       tabPanes.forEach((pane) => {
           pane.classList.toggle("active", pane.id === `tab-${tabId}`);
