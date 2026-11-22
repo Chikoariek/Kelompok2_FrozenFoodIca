@@ -71,7 +71,7 @@ Aplikasi ini dikembangkan untuk mendigitalisasi operasional penjualan ritel dan 
 
 ---
 
-## Arsitektur Skema Database Terbaru
+## Arsitektur Skema Database Terbaruu
 
 Skema database telah dioptimalkan dan mengikuti kaidah *Version-Controlled Migrations* Laravel:
 
