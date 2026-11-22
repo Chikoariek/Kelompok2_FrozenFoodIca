@@ -1080,6 +1080,17 @@ document.addEventListener('DOMContentLoaded', function () {
           el.textContent = nextStock;
         });
 
+        // Update badge status (Habis, Menipis, atau Cukup)
+        document.querySelectorAll(`.stock-badge-container[data-id="${id}"]`).forEach((badgeWrap) => {
+          if (nextStock === 0) {
+            badgeWrap.innerHTML = `<span class="badge-status" style="background: var(--red-bg); color: var(--red);">Habis</span>`;
+          } else if (nextStock < 5) {
+            badgeWrap.innerHTML = `<span class="badge-status" style="background: var(--amber-bg); color: var(--amber-text);">Menipis</span>`;
+          } else {
+            badgeWrap.innerHTML = '';
+          }
+        });
+
         const row = document.querySelector(`tr[data-prod-row="${id}"]`);
         if (row) row.setAttribute('data-stock', nextStock);
 
@@ -1092,14 +1103,16 @@ document.addEventListener('DOMContentLoaded', function () {
               'Accept': 'application/json',
               'X-CSRF-TOKEN': csrfToken,
             },
-            body: JSON.stringify({ diff: diff }),
+            body: JSON.stringify({ diff: diff, delta: diff, stock: nextStock }),
           });
           const resData = await res.json();
           if (res.ok && resData.success) {
             showToast(`Stok "${prod.name}" berhasil diperbarui: ${nextStock} unit`);
+          } else {
+            showToast(resData?.message || 'Gagal memperbarui stok di server', 'error');
           }
         } catch (err) {
-          console.warn('Background stock sync failed');
+          console.warn('Background stock sync failed', err);
         }
       }
     }

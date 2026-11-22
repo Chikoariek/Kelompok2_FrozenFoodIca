@@ -223,6 +223,7 @@ class AdminDataController extends Controller
     {
         $validated = $request->validate([
             'delta' => 'nullable|integer',
+            'diff'  => 'nullable|integer',
             'stock' => 'nullable|integer',
         ]);
 
@@ -231,10 +232,11 @@ class AdminDataController extends Controller
             return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan'], 404);
         }
 
-        if ($request->has('delta')) {
-            $product->stock = max(0, $product->stock + (int) $validated['delta']);
-        } elseif ($request->has('stock')) {
-            $product->stock = max(0, (int) $validated['stock']);
+        if ($request->has('stock')) {
+            $product->stock = max(0, (int) $request->input('stock'));
+        } elseif ($request->has('delta') || $request->has('diff')) {
+            $change = (int) ($request->input('delta') ?? $request->input('diff') ?? 0);
+            $product->stock = max(0, $product->stock + $change);
         }
         $product->save();
 

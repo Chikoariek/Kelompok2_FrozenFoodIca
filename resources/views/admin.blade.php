@@ -1033,11 +1033,13 @@
                                                     <button class="btn-stepper btn-stock-inc" data-id="{{ $prod->id }}" type="button">+</button>
                                                 </div>
 
-                                                @if($isZero)
-                                                    <span class="badge-status" style="background: var(--red-bg); color: var(--red);">Habis</span>
-                                                @elseif($isLow)
-                                                    <span class="badge-status" style="background: var(--amber-bg); color: var(--amber-text);">Menipis</span>
-                                                @endif
+                                                <span class="stock-badge-container" data-id="{{ $prod->id }}">
+                                                    @if($isZero)
+                                                        <span class="badge-status" style="background: var(--red-bg); color: var(--red);">Habis</span>
+                                                    @elseif($isLow)
+                                                        <span class="badge-status" style="background: var(--amber-bg); color: var(--amber-text);">Menipis</span>
+                                                    @endif
+                                                </span>
                                             </div>
                                         </td>
 
