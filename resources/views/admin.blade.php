@@ -2510,62 +2510,61 @@
         </div>
     </div>
 
-    <!-- 8. Admin Mobile Bottom Navigation Bar (Impeccable Seller-App Pattern: Dashboard, Pesanan, Kasir POS, Produk, Menu) -->
+    <!-- 8. Admin Mobile Bottom Navigation Bar (Impeccable Seller-App Pattern: Dashboard, Pesanan, Kasir Toko, Produk, Menu) -->
     <nav class="admin-mobile-bottom-nav" id="adminBottomNav" aria-label="Navigasi Bawah Admin">
         <!-- 1. Dashboard Overview -->
         <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'dashboard' ? 'active' : '' }}" data-tab="dashboard" aria-label="Dashboard Ringkasan">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="7" height="9" x="3" y="3" rx="1"/>
-                <rect width="7" height="5" x="14" y="3" rx="1"/>
-                <rect width="7" height="9" x="14" y="12" rx="1"/>
-                <rect width="7" height="5" x="3" y="16" rx="1"/>
-            </svg>
+            <div class="admin-bottom-nav-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="9" x="3" y="3" rx="1"/>
+                    <rect width="7" height="5" x="14" y="3" rx="1"/>
+                    <rect width="7" height="9" x="14" y="12" rx="1"/>
+                    <rect width="7" height="5" x="3" y="16" rx="1"/>
+                </svg>
+            </div>
             <span>Dashboard</span>
         </button>
 
-        <!-- 2. Pesanan Pelanggan (Ikon Bersih Tanpa Badge Pajangan) -->
+        <!-- 2. Pesanan Pelanggan -->
         <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'orders' ? 'active' : '' }}" data-tab="orders" aria-label="Pesanan Masuk">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
+            <div class="admin-bottom-nav-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+            </div>
             <span>Pesanan</span>
         </button>
 
-        <!-- 3. Kasir Toko / Input Pesanan Cepat (Hero Floating Action Button) -->
-        <button type="button" class="admin-bottom-nav-item admin-bottom-nav-center" id="adminBottomBtnPos" aria-label="Input Pesanan Kasir Toko">
-            <div class="admin-bottom-pos-btn">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="5" y="2" width="14" height="5" rx="1.5"/>
-                    <line x1="8" y1="4.5" x2="16" y2="4.5"/>
-                    <path d="M4 7h16a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 4 7Z"/>
-                    <circle cx="7.5" cy="11.5" r="0.75" fill="#FFFFFF"/>
-                    <circle cx="12" cy="11.5" r="0.75" fill="#FFFFFF"/>
-                    <circle cx="16.5" cy="11.5" r="0.75" fill="#FFFFFF"/>
-                    <circle cx="7.5" cy="15" r="0.75" fill="#FFFFFF"/>
-                    <circle cx="12" cy="15" r="0.75" fill="#FFFFFF"/>
-                    <circle cx="16.5" cy="15" r="0.75" fill="#FFFFFF"/>
-                    <line x1="7" y1="18.5" x2="17" y2="18.5"/>
+        <!-- 3. Kasir Toko / Input Pesanan Cepat (Ikon Keranjang Belanja Web Konsisten) -->
+        <button type="button" class="admin-bottom-nav-item" id="adminBottomBtnPos" aria-label="Input Pesanan Kasir Toko">
+            <div class="admin-bottom-nav-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="21" r="1"/>
+                    <circle cx="19" cy="21" r="1"/>
+                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
                 </svg>
             </div>
-            <span class="admin-bottom-pos-label">Kasir Toko</span>
+            <span>Kasir Toko</span>
         </button>
 
         <!-- 4. Inventaris Produk & Stok Freezer -->
         <button type="button" class="admin-bottom-nav-item {{ $activeTab === 'inventory' ? 'active' : '' }}" data-tab="inventory" aria-label="Inventaris Produk">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-                <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
-            </svg>
+            <div class="admin-bottom-nav-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+                </svg>
+            </div>
             <span>Produk</span>
         </button>
 
         <!-- 5. Menu Lengkap & Pengaturan (Buka Drawer Sidebar) -->
         <button type="button" class="admin-bottom-nav-item {{ !in_array($activeTab, ['dashboard', 'orders', 'inventory']) ? 'active' : '' }}" id="adminBottomBtnMenu" aria-label="Buka Menu Lengkap">
             <div class="admin-bottom-nav-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="4" y1="6" x2="20" y2="6"/>
                     <line x1="4" y1="12" x2="20" y2="12"/>
                     <line x1="4" y1="18" x2="20" y2="18"/>

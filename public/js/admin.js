@@ -219,17 +219,28 @@ document.addEventListener('DOMContentLoaded', function () {
           );
       });
 
-      // Sync Admin Mobile Bottom Nav
+      // Sync Admin Mobile Bottom Nav & Efek Getaran Visual Tab Aktif
       const mainBottomTabs = ['dashboard', 'orders', 'inventory'];
       document.querySelectorAll('.admin-bottom-nav-item[data-tab]').forEach((btn) => {
-          btn.classList.toggle(
-              "active",
-              btn.getAttribute("data-tab") === tabId,
-          );
+          const isMatch = btn.getAttribute("data-tab") === tabId;
+          const wasActive = btn.classList.contains("active");
+          btn.classList.toggle("active", isMatch);
+          if (isMatch && !wasActive) {
+            btn.classList.remove("tab-just-switched");
+            void btn.offsetWidth;
+            btn.classList.add("tab-just-switched");
+          }
       });
       const bottomMenuBtn = document.getElementById('adminBottomBtnMenu');
       if (bottomMenuBtn) {
-          bottomMenuBtn.classList.toggle('active', !mainBottomTabs.includes(tabId));
+          const isMenuMatch = !mainBottomTabs.includes(tabId);
+          const wasMenuActive = bottomMenuBtn.classList.contains("active");
+          bottomMenuBtn.classList.toggle('active', isMenuMatch);
+          if (isMenuMatch && !wasMenuActive) {
+            bottomMenuBtn.classList.remove("tab-just-switched");
+            void bottomMenuBtn.offsetWidth;
+            bottomMenuBtn.classList.add("tab-just-switched");
+          }
       }
 
       tabPanes.forEach((pane) => {
@@ -283,9 +294,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // Haptic feedback & getaran lembut saat berpindah menu di mobile (seperti navigasi WhatsApp mobile)
+  function triggerNavHaptic() {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(20);
+      } catch (e) {}
+    }
+  }
+
   // Admin Mobile Bottom Nav Click Handlers
   document.querySelectorAll('.admin-bottom-nav-item[data-tab]').forEach((btn) => {
     btn.addEventListener('click', function () {
+      triggerNavHaptic();
       const tab = this.getAttribute('data-tab');
       if (tab) {
         closeMobileSidebar();
@@ -295,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.getElementById('adminBottomBtnPos')?.addEventListener('click', () => {
+    triggerNavHaptic();
     closeMobileSidebar();
     const btn = document.getElementById('btnOpenOfflineOrderModal');
     if (btn) {
@@ -310,6 +332,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.getElementById('adminBottomBtnMenu')?.addEventListener('click', () => {
+    triggerNavHaptic();
     openMobileSidebar();
   });
 
