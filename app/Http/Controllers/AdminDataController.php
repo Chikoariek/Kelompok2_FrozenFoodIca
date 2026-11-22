@@ -9,6 +9,7 @@ use App\Models\Bundle;
 use App\Models\BundleItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Controller Manajemen Data (API Endpoint)
@@ -912,10 +913,27 @@ class AdminDataController extends Controller
 
     // --- 3. Proses Pesanan ---
 
-    // Mengambil riwayat daftar seluruh pesanan pelanggan
+    // Mengambil riwayat daftar seluruh pesanan pelanggan (Aman: Admin melihat semua, user melihat miliknya sendiri)
     public function getOrders()
     {
-        $orders = Order::orderBy('created_at', 'desc')->get()->map(function ($order) {
+        if (Auth::check() && Auth::user()->isAdmin()) {
+            $ordersQuery = Order::orderBy('created_at', 'desc');
+        } elseif (Auth::check()) {
+            $user = Auth::user();
+            $ordersQuery = Order::where(function ($q) use ($user) {
+                $q->where('customer_name', $user->name);
+                if (!empty($user->phone)) {
+                    $q->orWhere('customer_phone', $user->phone);
+                }
+            })->orderBy('created_at', 'desc');
+        } else {
+            return response()->json([
+                'success' => true,
+                'orders'  => [],
+            ]);
+        }
+
+        $orders = $ordersQuery->get()->map(function ($order) {
             return [
                 'id'            => $order->id,
                 'customerName'  => $order->customer_name,
@@ -947,7 +965,22 @@ class AdminDataController extends Controller
     // Menyimpan pesanan baru dan otomatis mengurangi stok produk
     public function storeOrder(Request $request)
     {
-        $id = $request->input('id') ?: ('ORD-ICA-' . rand(1000, 9999));
+        // Pastikan ID unik dan tidak menimpa pesanan orang lain jika acak
+        $inputId = $request->input('id');
+        if (empty($inputId)) {
+            do {
+                $id = 'ORD-ICA-' . strtoupper(bin2hex(random_bytes(3)));
+            } while (Order::where('id', $id)->exists());
+        } else {
+            $id = $inputId;
+            $existingOrder = Order::find($id);
+            // Cegah penimpaan (IDOR overwrite) jika bukan admin yang mengupdate pesanan
+            if ($existingOrder && (!Auth::check() || !Auth::user()->isAdmin())) {
+                do {
+                    $id = 'ORD-ICA-' . strtoupper(bin2hex(random_bytes(3)));
+                } while (Order::where('id', $id)->exists());
+            }
+        }
         $custName = $request->input('customerName') ?: ($request->input('customer_name') ?: 'Pelanggan');
         $custPhone = $request->input('customerPhone') ?: ($request->input('customer_phone') ?: '-');
         $address = $request->input('address') ?: '-';
@@ -961,17 +994,67 @@ class AdminDataController extends Controller
         } else {
             $items = is_array($rawItems) ? $rawItems : [];
         }
-        $subtotal = (int) ($request->input('subtotal') ?: 0);
-        $shippingFee = (int) ($request->input('shipping_fee') ?: ($request->input('shippingFee') ?: ($request->input('iceFee') ?: ($request->input('ice_fee') ?: 0))));
-        $total = (int) ($request->input('total') ?: ($subtotal + $shippingFee));
+        // Validasi & Rekalkulasi Harga Server-Side (Cegah Price / Parameter Tampering)
+        $calculatedSubtotal = 0;
+        $validatedItems = [];
+        if (is_array($items) && count($items) > 0) {
+            foreach ($items as $item) {
+                $qty = max(1, (int) ($item['qty'] ?? 1));
+                $itemId = $item['id'] ?? null;
+                $itemPrice = (int) ($item['price'] ?? 0);
+                $itemName = $item['name'] ?? 'Produk';
+                $itemImage = $item['image'] ?? null;
+
+                if ($itemId) {
+                    if (str_starts_with((string)$itemId, 'bundle_') || !empty($item['is_bundle'])) {
+                        $bundleId = str_replace('bundle_', '', (string)$itemId);
+                        $bundle = Bundle::find($bundleId);
+                        if ($bundle) {
+                            $itemPrice = (int) $bundle->price;
+                            $itemName = $bundle->name;
+                        }
+                    } else {
+                        $prod = Product::find($itemId);
+                        if ($prod) {
+                            $itemPrice = (int) $prod->price;
+                            $itemName = $prod->name;
+                            $itemImage = $prod->image ?: $itemImage;
+                        }
+                    }
+                }
+
+                $calculatedSubtotal += ($itemPrice * $qty);
+                $item['qty'] = $qty;
+                $item['price'] = $itemPrice;
+                $item['name'] = $itemName;
+                if ($itemImage) $item['image'] = $itemImage;
+                $validatedItems[] = $item;
+            }
+            $items = $validatedItems;
+            $subtotal = $calculatedSubtotal;
+        } else {
+            $subtotal = (int) ($request->input('subtotal') ?: 0);
+        }
+
+        // Tentukan biaya pengiriman (Kurir Toko = 5000, Ambil di Toko = 0)
+        $isDelivery = (stripos($method, 'kurir') !== false || stripos($method, 'antar') !== false || stripos($method, 'delivery') !== false);
+        $shippingFee = $isDelivery ? 5000 : 0;
+        $total = $subtotal + $shippingFee;
         $isPaid = $request->has('isPaid') ? $request->boolean('isPaid') : ($request->has('is_paid') ? $request->boolean('is_paid') : false);
         $channel = $request->input('channel') ?: 'Online';
 
         $proofPath = null;
         if ($request->hasFile('proof')) {
+            $request->validate([
+                'proof' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            ]);
             $file = $request->file('proof');
             $uploadDir = self::getProofUploadDir();
-            $fileName = 'proof_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $id) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+            if (!in_array($ext, ['jpeg', 'png', 'jpg', 'webp'])) {
+                $ext = 'jpg';
+            }
+            $fileName = 'proof_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $id) . '_' . time() . '.' . $ext;
             $file->move($uploadDir, $fileName);
             @chmod($uploadDir . '/' . $fileName, 0644);
 
@@ -1015,21 +1098,39 @@ class AdminDataController extends Controller
             $orderData['payment_proof'] = $proofPath;
         }
 
-        $order = Order::updateOrCreate(['id' => $id], $orderData);
+        // Transaksi Basis Data Atomik (Cegah Race Condition saat Checkout & Pemotongan Stok)
+        $order = DB::transaction(function () use ($id, $orderData, $items) {
+            $order = Order::updateOrCreate(['id' => $id], $orderData);
 
-        // Deduct stock for each item ordered
-        if (is_array($items)) {
-            foreach ($items as $item) {
-                if (!empty($item['id'])) {
-                    $qty = (int) ($item['qty'] ?? 1);
-                    $prod = Product::find($item['id']);
-                    if ($prod) {
-                        $prod->stock = max(0, $prod->stock - $qty);
-                        $prod->save();
+            if (is_array($items)) {
+                foreach ($items as $item) {
+                    if (!empty($item['id'])) {
+                        $qty = (int) ($item['qty'] ?? 1);
+                        if (str_starts_with((string)$item['id'], 'bundle_') || !empty($item['is_bundle'])) {
+                            $bundleId = str_replace('bundle_', '', (string)$item['id']);
+                            $bundle = Bundle::with('items')->find($bundleId);
+                            if ($bundle && $bundle->items) {
+                                foreach ($bundle->items as $bItem) {
+                                    $bProd = Product::find($bItem->product_id);
+                                    if ($bProd) {
+                                        $bProd->stock = max(0, $bProd->stock - ($bItem->quantity * $qty));
+                                        $bProd->save();
+                                    }
+                                }
+                            }
+                        } else {
+                            $prod = Product::find($item['id']);
+                            if ($prod) {
+                                $prod->stock = max(0, $prod->stock - $qty);
+                                $prod->save();
+                            }
+                        }
                     }
                 }
             }
-        }
+
+            return $order;
+        });
 
         return response()->json([
             'success' => true,

@@ -2576,23 +2576,47 @@ body.admin-modal-open {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
-  .admin-bottom-nav-center {
+  /* Tombol Aksi Langsung Kasir Toko (Prominent Action Centerpiece) */
+  .admin-bottom-nav-action {
     position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 2px;
   }
 
-  /* Tombol Kasir Toko Tanpa Efek Berlebih (Rapi, Seimbang & Serasi) */
-  .admin-bottom-pos-btn {
-    display: inline-flex;
+  .admin-bottom-nav-action::before {
+    display: none !important;
+  }
+
+  .admin-bottom-action-pill {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #677D9E 0%, #4B5E78 100%);
+    display: flex;
     align-items: center;
     justify-content: center;
-    color: inherit;
-    transition: transform 0.18s ease;
+    border: 3px solid #FFFFFF;
+    box-shadow: 0 4px 14px rgba(103, 125, 158, 0.4);
+    margin-top: -14px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
   }
 
-  .admin-bottom-pos-label {
-    font-size: 11.5px !important;
-    font-weight: 600 !important;
+  .admin-bottom-nav-action:active .admin-bottom-action-pill {
+    transform: scale(0.92) translateY(2px);
+    box-shadow: 0 2px 6px rgba(103, 125, 158, 0.25);
+  }
+
+  .admin-bottom-action-label {
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    color: var(--navy) !important;
     letter-spacing: -0.01em;
+    margin-top: 2px;
+    white-space: nowrap;
   }
 
   /* 2x2 Grid KPI Statistik Dashboard (Padat & Sekali Lirik di HP) */

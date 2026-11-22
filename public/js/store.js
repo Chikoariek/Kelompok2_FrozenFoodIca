@@ -1692,12 +1692,16 @@ document.addEventListener('DOMContentLoaded', function () {
         <div style="background-color: #FFFFFF; padding: 0.75rem; border-radius: 16px; border: 1px solid rgba(166, 177, 195, 0.5); box-shadow: var(--shadow-2xs); display: flex; gap: 0.75rem; align-items: center;">
           <img src="${it.product.image || '/images/ica_logo.png'}" alt="${it.product.name}" style="width: 3.75rem; height: 3.75rem; border-radius: 12px; object-fit: cover; flex-shrink: 0;" onerror="this.src='/images/ica_logo.png'">
           <div style="flex: 1; min-width: 0;">
-            <h4 style="font-weight: 700; font-size: 0.75rem; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${it.product.name}</h4>
-            <p style="font-size: 11px; color: var(--soft-blue); font-weight: 700;">Rp ${Number(it.product.price).toLocaleString('id-ID')}</p>
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem;">
-              <button onclick="window.updateCartQty('${it.product.id}', -1)" style="width: 1.875rem; height: 1.875rem; border-radius: 8px; background-color: #F3F4F6; border: 1px solid #CBD5E1; display: flex; align-items: center; justify-content: center; color: var(--navy); font-size: 0.875rem; font-weight: 700; cursor: pointer; touch-action: manipulation;">-</button>
-              <span style="font-size: 0.8125rem; font-weight: 800; color: var(--navy); min-width: 1.5rem; text-align: center;">${it.qty}</span>
-              <button onclick="window.updateCartQty('${it.product.id}', 1)" style="width: 1.875rem; height: 1.875rem; border-radius: 8px; background-color: #F3F4F6; border: 1px solid #CBD5E1; display: flex; align-items: center; justify-content: center; color: var(--navy); font-size: 0.875rem; font-weight: 700; cursor: pointer; touch-action: manipulation;">+</button>
+            <h4 style="font-weight: 700; font-size: 0.8125rem; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;">${it.product.name}</h4>
+            <p style="font-size: 11.5px; color: var(--soft-blue); font-weight: 700; margin-top: 2px;">Rp ${Number(it.product.price).toLocaleString('id-ID')}</p>
+            <div style="display: inline-flex; align-items: center; gap: 0.45rem; margin-top: 0.45rem;">
+              <button onclick="window.updateCartQty('${it.product.id}', -1)" style="width: 1.75rem; height: 1.75rem; border-radius: 8px; background-color: #F8FAFC; border: 1px solid #CBD5E1; display: inline-flex; align-items: center; justify-content: center; color: var(--navy); padding: 0; cursor: pointer; touch-action: manipulation; transition: all 0.15s ease;" title="Kurangi 1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <span style="font-size: 0.8125rem; font-weight: 800; color: var(--navy); min-width: 1.5rem; text-align: center; line-height: 1;">${it.qty}</span>
+              <button onclick="window.updateCartQty('${it.product.id}', 1)" style="width: 1.75rem; height: 1.75rem; border-radius: 8px; background-color: #F8FAFC; border: 1px solid #CBD5E1; display: inline-flex; align-items: center; justify-content: center; color: var(--navy); padding: 0; cursor: pointer; touch-action: manipulation; transition: all 0.15s ease;" title="Tambah 1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
             </div>
           </div>
           <div style="text-align: right;">

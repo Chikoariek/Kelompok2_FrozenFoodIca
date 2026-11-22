@@ -2342,9 +2342,13 @@ document.addEventListener('DOMContentLoaded', function () {
             <span class="pos-cart-item-price">Rp ${it.price.toLocaleString('id-ID')} &bull; Stok: ${it.stock}</span>
           </div>
           <div class="pos-qty-pill-wrap">
-            <button type="button" class="pos-qty-pill-btn btn-pos-qty-minus" data-id="${it.id}" title="Kurangi">-</button>
-            <span class="pos-qty-pill-val">${it.qty}</span>
-            <button type="button" class="pos-qty-pill-btn btn-pos-qty-plus" data-id="${it.id}" ${isMax ? 'disabled' : ''} title="Tambah">+</button>
+            <button type="button" class="pos-qty-pill-btn btn-pos-qty-minus" data-id="${it.id}" title="Kurangi" style="display:inline-flex;align-items:center;justify-content:center;padding:0;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <span class="pos-qty-pill-val" style="line-height:1;">${it.qty}</span>
+            <button type="button" class="pos-qty-pill-btn btn-pos-qty-plus" data-id="${it.id}" ${isMax ? 'disabled' : ''} title="Tambah" style="display:inline-flex;align-items:center;justify-content:center;padding:0;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
           </div>
           <div class="pos-item-subtotal">Rp ${subtotal.toLocaleString('id-ID')}</div>
           <button type="button" class="pos-btn-remove-item btn-pos-remove-item" data-id="${it.id}" title="Hapus dari kasir">

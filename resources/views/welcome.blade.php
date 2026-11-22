@@ -1191,11 +1191,15 @@
                         <div
                             style="display: flex; align-items: center; border: 1px solid #A6B1C3; border-radius: 12px; background: #F9FAFB; padding: 4px;">
                             <button id="btnDetailMinus"
-                                style="width: 2rem; height: 2rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #374151; font-weight: 700; cursor: pointer;">-</button>
+                                style="width: 2rem; height: 2rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #374151; padding: 0; cursor: pointer;" aria-label="Kurangi">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
                             <span id="detailQtyDisplay"
-                                style="width: 2rem; text-align: center; font-weight: 700; font-size: 0.875rem; color: var(--navy);">1</span>
+                                style="width: 2rem; text-align: center; font-weight: 700; font-size: 0.875rem; color: var(--navy); line-height: 1;">1</span>
                             <button id="btnDetailPlus"
-                                style="width: 2rem; height: 2rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #374151; font-weight: 700; cursor: pointer;">+</button>
+                                style="width: 2rem; height: 2rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #374151; padding: 0; cursor: pointer;" aria-label="Tambah">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
                         </div>
                         <button id="btnDetailAddToCart"
                             style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1rem; background-color: var(--soft-blue); color: #FFFFFF; font-weight: 700; font-size: 0.875rem; border-radius: 12px; box-shadow: var(--shadow-md); cursor: pointer;">

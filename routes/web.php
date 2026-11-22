@@ -79,39 +79,44 @@ Route::middleware(['auth', 'prevent-back-history'])->group(function () {
 
 // --- 5. Rute API AJAX (Sinkronisasi database tanpa reload halaman) ---
 Route::prefix('api')->group(function () {
-    // Ambil data kategori, produk, paket hemat, dan riwayat pesanan
+    // 5.1 Rute Publik & Etalase (Bebas diakses pengunjung & etalase belanja)
     Route::get('/categories', [\App\Http\Controllers\AdminDataController::class, 'getCategories']);
     Route::get('/products', [\App\Http\Controllers\AdminDataController::class, 'getProducts']);
     Route::get('/bundles', [\App\Http\Controllers\AdminDataController::class, 'getBundles']);
-    Route::post('/bundles', [\App\Http\Controllers\AdminDataController::class, 'storeBundle']);
-    Route::delete('/bundles/{id}', [\App\Http\Controllers\AdminDataController::class, 'destroyBundle']);
-    Route::patch('/bundles/{id}/toggle', [\App\Http\Controllers\AdminDataController::class, 'toggleBundleStatus']);
+    Route::get('/store-status', [\App\Http\Controllers\AdminDataController::class, 'getStoreStatus']);
+
+    // 5.2 Rute Pesanan (Dapat diakses pelanggan terdaftar / checkout)
+    Route::post('/orders', [\App\Http\Controllers\AdminDataController::class, 'storeOrder']);
+    Route::post('/orders/{id}/payment-proof', [\App\Http\Controllers\AdminDataController::class, 'uploadPaymentProof']);
     Route::get('/orders', [\App\Http\Controllers\AdminDataController::class, 'getOrders']);
 
-    // Simpan pesanan baru & perbarui status pesanan
-    Route::post('/orders', [\App\Http\Controllers\AdminDataController::class, 'storeOrder']);
-    Route::patch('/orders/{id}/status', [\App\Http\Controllers\AdminDataController::class, 'updateOrderStatus']);
+    // 5.3 Rute Operasional Khusus Administrator (Wajib Login & Peran Admin)
+    Route::middleware(['auth', 'role:admin'])->group(function () {
+        // Sakelar Status Toko
+        Route::post('/store-status/toggle', [\App\Http\Controllers\AdminDataController::class, 'toggleStoreStatus']);
 
-    // Sakelar Status Buka/Tutup Toko
-    Route::get('/store-status', [\App\Http\Controllers\AdminDataController::class, 'getStoreStatus']);
-    Route::post('/store-status/toggle', [\App\Http\Controllers\AdminDataController::class, 'toggleStoreStatus']);
+        // Kelola Pesanan & Verifikasi
+        Route::patch('/orders/{id}/status', [\App\Http\Controllers\AdminDataController::class, 'updateOrderStatus']);
+        Route::post('/orders/{id}/verify-payment', [\App\Http\Controllers\AdminDataController::class, 'verifyPayment']);
 
-    // Upload & Verifikasi Bukti Pembayaran
-    Route::post('/orders/{id}/payment-proof', [\App\Http\Controllers\AdminDataController::class, 'uploadPaymentProof']);
-    Route::post('/orders/{id}/verify-payment', [\App\Http\Controllers\AdminDataController::class, 'verifyPayment']);
+        // CRUD Paket Hemat Bundles
+        Route::post('/bundles', [\App\Http\Controllers\AdminDataController::class, 'storeBundle']);
+        Route::delete('/bundles/{id}', [\App\Http\Controllers\AdminDataController::class, 'destroyBundle']);
+        Route::patch('/bundles/{id}/toggle', [\App\Http\Controllers\AdminDataController::class, 'toggleBundleStatus']);
 
-    // Operasi CRUD Kategori Produk
-    Route::post('/categories', [\App\Http\Controllers\AdminDataController::class, 'storeCategory']);
-    Route::post('/categories/update', [\App\Http\Controllers\AdminDataController::class, 'updateCategory']);
-    Route::post('/categories/delete', [\App\Http\Controllers\AdminDataController::class, 'destroyCategory']);
-    Route::post('/categories/sync', [\App\Http\Controllers\AdminDataController::class, 'syncCategories']);
+        // Operasi CRUD Kategori Produk
+        Route::post('/categories', [\App\Http\Controllers\AdminDataController::class, 'storeCategory']);
+        Route::post('/categories/update', [\App\Http\Controllers\AdminDataController::class, 'updateCategory']);
+        Route::post('/categories/delete', [\App\Http\Controllers\AdminDataController::class, 'destroyCategory']);
+        Route::post('/categories/sync', [\App\Http\Controllers\AdminDataController::class, 'syncCategories']);
 
-    // Operasi CRUD Produk & Stok Freezer
-    Route::post('/products', [\App\Http\Controllers\AdminDataController::class, 'storeProduct']);
-    Route::post('/products/{id}/stock', [\App\Http\Controllers\AdminDataController::class, 'updateProductStock']);
-    Route::delete('/products/{id}', [\App\Http\Controllers\AdminDataController::class, 'destroyProduct']);
-    Route::post('/products/sync', [\App\Http\Controllers\AdminDataController::class, 'syncProducts']);
-    Route::post('/products/import', [\App\Http\Controllers\AdminDataController::class, 'importProducts']);
+        // Operasi CRUD Produk & Stok Freezer
+        Route::post('/products', [\App\Http\Controllers\AdminDataController::class, 'storeProduct']);
+        Route::post('/products/{id}/stock', [\App\Http\Controllers\AdminDataController::class, 'updateProductStock']);
+        Route::delete('/products/{id}', [\App\Http\Controllers\AdminDataController::class, 'destroyProduct']);
+        Route::post('/products/sync', [\App\Http\Controllers\AdminDataController::class, 'syncProducts']);
+        Route::post('/products/import', [\App\Http\Controllers\AdminDataController::class, 'importProducts']);
+    });
 });
 
 // --- 6. Rute Autentikasi Laravel Breeze (Login, Register, Logout) ---

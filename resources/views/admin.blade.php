@@ -2537,16 +2537,16 @@
             <span>Pesanan</span>
         </button>
 
-        <!-- 3. Kasir Toko / Input Pesanan Cepat (Ikon Keranjang Belanja Web Konsisten) -->
-        <button type="button" class="admin-bottom-nav-item" id="adminBottomBtnPos" aria-label="Input Pesanan Kasir Toko">
-            <div class="admin-bottom-nav-icon-wrap">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- 3. Kasir Toko / Input Pesanan Cepat (Floating Action Button - Direct Cashier Action) -->
+        <button type="button" class="admin-bottom-nav-item admin-bottom-nav-action" id="adminBottomBtnPos" aria-label="Aksi Kasir Toko Langsung">
+            <div class="admin-bottom-action-pill">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="8" cy="21" r="1"/>
                     <circle cx="19" cy="21" r="1"/>
                     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
                 </svg>
             </div>
-            <span>Kasir Toko</span>
+            <span class="admin-bottom-action-label">Kasir Toko</span>
         </button>
 
         <!-- 4. Inventaris Produk & Stok Freezer -->
