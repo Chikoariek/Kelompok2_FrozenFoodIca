@@ -944,7 +944,7 @@
 
                 <!-- Filter & Search Toolbar (Opsi Tampilan: Produk Satuan vs Paket Hemat & Filter Stok) -->
                 <div class="admin-toolbar-card">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <div class="inventory-toolbar-left">
                         <!-- Segmented Switcher Toggle: Produk Satuan vs Paket Hemat (Style Identik Menu Kategori) -->
                         <div class="category-view-toggle-wrap">
                             <button class="btn-toggle-view active btn-switch-subtab" data-subtab="products" type="button" title="Katalog Produk Satuan">
@@ -956,6 +956,9 @@
                                 <span>Paket Hemat</span>
                             </button>
                         </div>
+
+                        <!-- Divider halus pemisah sub-tab dengan filter kategori -->
+                        <div class="toolbar-v-divider"></div>
 
                         <!-- Filter Kategori Produk Satuan (Custom Dropdown Impeccable UI konsisten dengan Homepage) -->
                         <div class="custom-category-dropdown" id="customCategoryDropdown">
@@ -991,6 +994,9 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <!-- Divider halus pemisah kategori dengan filter status stok -->
+                        <div class="toolbar-v-divider"></div>
 
                         <!-- Filter Status Stok Produk Satuan (Urutan: Semua -> Habis (0) -> Tersedia -> Stok Menipis < 5) -->
                         <div class="toolbar-filters-group">
@@ -1166,7 +1172,7 @@
 
                     <!-- Toolbar / Search Bundles -->
                     <div class="admin-toolbar-card">
-                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <div class="inventory-toolbar-left">
                             <!-- Segmented Switcher Toggle: Produk Satuan vs Paket Hemat (Style Identik Menu Kategori) -->
                             <div class="category-view-toggle-wrap">
                                 <button class="btn-toggle-view btn-switch-subtab" data-subtab="products" type="button" title="Katalog Produk Satuan">
@@ -1178,6 +1184,9 @@
                                     <span>Paket Hemat</span>
                                 </button>
                             </div>
+
+                            <!-- Divider halus pemisah sub-tab dengan filter status -->
+                            <div class="toolbar-v-divider"></div>
 
                             <!-- Filter Status Paket Hemat -->
                             <div class="toolbar-filters-group">

@@ -1500,15 +1500,32 @@ a {
   }
 }
 
-.toolbar-filters-group {
-  display: flex;
+/* Toolbar Left Layout & Functional Vertical Divider */
+.inventory-toolbar-left {
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.toolbar-v-divider {
+  width: 1px;
+  height: 22px;
+  background-color: #E2E8F0;
+  margin: 0 0.15rem;
+  flex-shrink: 0;
+}
+
+.toolbar-filters-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   overflow-x: auto;
   white-space: nowrap;
-  padding: 0.4rem 0.25rem 0.85rem;
+  padding: 0;
+  margin: 0;
   min-width: 0;
-  max-width: 100%;
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important; /* IE / Edge */
   -webkit-overflow-scrolling: touch;
@@ -1523,10 +1540,9 @@ a {
 
 @media (max-width: 768px) {
   .toolbar-filters-group {
-    padding-top: 0.35rem;
-    padding-bottom: 0.95rem;
-    margin-bottom: -0.25rem;
-    width: 100%;
+    padding: 0;
+    margin: 0;
+    width: auto;
   }
 }
 
@@ -1550,14 +1566,21 @@ a {
 }
 
 .filter-btn-pill {
-  padding: 0.5rem 0.875rem;
-  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 0.875rem;
+  border-radius: var(--radius-xl, 9999px);
   font-size: 0.75rem;
   font-weight: 700;
   background: #F3F4F6;
   color: var(--navy);
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .filter-btn-pill:hover {
@@ -1565,20 +1588,34 @@ a {
 }
 
 .filter-btn-pill.active {
-  background: var(--soft-blue);
+  background: var(--soft-blue, #677D9E);
+  border-color: var(--soft-blue, #677D9E);
   color: #FFFFFF;
   box-shadow: var(--shadow-2xs);
 }
 
+.filter-btn-pill.danger {
+  background: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.filter-btn-pill.danger.active {
+  background: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+}
+
 .filter-btn-pill.warning {
-  background: var(--amber-bg);
-  color: var(--amber-text);
+  background: var(--amber-bg, #FFF8E1);
+  color: var(--amber-text, #D97706);
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .filter-btn-pill.warning.active {
-  background: var(--amber);
+  background: var(--amber, #F59E0B);
   color: #FFFFFF;
+  border-color: var(--amber, #F59E0B);
 }
 
 .toolbar-search-wrap {
@@ -3550,19 +3587,22 @@ body.admin-modal-open {
    CATEGORY VIEW TOGGLE (LIST VS GRID)
    ========================================== */
 .category-view-toggle-wrap {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   background: #F3F4F6;
   padding: 3px;
-  border-radius: 12px;
+  border-radius: var(--radius-xl, 9999px);
+  height: 34px;
+  box-sizing: border-box;
 }
 
 .btn-toggle-view {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
+  padding: 0 0.75rem;
+  height: 28px;
+  border-radius: var(--radius-xl, 9999px);
   font-size: 0.75rem;
   font-weight: 700;
   color: #6B7280;
@@ -3570,6 +3610,7 @@ body.admin-modal-open {
   background: transparent;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .btn-toggle-view:hover {
@@ -4684,22 +4725,39 @@ body.admin-modal-open {
 @media print {
   /* Hilangkan margin default browser & set background putih murni */
   @page {
-    margin: 0;
-    size: auto;
+    size: portrait;
+    margin: 12mm 10mm 15mm 10mm;
   }
 
+  html,
   body {
     background: #FFFFFF !important;
     color: #000000 !important;
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    display: block !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Sembunyikan elemen dashboard yang tidak relevan saat cetak */
+  /* Sembunyikan seluruh elemen dashboard, sidebar, header, dan mobile navigation saat cetak */
   .admin-sidebar,
   .admin-header,
+  .admin-topbar,
+  .admin-mobile-header,
+  .admin-mobile-bottom-nav,
+  #adminBottomNav,
+  #adminBottomNavDrawer,
+  .admin-bottom-nav-drawer,
+  .admin-drawer-overlay,
+  .mobile-pos-trigger-fab,
   .admin-toolbar-card,
   .panel-header-actions,
   .export-dropdown-wrapper,
@@ -4720,14 +4778,24 @@ body.admin-modal-open {
   .admin-data-table th:last-child,
   .admin-data-table td:last-child {
     display: none !important;
+    visibility: hidden !important;
   }
 
   .admin-main-wrap,
   .admin-scroll-body {
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
     overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
     background: transparent !important;
+    display: block !important;
+    position: static !important;
   }
 
   /* ================================================================
@@ -4849,6 +4917,12 @@ body.admin-modal-open {
     background: transparent !important;
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
   }
 
   body.is-printing-report #tab-reports > *:not(#printableSalesReportDoc) {
@@ -4862,8 +4936,15 @@ body.admin-modal-open {
   body.is-printing-report #printableSalesReportDoc {
     display: block !important;
     width: 100% !important;
-    padding: 1.2cm !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
     background: #FFFFFF !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   .print-header-letterhead {
@@ -4873,6 +4954,8 @@ body.admin-modal-open {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .print-store-title {
@@ -4910,6 +4993,8 @@ body.admin-modal-open {
     display: flex;
     gap: 15px;
     margin-bottom: 20px;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .print-stat-box {
@@ -4938,8 +5023,18 @@ body.admin-modal-open {
   .print-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 30px;
-    font-size: 9pt;
+    margin-bottom: 25px;
+    font-size: 8.5pt;
+    page-break-inside: auto;
+  }
+
+  .print-table thead {
+    display: table-header-group;
+  }
+
+  .print-table tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .print-table th,
@@ -4958,8 +5053,9 @@ body.admin-modal-open {
   .print-signatures {
     display: flex;
     justify-content: space-between;
-    margin-top: 40px;
+    margin-top: 35px;
     page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .print-sig-col {
@@ -4969,7 +5065,7 @@ body.admin-modal-open {
   }
 
   .print-sig-space {
-    height: 65px;
+    height: 60px;
   }
 
   .print-sig-name {
@@ -5188,7 +5284,7 @@ body.admin-modal-open {
   align-items: center;
   justify-content: space-between;
   gap: 0.65rem;
-  height: 33px;
+  height: 34px;
   padding: 0 0.875rem;
   border-radius: var(--radius-xl, 9999px);
   border: 1px solid rgba(166, 177, 195, 0.6);
@@ -5200,6 +5296,7 @@ body.admin-modal-open {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-2xs, 0 1px 2px rgba(0, 0, 0, 0.05));
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .custom-category-trigger:hover {
