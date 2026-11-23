@@ -1631,7 +1631,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const bundlesEmptyFilterRow = document.getElementById('bundlesEmptyFilterRow');
   const btnResetBundleFilter = document.getElementById('btnResetBundleFilter');
   const bundlesPaginationWrap = document.getElementById('bundlesPaginationWrap');
-  const bundleStatusFilterBtns = document.querySelectorAll('.btn-bundle-status-filter');
+  const bundleStatusFilterBtns = document.querySelectorAll('.bundle-filter-btn, .btn-bundle-status-filter');
   let activeBundleStatus = 'all';
   let bundleCurrentPage = 1;
   const bundlePageSize = 10;
@@ -1699,7 +1699,7 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.addEventListener('click', function () {
       bundleStatusFilterBtns.forEach((b) => b.classList.remove('active'));
       this.classList.add('active');
-      activeBundleStatus = this.getAttribute('data-status') || 'all';
+      activeBundleStatus = this.getAttribute('data-status') || this.getAttribute('data-filter') || 'all';
       bundleCurrentPage = 1;
       filterBundles();
     });
@@ -1713,7 +1713,8 @@ document.addEventListener('DOMContentLoaded', function () {
   btnResetBundleFilter?.addEventListener('click', function () {
     if (bundleSearchInput) bundleSearchInput.value = '';
     bundleStatusFilterBtns.forEach((b) => {
-      if (b.getAttribute('data-status') === 'all') {
+      const st = b.getAttribute('data-status') || b.getAttribute('data-filter') || '';
+      if (st === 'all') {
         b.classList.add('active');
       } else {
         b.classList.remove('active');
@@ -2637,8 +2638,8 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="pos-product-card ${isOut ? 'out-of-stock' : ''}" data-bundle-id="${b.id}" data-is-bundle="true" style="border-color: #FCD34D;">
           ${inCartBadge}
           <div class="pos-product-meta-row">
-            <span class="pos-bundle-indicator">★ PAKET HEMAT</span>
-            <span class="pos-product-weight">${b.items ? b.items.length + ' Macam Produk' : 'Paket'}</span>
+            <span class="pos-bundle-indicator">★ Paket Hemat</span>
+            <span class="pos-product-weight">${b.items ? b.items.length + ' Produk' : 'Paket'}</span>
           </div>
           <h4 class="pos-product-title" title="${b.name}">${b.name}</h4>
           <div class="pos-product-price-row">
@@ -3108,6 +3109,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (importFileInput) importFileInput.value = '';
     if (importFilePreview) importFilePreview.style.display = 'none';
     if (importDropzone) importDropzone.style.display = 'block';
+    const importErrorAlert = document.getElementById('importErrorAlert');
+    if (importErrorAlert) importErrorAlert.style.display = 'none';
+    const importErrorList = document.getElementById('importErrorList');
+    if (importErrorList) importErrorList.innerHTML = '';
     if (btnSubmitImport) {
       btnSubmitImport.disabled = true;
       btnSubmitImport.innerHTML = `
@@ -3264,7 +3269,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 1000);
           }
         } else {
-          showToast(data.message || 'Gagal mengimpor data produk.', 'error');
+          const importErrorAlert = document.getElementById('importErrorAlert');
+          const importErrorList = document.getElementById('importErrorList');
+          const importErrorTitle = document.getElementById('importErrorTitle');
+
+          if (data.errors && Array.isArray(data.errors) && data.errors.length > 0 && importErrorAlert && importErrorList) {
+            importErrorTitle.textContent = data.message || 'Terdapat kesalahan validasi data pada file:';
+            importErrorList.innerHTML = data.errors.map((err) => `<li>${err}</li>`).join('');
+            importErrorAlert.style.display = 'block';
+            modalImportExcel?.querySelector('.admin-modal-box')?.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast(data.errors[0], 'error');
+          } else {
+            showToast(data.message || 'Gagal mengimpor data produk.', 'error');
+          }
           btnSubmitImport.disabled = false;
           btnSubmitImport.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>

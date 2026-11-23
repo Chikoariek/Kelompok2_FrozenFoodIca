@@ -887,6 +887,62 @@ class AdminDataController extends Controller
             $colMap['name'] = isset($headerRow[1]) ? 1 : 0;
         }
 
+        // Pra-validasi integritas data baris per baris sebelum eksekusi ke database
+        $validationErrors = [];
+        for ($i = 1; $i < count($rows); $i++) {
+            $row = $rows[$i];
+            if (empty($row) || !is_array($row)) continue;
+
+            $rowNum = $i + 1; // Baris fisik riil spreadsheet (header adalah baris 1)
+            $name = $colMap['name'] !== -1 ? trim((string)($row[$colMap['name']] ?? '')) : '';
+
+            $allEmpty = true;
+            foreach ($row as $cell) {
+                if (trim((string)$cell) !== '') {
+                    $allEmpty = false;
+                    break;
+                }
+            }
+            if ($allEmpty) continue;
+
+            if ($name === '') {
+                $validationErrors[] = "Baris {$rowNum}: Kolom nama produk tidak boleh kosong.";
+                continue;
+            }
+
+            // Validasi Stok (tidak boleh negatif atau non-numerik tak valid)
+            if ($colMap['stock'] !== -1 && isset($row[$colMap['stock']])) {
+                $stockRaw = trim((string)$row[$colMap['stock']]);
+                if ($stockRaw !== '') {
+                    if (str_starts_with($stockRaw, '-') || (is_numeric($stockRaw) && (float)$stockRaw < 0)) {
+                        $validationErrors[] = "Baris {$rowNum} ('{$name}'): Jumlah stok tidak boleh bernilai negatif ({$stockRaw}).";
+                    } elseif (!is_numeric(preg_replace('/[^0-9\-]/', '', $stockRaw))) {
+                        $validationErrors[] = "Baris {$rowNum} ('{$name}'): Jumlah stok harus berupa bilangan bulat valid ('{$stockRaw}').";
+                    }
+                }
+            }
+
+            // Validasi Harga Jual (tidak boleh bernilai negatif)
+            if ($colMap['price'] !== -1 && isset($row[$colMap['price']])) {
+                $priceRaw = trim((string)$row[$colMap['price']]);
+                if ($priceRaw !== '') {
+                    $cleanPrice = str_ireplace(['rp', ' ', '.'], '', $priceRaw);
+                    $cleanPrice = str_replace(',', '.', $cleanPrice);
+                    if (str_starts_with($priceRaw, '-') || (is_numeric($cleanPrice) && (float)$cleanPrice < 0)) {
+                        $validationErrors[] = "Baris {$rowNum} ('{$name}'): Harga jual produk tidak boleh bernilai negatif ({$priceRaw}).";
+                    }
+                }
+            }
+        }
+
+        if (!empty($validationErrors)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proses impor dibatalkan. Ditemukan ' . count($validationErrors) . ' data yang tidak sesuai dengan ketentuan validasi.',
+                'errors' => $validationErrors,
+            ], 422);
+        }
+
         $imported = 0;
         $updated = 0;
         $created = 0;

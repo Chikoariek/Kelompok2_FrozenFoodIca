@@ -5057,18 +5057,18 @@ body.admin-modal-open {
   user-select: none;
 }
 
-.pagination-btn:hover:not(:disabled) {
-  background: #F1F5F9;
+.pagination-btn:hover:not(:disabled):not(.active) {
+  background: #EAEFF5;
   border-color: #CBD5E1;
-  color: #0F172A;
+  color: var(--navy);
 }
 
 .pagination-btn.active {
-  background: #2563EB;
-  border-color: #2563EB;
+  background: var(--navy);
+  border-color: var(--navy);
   color: #FFFFFF;
   font-weight: 700;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+  box-shadow: none;
 }
 
 .pagination-btn:disabled {
@@ -5143,20 +5143,87 @@ body.admin-modal-open {
 }
 
 /* ================================================================
+   13. TOOLBAR SELECT FILTER (Kategori Produk Inventaris)
+   ================================================================ */
+.toolbar-select-filter-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+.toolbar-select-filter {
+  height: 33px;
+  padding: 0 1.85rem 0 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #F3F4F6;
+  color: var(--navy);
+  border: 1px solid #E5E7EB;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232C3E50' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+}
+.toolbar-select-filter:hover {
+  background-color: #E5E7EB;
+  border-color: #CBD5E1;
+}
+.toolbar-select-filter:focus {
+  border-color: var(--soft-blue);
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 2px rgba(103, 125, 158, 0.15);
+}
+
+/* ================================================================
    14. POS BUNDLE CARDS (PAKET HEMAT DI KASIR)
    ================================================================ */
 .pos-bundle-indicator {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: 5px;
+  padding: 2px 6px;
+  border-radius: 6px;
   background: #FEF3C7;
   color: #92400E;
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* ================================================================
+   15. SPREADSHEET IMPORT VALIDATION ALERTS
+   ================================================================ */
+.import-error-alert {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+.import-error-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #DC2626;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.import-error-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #991B1B;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.import-error-list li {
+  margin-bottom: 0.2rem;
 }
 
 

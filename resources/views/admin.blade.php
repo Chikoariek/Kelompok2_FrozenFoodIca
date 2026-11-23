@@ -24,14 +24,6 @@
     <!-- Chart.js CDN for Visual Sales Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <!-- Pencegahan Cache / Tombol Back Browser Setelah Logout -->
-    <script>
-        window.addEventListener('pageshow', function (event) {
-            if (event.persisted || (window.performance && window.performance.getEntriesByType && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) {
-                window.location.replace("{{ route('home') }}");
-            }
-        });
-    </script>
     <script>
         (function() {
             try {
@@ -741,7 +733,7 @@
                                         $statusSlug = strtolower(str_replace(' ', '-', $statusDisplay));
                                         $itemsList = is_array($order->items) ? $order->items : json_decode($order->items, true);
                                     @endphp
-                                    <tr data-order-row="{{ $order->id }}" data-status="{{ $statusDisplay }}">
+                                    <tr class="order-table-row" data-order-row="{{ $order->id }}" data-status="{{ $statusDisplay }}" @if($loop->index >= 10) style="display: none;" @endif>
                                         <!-- ID & Date -->
                                         <td class="order-id-cell">
                                             <div class="order-id-code">{{ $order->id }}</div>
@@ -976,20 +968,20 @@
                             </select>
                         </div>
 
-                        <!-- Filter Status Stok Produk Satuan -->
+                        <!-- Filter Status Stok Produk Satuan (Urutan: Semua -> Habis (0) -> Stok Menipis -> Tersedia) -->
                         <div class="toolbar-filters-group">
                             <button id="filterAllProducts" class="filter-btn-pill active prod-filter-btn" data-filter="all" type="button">
                                 Semua ({{ count($products) }})
                             </button>
-                            <button class="filter-btn-pill prod-filter-btn" data-filter="in_stock" type="button">
-                                Tersedia
+                            <button class="filter-btn-pill danger prod-filter-btn" data-filter="zero" type="button">
+                                Habis (0)
                             </button>
                             <button id="filterLowStockProducts" class="filter-btn-pill warning prod-filter-btn" data-filter="low" type="button">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                                 <span>Stok Menipis &lt; 5</span>
                             </button>
-                            <button class="filter-btn-pill danger prod-filter-btn" data-filter="zero" type="button">
-                                Habis (0)
+                            <button class="filter-btn-pill prod-filter-btn" data-filter="in_stock" type="button">
+                                Tersedia
                             </button>
                         </div>
                     </div>
@@ -1021,7 +1013,7 @@
                                         $isLow = $prod->stock <= 5 && $prod->stock > 0;
                                         $isZero = $prod->stock <= 0;
                                     @endphp
-                                    <tr data-prod-row="{{ $prod->id }}" data-category="{{ $prod->category }}" data-stock="{{ $prod->stock }}">
+                                    <tr class="product-row-item" data-prod-row="{{ $prod->id }}" data-category="{{ $prod->category }}" data-stock="{{ $prod->stock }}" @if($loop->index >= 10) style="display: none;" @endif>
                                         <!-- Product info -->
                                         <td>
                                             <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -1165,14 +1157,18 @@
 
                             <!-- Filter Status Paket Hemat -->
                             <div class="toolbar-filters-group">
-                                <button class="filter-btn-pill active bundle-filter-btn" data-filter="all" type="button">
+                                @php
+                                    $activeBundlesCount = $bundles->where('is_active', true)->count();
+                                    $inactiveBundlesCount = $bundles->where('is_active', false)->count();
+                                @endphp
+                                <button class="filter-btn-pill active bundle-filter-btn" data-status="all" data-filter="all" type="button">
                                     Semua ({{ count($bundles) }})
                                 </button>
-                                <button class="filter-btn-pill bundle-filter-btn" data-filter="active" type="button">
-                                    ● Aktif
+                                <button class="filter-btn-pill bundle-filter-btn" data-status="active" data-filter="active" type="button">
+                                    ● Aktif ({{ $activeBundlesCount }})
                                 </button>
-                                <button class="filter-btn-pill bundle-filter-btn" data-filter="inactive" type="button">
-                                    ● Nonaktif
+                                <button class="filter-btn-pill bundle-filter-btn" data-status="inactive" data-filter="inactive" type="button">
+                                    ● Nonaktif ({{ $inactiveBundlesCount }})
                                 </button>
                             </div>
                         </div>
@@ -1199,7 +1195,7 @@
                                 </thead>
                                 <tbody id="tableBundlesBody">
                                     @forelse($bundles as $b)
-                                        <tr class="bundle-row-item" data-id="{{ $b->id }}" data-name="{{ strtolower($b->name) }}" data-active="{{ $b->is_active ? '1' : '0' }}">
+                                        <tr class="bundle-row-item" data-id="{{ $b->id }}" data-name="{{ strtolower($b->name) }}" data-active="{{ $b->is_active ? '1' : '0' }}" @if($loop->index >= 10) style="display: none;" @endif>
                                             <td>
                                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
                                                     <img src="{{ $b->image }}" alt="{{ $b->name }}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid #E5E7EB; flex-shrink: 0;" onerror="this.src='/images/products/nugget.png'">
@@ -1372,7 +1368,7 @@
                                     @php
                                         $prodCount = $products->where('category', $cat->name)->count();
                                     @endphp
-                                    <tr data-cat-row="{{ $cat->name }}" data-cat-name="{{ $cat->name }}">
+                                    <tr data-cat-row="{{ $cat->name }}" data-cat-name="{{ $cat->name }}" @if($idx >= 10) style="display: none;" @endif>
                                         <td style="text-align: center; font-weight: 700; color: #9CA3AF;">{{ $idx + 1 }}</td>
                                         <td style="font-weight: 800; font-size: 0.875rem; color: var(--navy);">
                                             <span>{{ $cat->name }}</span>
@@ -1442,7 +1438,7 @@
                         @php
                             $prodCount = $products->where('category', $cat->name)->count();
                         @endphp
-                        <div class="admin-card-box category-item-card" data-cat-name="{{ $cat->name }}" style="padding: 1.25rem;">
+                        <div class="admin-card-box category-item-card" data-cat-name="{{ $cat->name }}" style="padding: 1.25rem; @if($loop->index >= 10) display: none; @endif">
                             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
                                 <div style="width: 36px; height: 36px; border-radius: 10px; background: #F1F0E8; color: var(--soft-blue); display: flex; align-items: center; justify-content: center;">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
@@ -1978,7 +1974,7 @@
                     <div class="form-group-item">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                             <label style="margin: 0; font-weight: 700;">Pilih Produk Relasional (Isi Paket) *</label>
-                            <span style="font-size: 0.75rem; color: #0284C7; font-weight: 700;" id="addBundleCalcNote">Pilih minimal 1 produk</span>
+                            <span style="font-size: 0.75rem; color: var(--soft-blue); font-weight: 700;" id="addBundleCalcNote">Pilih minimal 1 produk</span>
                         </div>
 
                         <!-- Search Box Produk Paket -->
@@ -2103,7 +2099,7 @@
                     <div class="form-group-item">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                             <label style="margin: 0; font-weight: 700;">Pilih Produk Relasional (Isi Paket) *</label>
-                            <span style="font-size: 0.75rem; color: #0284C7; font-weight: 700;" id="editBundleCalcNote">Pilih minimal 1 produk</span>
+                            <span style="font-size: 0.75rem; color: var(--soft-blue); font-weight: 700;" id="editBundleCalcNote">Pilih minimal 1 produk</span>
                         </div>
 
                         <!-- Search Box Produk Paket (Edit) -->
@@ -2291,6 +2287,15 @@
             <form id="formImportExcel" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body-pad" style="padding-top: 0;">
+                    <!-- Box Notifikasi Error Validasi Data Spreadsheet -->
+                    <div id="importErrorAlert" class="import-error-alert" style="display: none;">
+                        <div class="import-error-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <span id="importErrorTitle">Terdapat kesalahan validasi data pada file spreadsheet:</span>
+                        </div>
+                        <ul id="importErrorList" class="import-error-list"></ul>
+                    </div>
+
                     <!-- Area Upload Dropzone -->
                     <div id="importDropzone" class="import-dropzone">
                         <input type="file" id="importFileInput" name="file" accept=".xlsx,.xls,.csv" style="display: none;" required>
@@ -2441,9 +2446,9 @@
                                     <span>Semua</span>
                                     <span class="pos-cat-count">{{ count($products) + count($bundles) }}</span>
                                 </button>
-                                <button type="button" class="pos-cat-chip" data-cat="paket-hemat" style="background: #EFF6FF; border-color: #BFDBFE;">
-                                    <span style="color: var(--soft-blue); font-weight: 800;">★ Paket Hemat</span>
-                                    <span class="pos-cat-count" style="background: var(--soft-blue); color: #fff;">{{ count($bundles) }}</span>
+                                <button type="button" class="pos-cat-chip" data-cat="paket-hemat">
+                                    <span>★ Paket Hemat</span>
+                                    <span class="pos-cat-count">{{ count($bundles) }}</span>
                                 </button>
                                 @foreach($categories as $cat)
                                     @php
