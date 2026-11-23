@@ -957,9 +957,33 @@
                             </button>
                         </div>
 
-                        <!-- Filter Kategori Produk Satuan -->
-                        <div class="toolbar-select-filter-wrap">
-                            <select id="inventoryCategoryFilter" class="toolbar-select-filter" title="Filter Kategori Produk">
+                        <!-- Filter Kategori Produk Satuan (Custom Dropdown Impeccable UI konsisten dengan Homepage) -->
+                        <div class="custom-category-dropdown" id="customCategoryDropdown">
+                            <button type="button" class="custom-category-trigger" id="customCategoryTrigger" aria-expanded="false" aria-haspopup="listbox" title="Filter Kategori Produk">
+                                <span id="customCategoryCurrentText">Semua Kategori ({{ count($products) }})</span>
+                                <svg class="category-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <ul class="custom-category-menu" id="customCategoryMenu" role="listbox">
+                                <li class="custom-category-item active" data-value="all" role="option" aria-selected="true">
+                                    <span>Semua Kategori ({{ count($products) }})</span>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </li>
+                                @foreach($categories as $cat)
+                                    @php $pCatCount = $products->where('category', $cat->name)->count(); @endphp
+                                    <li class="custom-category-item" data-value="{{ $cat->name }}" role="option" aria-selected="false">
+                                        <span>{{ $cat->name }} ({{ $pCatCount }})</span>
+                                        <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <!-- Hidden select for full JS backwards-compatibility -->
+                            <select id="inventoryCategoryFilter" class="visually-hidden" style="display: none;" title="Filter Kategori Produk">
                                 <option value="all">Semua Kategori ({{ count($products) }})</option>
                                 @foreach($categories as $cat)
                                     @php $pCatCount = $products->where('category', $cat->name)->count(); @endphp
@@ -968,7 +992,7 @@
                             </select>
                         </div>
 
-                        <!-- Filter Status Stok Produk Satuan (Urutan: Semua -> Habis (0) -> Stok Menipis -> Tersedia) -->
+                        <!-- Filter Status Stok Produk Satuan (Urutan: Semua -> Habis (0) -> Tersedia -> Stok Menipis < 5) -->
                         <div class="toolbar-filters-group">
                             <button id="filterAllProducts" class="filter-btn-pill active prod-filter-btn" data-filter="all" type="button">
                                 Semua ({{ count($products) }})
@@ -976,12 +1000,12 @@
                             <button class="filter-btn-pill danger prod-filter-btn" data-filter="zero" type="button">
                                 Habis (0)
                             </button>
+                            <button class="filter-btn-pill prod-filter-btn" data-filter="in_stock" type="button">
+                                Tersedia
+                            </button>
                             <button id="filterLowStockProducts" class="filter-btn-pill warning prod-filter-btn" data-filter="low" type="button">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                                 <span>Stok Menipis &lt; 5</span>
-                            </button>
-                            <button class="filter-btn-pill prod-filter-btn" data-filter="in_stock" type="button">
-                                Tersedia
                             </button>
                         </div>
                     </div>
@@ -1165,10 +1189,10 @@
                                     Semua ({{ count($bundles) }})
                                 </button>
                                 <button class="filter-btn-pill bundle-filter-btn" data-status="active" data-filter="active" type="button">
-                                    ● Aktif ({{ $activeBundlesCount }})
+                                    Aktif ({{ $activeBundlesCount }})
                                 </button>
                                 <button class="filter-btn-pill bundle-filter-btn" data-status="inactive" data-filter="inactive" type="button">
-                                    ● Nonaktif ({{ $inactiveBundlesCount }})
+                                    Nonaktif ({{ $inactiveBundlesCount }})
                                 </button>
                             </div>
                         </div>
@@ -1940,7 +1964,7 @@
         <div class="admin-modal-box" style="max-width: 640px;">
             <div class="modal-header-row">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="background: #FEF3C7; color: #D97706; padding: 6px; border-radius: 8px; display: flex;">
+                    <span style="background: #E8EEF5; color: #677D9E; padding: 6px; border-radius: 8px; display: flex;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
                     </span>
                     <h3 class="modal-header-title">Tambah Paket Hemat (Bundling) Baru</h3>
