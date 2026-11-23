@@ -1003,13 +1003,13 @@
                             <button id="filterAllProducts" class="filter-btn-pill active prod-filter-btn" data-filter="all" type="button">
                                 Semua ({{ count($products) }})
                             </button>
-                            <button class="filter-btn-pill danger prod-filter-btn" data-filter="zero" type="button">
+                            <button class="filter-btn-pill prod-filter-btn" data-filter="zero" type="button">
                                 Habis (0)
                             </button>
                             <button class="filter-btn-pill prod-filter-btn" data-filter="in_stock" type="button">
                                 Tersedia
                             </button>
-                            <button id="filterLowStockProducts" class="filter-btn-pill warning prod-filter-btn" data-filter="low" type="button">
+                            <button id="filterLowStockProducts" class="filter-btn-pill prod-filter-btn" data-filter="low" type="button">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                                 <span>Stok Menipis &lt; 5</span>
                             </button>
