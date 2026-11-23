@@ -447,15 +447,15 @@ class AdminDataController extends Controller
     // --- 2b. Ekspor & Impor Data Produk (Integrasi Kasir Pintar / Excel) ---
 
     /**
-     * Export seluruh data produk freezer ke format CSV (BOM UTF-8, kompatibel Microsoft Excel)
+     * Export seluruh data produk freezer ke format Spreadsheet Excel Tabel Rapi (.xls)
      */
     public function exportProducts()
     {
         $products = Product::all();
-        $filename = 'Etalase_Produk_IcaFrozenFood_' . now()->format('Y-m-d_His') . '.csv';
+        $filename = 'Etalase_Produk_IcaFrozenFood_' . now()->format('Y-m-d_His') . '.xls';
 
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
@@ -466,31 +466,160 @@ class AdminDataController extends Controller
             $handle = fopen('php://output', 'w');
             fputs($handle, "\xEF\xBB\xBF"); // UTF-8 BOM untuk Microsoft Excel
 
-            fputcsv($handle, [
-                'Kode SKU',
-                'Nama Produk',
-                'Kategori',
-                'Harga Jual (Rp)',
-                'Stok Freezer',
-                'Berat Kemasan',
-                'Keterangan / Deskripsi',
-                'Label Tag',
-            ], ',');
+            $exportDate = now()->format('d/m/Y H:i') . ' WITA';
+            $totalItems = $products->count();
+            $totalStock = $products->sum('stock');
 
-            foreach ($products as $p) {
-                $tagsStr = is_array($p->tags) ? implode(', ', $p->tags) : ($p->tags ?? '');
-                fputcsv($handle, [
-                    $p->id,
-                    $p->name,
-                    $p->category,
-                    $p->price,
-                    $p->stock,
-                    $p->weight ?? '500g',
-                    $p->description ?? '',
-                    $tagsStr,
-                ], ',');
+            echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+            echo '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">';
+            echo '<style>
+                body { font-family: Calibri, Arial, sans-serif; }
+                .report-header { font-size: 15pt; font-weight: bold; color: #1E3A8A; margin-bottom: 3px; }
+                .report-sub { font-size: 9.5pt; color: #475569; margin-bottom: 12px; }
+                table.data-table { border-collapse: collapse; width: 100%; }
+                table.data-table th { background-color: #2563EB; color: #FFFFFF; font-weight: bold; text-align: center; border: 1px solid #1D4ED8; padding: 8px 6px; font-size: 10pt; }
+                table.data-table td { border: 1px solid #CBD5E1; padding: 6px 8px; font-size: 9.5pt; vertical-align: middle; }
+                .zebra { background-color: #F8FAFC; }
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+                .num-currency { mso-number-format: "\#\,\#\#0"; text-align: right; font-weight: bold; }
+                .text-sku { mso-number-format: "\@"; text-align: center; font-family: monospace; }
+                .badge-low { background-color: #FEF3C7; color: #B45309; font-weight: bold; text-align: center; }
+                .badge-zero { background-color: #FEE2E2; color: #B91C1C; font-weight: bold; text-align: center; }
+            </style></head><body>';
+
+            echo '<div class="report-header">ICA FROZEN FOOD - DATA INVENTARIS PRODUK & STOK FREEZER</div>';
+            echo '<div class="report-sub">Guntung Payung, Kec. Landasan Ulin, Kota Banjarbaru | Tanggal Export: ' . e($exportDate) . ' | Total Varian: ' . $totalItems . ' | Total Stok: ' . $totalStock . ' Unit</div>';
+
+            echo '<table class="data-table">';
+            echo '<thead><tr>
+                <th style="width: 45px;">No</th>
+                <th style="width: 90px;">Kode SKU</th>
+                <th style="width: 260px;">Nama Produk Makanan Beku</th>
+                <th style="width: 150px;">Kategori</th>
+                <th style="width: 120px;">Harga Jual (Rp)</th>
+                <th style="width: 90px;">Stok Unit</th>
+                <th style="width: 90px;">Berat</th>
+                <th style="width: 110px;">Status Stok</th>
+                <th style="width: 250px;">Keterangan / Deskripsi</th>
+            </tr></thead><tbody>';
+
+            foreach ($products as $idx => $p) {
+                $zebra = ($idx % 2 === 1) ? ' class="zebra"' : '';
+                $stockStatus = 'Tersedia';
+                $stockClass = '';
+                if ($p->stock <= 0) {
+                    $stockStatus = 'Habis';
+                    $stockClass = ' class="badge-zero"';
+                } elseif ($p->stock <= 5) {
+                    $stockStatus = 'Menipis';
+                    $stockClass = ' class="badge-low"';
+                }
+
+                echo "<tr{$zebra}>";
+                echo '<td class="text-center">' . ($idx + 1) . '</td>';
+                echo '<td class="text-sku">' . e($p->id) . '</td>';
+                echo '<td style="font-weight: bold; color: #0F172A;">' . e($p->name) . '</td>';
+                echo '<td>' . e($p->category) . '</td>';
+                echo '<td class="num-currency">' . $p->price . '</td>';
+                echo '<td class="text-center" style="font-weight: bold;">' . $p->stock . '</td>';
+                echo '<td class="text-center">' . e($p->weight ?? '500g') . '</td>';
+                echo "<td{$stockClass}>" . $stockStatus . '</td>';
+                echo '<td>' . e($p->description ?? '-') . '</td>';
+                echo '</tr>';
             }
 
+            echo '</tbody></table></body></html>';
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export seluruh data Paket Hemat (Bundling) ke format Spreadsheet Excel Tabel Rapi (.xls)
+     */
+    public function exportBundles()
+    {
+        $bundles = Bundle::with('items.product')->get();
+        $filename = 'Paket_Hemat_IcaFrozenFood_' . now()->format('Y-m-d_His') . '.xls';
+
+        $headers = [
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($bundles) {
+            $handle = fopen('php://output', 'w');
+            fputs($handle, "\xEF\xBB\xBF");
+
+            $exportDate = now()->format('d/m/Y H:i') . ' WITA';
+
+            echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+            echo '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">';
+            echo '<style>
+                body { font-family: Calibri, Arial, sans-serif; }
+                .report-header { font-size: 15pt; font-weight: bold; color: #1E3A8A; margin-bottom: 3px; }
+                .report-sub { font-size: 9.5pt; color: #475569; margin-bottom: 12px; }
+                table.data-table { border-collapse: collapse; width: 100%; }
+                table.data-table th { background-color: #2563EB; color: #FFFFFF; font-weight: bold; text-align: center; border: 1px solid #1D4ED8; padding: 8px 6px; font-size: 10pt; }
+                table.data-table td { border: 1px solid #CBD5E1; padding: 6px 8px; font-size: 9.5pt; vertical-align: middle; }
+                .zebra { background-color: #F8FAFC; }
+                .text-center { text-align: center; }
+                .num-currency { mso-number-format: "\#\,\#\#0"; text-align: right; font-weight: bold; }
+                .text-code { mso-number-format: "\@"; text-align: center; font-family: monospace; }
+                .badge-active { background-color: #DCFCE7; color: #15803D; font-weight: bold; text-align: center; }
+                .badge-inactive { background-color: #F3F4F6; color: #4B5563; text-align: center; }
+            </style></head><body>';
+
+            echo '<div class="report-header">ICA FROZEN FOOD - DATA PAKET HEMAT (BUNDLING PROMO)</div>';
+            echo '<div class="report-sub">Guntung Payung, Kec. Landasan Ulin, Kota Banjarbaru | Tanggal Export: ' . e($exportDate) . ' | Total Paket: ' . count($bundles) . '</div>';
+
+            echo '<table class="data-table">';
+            echo '<thead><tr>
+                <th style="width: 45px;">No</th>
+                <th style="width: 90px;">ID Paket</th>
+                <th style="width: 220px;">Nama Paket Hemat</th>
+                <th style="width: 120px;">Harga Normal (Rp)</th>
+                <th style="width: 130px;">Harga Promo Paket (Rp)</th>
+                <th style="width: 100px;">Hemat (Rp)</th>
+                <th style="width: 110px;">Label Badge</th>
+                <th style="width: 100px;">Status</th>
+                <th style="width: 320px;">Isi Produk Relasional (Item Paket)</th>
+            </tr></thead><tbody>';
+
+            foreach ($bundles as $idx => $b) {
+                $zebra = ($idx % 2 === 1) ? ' class="zebra"' : '';
+                $saving = max(0, (int)$b->original_price - (int)$b->bundle_price);
+                $statusClass = $b->is_active ? ' class="badge-active"' : ' class="badge-inactive"';
+                $statusText = $b->is_active ? 'Aktif' : 'Nonaktif';
+
+                $itemsArr = [];
+                if ($b->items) {
+                    foreach ($b->items as $it) {
+                        $pName = $it->product ? $it->product->name : ($it->product_name ?? 'Produk');
+                        $itemsArr[] = ($it->quantity ?? 1) . 'x ' . $pName;
+                    }
+                }
+                $itemsStr = count($itemsArr) > 0 ? implode('; ', $itemsArr) : '-';
+
+                echo "<tr{$zebra}>";
+                echo '<td class="text-center">' . ($idx + 1) . '</td>';
+                echo '<td class="text-code">' . e($b->id) . '</td>';
+                echo '<td style="font-weight: bold; color: #0F172A;">' . e($b->name) . '</td>';
+                echo '<td class="num-currency">' . (int)$b->original_price . '</td>';
+                echo '<td class="num-currency" style="color: #2563EB;">' . (int)$b->bundle_price . '</td>';
+                echo '<td class="num-currency" style="color: #15803D;">' . $saving . '</td>';
+                echo '<td class="text-center">' . e($b->badge_right ?? 'Hemat') . '</td>';
+                echo "<td{$statusClass}>" . $statusText . '</td>';
+                echo '<td>' . e($itemsStr) . '</td>';
+                echo '</tr>';
+            }
+
+            echo '</tbody></table></body></html>';
             fclose($handle);
         };
 
@@ -545,15 +674,15 @@ class AdminDataController extends Controller
     }
 
     /**
-     * Export rekap riwayat transaksi pesanan ke format CSV (BOM UTF-8, kompatibel Microsoft Excel)
+     * Export rekap riwayat transaksi pesanan ke format Spreadsheet Excel Tabel Rapi (.xls)
      */
     public function exportOrders()
     {
         $orders = Order::orderBy('created_at', 'desc')->get();
-        $filename = 'Laporan_Penjualan_IcaFrozenFood_' . now()->format('Y-m-d_His') . '.csv';
+        $filename = 'Laporan_Penjualan_IcaFrozenFood_' . now()->format('Y-m-d_His') . '.xls';
 
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
@@ -564,23 +693,51 @@ class AdminDataController extends Controller
             $handle = fopen('php://output', 'w');
             fputs($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, [
-                'No Pesanan',
-                'Tanggal Transaksi',
-                'Channel',
-                'Nama Pelanggan',
-                'No WhatsApp / HP',
-                'Metode Pengantaran',
-                'Metode Pembayaran',
-                'Status Pesanan',
-                'Status Pembayaran',
-                'Ringkasan Produk',
-                'Subtotal (Rp)',
-                'Ongkir / Ice Fee (Rp)',
-                'Total Transaksi (Rp)',
-            ], ',');
+            $exportDate = now()->format('d/m/Y H:i') . ' WITA';
+            $totalIncome = $orders->where('is_paid', true)->sum('total');
+            $totalOrders = $orders->count();
 
-            foreach ($orders as $order) {
+            echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+            echo '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">';
+            echo '<style>
+                body { font-family: Calibri, Arial, sans-serif; }
+                .report-header { font-size: 15pt; font-weight: bold; color: #1E3A8A; margin-bottom: 3px; }
+                .report-sub { font-size: 9.5pt; color: #475569; margin-bottom: 12px; }
+                table.data-table { border-collapse: collapse; width: 100%; }
+                table.data-table th { background-color: #2563EB; color: #FFFFFF; font-weight: bold; text-align: center; border: 1px solid #1D4ED8; padding: 8px 6px; font-size: 10pt; }
+                table.data-table td { border: 1px solid #CBD5E1; padding: 6px 8px; font-size: 9pt; vertical-align: middle; }
+                .zebra { background-color: #F8FAFC; }
+                .text-center { text-align: center; }
+                .num-currency { mso-number-format: "\#\,\#\#0"; text-align: right; font-weight: bold; }
+                .text-code { mso-number-format: "\@"; text-align: center; font-family: monospace; font-weight: bold; }
+                .text-phone { mso-number-format: "\@"; }
+                .badge-paid { background-color: #DCFCE7; color: #15803D; font-weight: bold; text-align: center; }
+                .badge-unpaid { background-color: #FEE2E2; color: #B91C1C; text-align: center; }
+            </style></head><body>';
+
+            echo '<div class="report-header">ICA FROZEN FOOD - REKAP LAPORAN PENJUALAN & TRANSAKSI</div>';
+            echo '<div class="report-sub">Guntung Payung, Kec. Landasan Ulin, Kota Banjarbaru | Tanggal Cetak: ' . e($exportDate) . ' | Total Transaksi: ' . $totalOrders . ' | Total Omzet Terbayar: Rp ' . number_format($totalIncome, 0, ',', '.') . '</div>';
+
+            echo '<table class="data-table">';
+            echo '<thead><tr>
+                <th style="width: 45px;">No</th>
+                <th style="width: 100px;">No Pesanan</th>
+                <th style="width: 120px;">Tanggal & Waktu</th>
+                <th style="width: 80px;">Channel</th>
+                <th style="width: 160px;">Nama Pelanggan</th>
+                <th style="width: 120px;">No WhatsApp / HP</th>
+                <th style="width: 110px;">Pengantaran</th>
+                <th style="width: 120px;">Metode Bayar</th>
+                <th style="width: 100px;">Status Pesanan</th>
+                <th style="width: 95px;">Pembayaran</th>
+                <th style="width: 250px;">Item Produk Dipesan</th>
+                <th style="width: 100px;">Subtotal (Rp)</th>
+                <th style="width: 80px;">Ongkir (Rp)</th>
+                <th style="width: 110px;">Total (Rp)</th>
+            </tr></thead><tbody>';
+
+            foreach ($orders as $idx => $order) {
+                $zebra = ($idx % 2 === 1) ? ' class="zebra"' : '';
                 $itemsSummary = [];
                 if (is_array($order->items)) {
                     foreach ($order->items as $it) {
@@ -589,25 +746,29 @@ class AdminDataController extends Controller
                         $itemsSummary[] = "{$name} ({$qty}x)";
                     }
                 }
-                $itemStr = implode(' | ', $itemsSummary);
+                $itemStr = count($itemsSummary) > 0 ? implode('; ', $itemsSummary) : '-';
+                $paidClass = $order->is_paid ? ' class="badge-paid"' : ' class="badge-unpaid"';
+                $paidText = $order->is_paid ? 'Lunas' : 'Belum Lunas';
 
-                fputcsv($handle, [
-                    $order->id,
-                    $order->order_date ?? ($order->created_at ? $order->created_at->format('Y-m-d H:i') : ''),
-                    $order->channel ?? 'Online',
-                    $order->customer_name,
-                    $order->customer_phone ?? '-',
-                    $order->method ?? 'Ambil di Toko',
-                    $order->payment_method ?? 'QRIS Instan',
-                    $order->status ?? 'Diproses',
-                    $order->is_paid ? 'Lunas' : 'Belum Lunas',
-                    $itemStr,
-                    $order->subtotal ?? 0,
-                    $order->shipping_fee ?? 0,
-                    $order->total ?? 0,
-                ], ',');
+                echo "<tr{$zebra}>";
+                echo '<td class="text-center">' . ($idx + 1) . '</td>';
+                echo '<td class="text-code">' . e($order->id) . '</td>';
+                echo '<td class="text-center">' . ($order->order_date ?? ($order->created_at ? $order->created_at->format('d/m/Y H:i') : '-')) . '</td>';
+                echo '<td class="text-center">' . e($order->channel ?? 'Online') . '</td>';
+                echo '<td style="font-weight: bold; color: #0F172A;">' . e($order->customer_name) . '</td>';
+                echo '<td class="text-phone">' . e($order->customer_phone ?? '-') . '</td>';
+                echo '<td>' . e($order->method ?? 'Ambil di Toko') . '</td>';
+                echo '<td>' . e($order->payment_method ?? 'QRIS Instan') . '</td>';
+                echo '<td class="text-center">' . e($order->status ?? 'Diproses') . '</td>';
+                echo "<td{$paidClass}>" . $paidText . '</td>';
+                echo '<td>' . e($itemStr) . '</td>';
+                echo '<td class="num-currency">' . (int)($order->subtotal ?? 0) . '</td>';
+                echo '<td class="num-currency">' . (int)($order->shipping_fee ?? 0) . '</td>';
+                echo '<td class="num-currency" style="color: #2563EB;">' . (int)($order->total ?? 0) . '</td>';
+                echo '</tr>';
             }
 
+            echo '</tbody></table></body></html>';
             fclose($handle);
         };
 
@@ -729,9 +890,11 @@ class AdminDataController extends Controller
         $imported = 0;
         $updated = 0;
         $created = 0;
+        $createdItems = [];
+        $updatedItems = [];
         $updateExisting = $request->boolean('update_existing', true);
 
-        DB::transaction(function () use ($rows, $colMap, $updateExisting, &$imported, &$updated, &$created) {
+        DB::transaction(function () use ($rows, $colMap, $updateExisting, &$imported, &$updated, &$created, &$createdItems, &$updatedItems) {
             for ($i = 1; $i < count($rows); $i++) {
                 $row = $rows[$i];
                 if (empty($row) || !is_array($row)) continue;
@@ -763,16 +926,29 @@ class AdminDataController extends Controller
                 $existing = Product::find($sku);
                 if ($existing) {
                     if ($updateExisting) {
+                        $oldPrice = $existing->price;
+                        $oldStock = $existing->stock;
+                        $newPrice = $price > 0 ? $price : $existing->price;
+
                         $existing->update([
                             'name' => $name,
                             'category' => $category,
-                            'price' => $price > 0 ? $price : $existing->price,
+                            'price' => $newPrice,
                             'stock' => $stock,
                             'weight' => $weight,
                             'description' => $desc ?: $existing->description,
                         ]);
                         $updated++;
                         $imported++;
+                        $updatedItems[] = [
+                            'sku' => $sku,
+                            'name' => $name,
+                            'category' => $category,
+                            'price' => $newPrice,
+                            'old_price' => $oldPrice,
+                            'stock' => $stock,
+                            'old_stock' => $oldStock,
+                        ];
                     }
                 } else {
                     Product::create([
@@ -788,16 +964,25 @@ class AdminDataController extends Controller
                     ]);
                     $created++;
                     $imported++;
+                    $createdItems[] = [
+                        'sku' => $sku,
+                        'name' => $name,
+                        'category' => $category,
+                        'price' => $price,
+                        'stock' => $stock,
+                    ];
                 }
             }
         });
 
         return response()->json([
             'success' => true,
-            'message' => "Berhasil memproses {$imported} produk ({$created} produk baru, {$updated} diperbarui) dari file spreadsheet!",
+            'message' => "Berhasil memproses {$imported} produk ({$created} produk baru ditambahkan, {$updated} produk diperbarui) dari file spreadsheet!",
             'imported_count' => $imported,
             'created_count' => $created,
             'updated_count' => $updated,
+            'created_items' => $createdItems,
+            'updated_items' => $updatedItems,
             'products' => Product::all(),
             'categories' => Category::all()->pluck('name'),
         ]);

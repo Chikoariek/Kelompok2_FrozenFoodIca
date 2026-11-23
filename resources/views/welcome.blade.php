@@ -59,11 +59,45 @@
 
 <body>
 
-    <!-- 1. Banner Info Pengantaran Kurir & Jam Operasional Toko -->
-    <div class="top-announcement-bar">
-        <span class="motor-delivery-icon" style="width: 1rem; height: 1rem; color: #6EE7B7;"></span>
-        <span>Pesan Sekarang, Melayani pengantaran via kurir area Banjarbaru &amp; sekitarnya!</span>
-        <span class="top-announcement-badge">Buka (08.00 – 21.00 WITA)</span>
+    <!-- 0. Admin Preview Bar (Hanya Muncul Saat Administrator Meninjau Etalase Pelanggan) -->
+    @if(Auth::check() && (Auth::user()->isAdmin() || Auth::user()->is_admin || Auth::user()->role === 'admin'))
+    <div class="admin-preview-topbar" id="adminPreviewBar">
+        <div class="admin-preview-inner">
+            <div class="admin-preview-left">
+                <span class="admin-preview-dot"></span>
+                <strong>Mode Tinjau Toko (Administrator)</strong>
+                <span class="admin-preview-hint">— Anda sedang melihat tampilan etalase sebagai admin toko.</span>
+            </div>
+            <div class="admin-preview-right">
+                <a href="{{ route('admin.dashboard') }}" class="btn-return-admin-top">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    <span>Kembali ke Panel Admin</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @php
+        $isStoreOpen = $storeStatus['is_open'] ?? true;
+        $storeHoursMsg = $storeStatus['message'] ?? ($isStoreOpen ? 'Buka (08.00 – 21.00 WITA)' : 'Tutup Sementara');
+    @endphp
+
+    <!-- 1. Banner Info Pengantaran Kurir & Jam Operasional Toko (Dinamis Sesuai Status Buka / Tutup Toko) -->
+    <div class="top-announcement-bar {{ $isStoreOpen ? 'store-open' : 'store-closed' }}" id="topAnnouncementBar">
+        @if($isStoreOpen)
+            <span class="motor-delivery-icon" style="width: 1rem; height: 1rem; color: #6EE7B7;"></span>
+            <span>Pesan Sekarang, Melayani pengantaran via kurir area Banjarbaru &amp; sekitarnya!</span>
+            <span class="top-announcement-badge open">Buka (08.00 – 21.00 WITA)</span>
+        @else
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FCA5A5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Operasional Toko Sedang <strong>TUTUP SEMENTARA</strong> saat ini (Jam Buka: 08.00 – 21.00 WITA).</span>
+            <span class="top-announcement-badge closed" style="background: rgba(239, 68, 68, 0.25); color: #FEE2E2;">Toko Tutup</span>
+        @endif
     </div>
 
     <!-- 2. Navbar Navigasi Utama & Menu Profil Pengguna -->
@@ -464,6 +498,34 @@
     </div>
 
     <main style="flex: 1;">
+        <!-- Banner Peringatan Toko Tutup (Terlihat Jelas Bagi Pengunjung di Halaman Depan Sejak Awal) -->
+        @if(!$isStoreOpen)
+        <div class="store-closed-hero-alert" id="storeClosedHeroAlert">
+            <div class="max-w-7xl">
+                <div class="store-closed-alert-card">
+                    <div class="store-closed-alert-icon-box">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <div class="store-closed-alert-text">
+                        <div class="store-closed-alert-badge-row">
+                            <span class="badge-closed-pill">Toko Sedang Tutup Sementara</span>
+                            <span class="store-closed-hours-text">Jam Buka: 08.00 – 21.00 WITA</span>
+                        </div>
+                        <h3 class="store-closed-alert-heading">Mohon Maaf, Saat Ini Kami Belum Menerima Pesanan Checkout</h3>
+                        <p class="store-closed-alert-sub">
+                            Anda tetap dapat melihat-lihat seluruh varian makanan beku, cek harga, dan menyimpan produk ke keranjang. 
+                            Fitur checkout akan dibuka kembali secara otomatis pada jam buka toko berikutnya.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- 3. Hero Section (Banner Promosi & Ajakan Belanja) -->
         <section id="home" class="hero-section-wrap">
             <div class="max-w-7xl">
@@ -2003,6 +2065,18 @@
             }
         } catch (e) { }
     </script>
+    @if(Auth::check() && (Auth::user()->isAdmin() || Auth::user()->is_admin || Auth::user()->role === 'admin'))
+    <!-- Floating Quick Return Button (Selalu Tampak Mengambang di Pojok Bawah untuk Admin) -->
+    <a href="{{ route('admin.dashboard') }}" class="floating-admin-return-btn link-to-admin-dashboard" title="Kembali ke Dashboard Admin">
+        <div class="floating-admin-icon-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </div>
+        <span class="floating-admin-text">Panel Admin</span>
+    </a>
+    @endif
+
 </body>
 
 </html>

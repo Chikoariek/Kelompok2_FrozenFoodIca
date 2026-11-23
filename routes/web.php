@@ -51,9 +51,10 @@ Route::middleware(['auth', 'role:admin', 'prevent-back-history'])->prefix('admin
         ]);
     })->name('dashboard');
 
-    // Export Data Excel / CSV
+    // Export Data Excel / Spreadsheet
     Route::get('/export/products', [\App\Http\Controllers\AdminDataController::class, 'exportProducts'])->name('export.products');
     Route::get('/export/orders', [\App\Http\Controllers\AdminDataController::class, 'exportOrders'])->name('export.orders');
+    Route::get('/export/bundles', [\App\Http\Controllers\AdminDataController::class, 'exportBundles'])->name('export.bundles');
     Route::get('/export/template-products', [\App\Http\Controllers\AdminDataController::class, 'exportProductTemplate'])->name('export.template');
 
     // Import Data Produk dari Excel / CSV (Kasir Pintar)

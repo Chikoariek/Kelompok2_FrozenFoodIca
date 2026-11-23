@@ -901,6 +901,13 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- Orders Pagination Container -->
+                    <div class="admin-pagination-wrapper" id="ordersPaginationWrap">
+                        <div class="pagination-info">
+                            Menampilkan <span id="ordersPageStart">1</span>–<span id="ordersPageEnd">10</span> dari <strong id="ordersTotalRows">{{ count($orders) }}</strong> pesanan
+                        </div>
+                        <div class="pagination-controls" id="ordersPaginationControls"></div>
+                    </div>
                 </div>
             </section>
 
@@ -958,14 +965,31 @@
                             </button>
                         </div>
 
+                        <!-- Filter Kategori Produk Satuan -->
+                        <div class="toolbar-select-filter-wrap">
+                            <select id="inventoryCategoryFilter" class="toolbar-select-filter" title="Filter Kategori Produk">
+                                <option value="all">Semua Kategori ({{ count($products) }})</option>
+                                @foreach($categories as $cat)
+                                    @php $pCatCount = $products->where('category', $cat->name)->count(); @endphp
+                                    <option value="{{ $cat->name }}">{{ $cat->name }} ({{ $pCatCount }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- Filter Status Stok Produk Satuan -->
                         <div class="toolbar-filters-group">
                             <button id="filterAllProducts" class="filter-btn-pill active prod-filter-btn" data-filter="all" type="button">
                                 Semua ({{ count($products) }})
                             </button>
+                            <button class="filter-btn-pill prod-filter-btn" data-filter="in_stock" type="button">
+                                Tersedia
+                            </button>
                             <button id="filterLowStockProducts" class="filter-btn-pill warning prod-filter-btn" data-filter="low" type="button">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                <span>Stok Menipis &lt; 5 Unit</span>
+                                <span>Stok Menipis &lt; 5</span>
+                            </button>
+                            <button class="filter-btn-pill danger prod-filter-btn" data-filter="zero" type="button">
+                                Habis (0)
                             </button>
                         </div>
                     </div>
@@ -1088,6 +1112,13 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- Inventory Pagination Container -->
+                    <div class="admin-pagination-wrapper" id="inventoryPaginationWrap">
+                        <div class="pagination-info">
+                            Menampilkan <span id="inventoryPageStart">1</span>–<span id="inventoryPageEnd">10</span> dari <strong id="inventoryTotalRows">{{ count($products) }}</strong> produk
+                        </div>
+                        <div class="pagination-controls" id="inventoryPaginationControls"></div>
+                    </div>
                 </div>
                 </div> <!-- /#subtabContentProducts -->
 
@@ -1106,6 +1137,10 @@
                             </p>
                         </div>
                         <div class="panel-header-actions">
+                            <a href="{{ route('admin.export.bundles') }}" class="btn-excel-green" title="Export Backup Paket Hemat ke Excel">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <span>Export Excel</span>
+                            </a>
                             <button id="btnOpenAddBundleModal" class="btn-primary-blue" title="Tambah Paket Hemat Baru" type="button">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                                 <span>Tambah Paket Hemat</span>
@@ -1128,8 +1163,17 @@
                                 </button>
                             </div>
 
-                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--navy); padding-left: 0.5rem; border-left: 1px solid #E5E7EB;">
-                                Total: <strong id="totalBundlesCount">{{ count($bundles) }}</strong> Paket Hemat
+                            <!-- Filter Status Paket Hemat -->
+                            <div class="toolbar-filters-group">
+                                <button class="filter-btn-pill active bundle-filter-btn" data-filter="all" type="button">
+                                    Semua ({{ count($bundles) }})
+                                </button>
+                                <button class="filter-btn-pill bundle-filter-btn" data-filter="active" type="button">
+                                    ● Aktif
+                                </button>
+                                <button class="filter-btn-pill bundle-filter-btn" data-filter="inactive" type="button">
+                                    ● Nonaktif
+                                </button>
                             </div>
                         </div>
 
@@ -1155,7 +1199,7 @@
                                 </thead>
                                 <tbody id="tableBundlesBody">
                                     @forelse($bundles as $b)
-                                        <tr class="bundle-row-item" data-id="{{ $b->id }}" data-name="{{ strtolower($b->name) }}">
+                                        <tr class="bundle-row-item" data-id="{{ $b->id }}" data-name="{{ strtolower($b->name) }}" data-active="{{ $b->is_active ? '1' : '0' }}">
                                             <td>
                                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
                                                     <img src="{{ $b->image }}" alt="{{ $b->name }}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid #E5E7EB; flex-shrink: 0;" onerror="this.src='/images/products/nugget.png'">
@@ -1249,6 +1293,13 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Bundles Pagination Container -->
+                        <div class="admin-pagination-wrapper" id="bundlesPaginationWrap">
+                            <div class="pagination-info">
+                                Menampilkan <span id="bundlesPageStart">1</span>–<span id="bundlesPageEnd">10</span> dari <strong id="bundlesTotalRows">{{ count($bundles) }}</strong> paket
+                            </div>
+                            <div class="pagination-controls" id="bundlesPaginationControls"></div>
+                        </div>
                     </div>
                 </div> <!-- /#subtabContentBundles -->
             </section>
@@ -1269,12 +1320,8 @@
                         </p>
                     </div>
 
-                    <!-- Action Buttons: Simpan Perubahan & Tambah Kategori (Persis sejajar seperti Data Produk) -->
+                    <!-- Action Buttons: Tambah Kategori -->
                     <div class="panel-header-actions">
-                        <button id="btnSyncCategories" class="btn-primary-green" title="Simpan Seluruh Data Kategori ke Server" type="button">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
-                            <span>Simpan Perubahan</span>
-                        </button>
                         <button id="btnOpenAddCategoryModal" class="btn-primary-blue" title="Tambah Kategori Baru" type="button">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             <span>Tambah Kategori Baru</span>
@@ -1379,6 +1426,13 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <!-- Categories Pagination Container -->
+                    <div class="admin-pagination-wrapper" id="categoriesPaginationWrap">
+                        <div class="pagination-info">
+                            Menampilkan <span id="categoriesPageStart">1</span>–<span id="categoriesPageEnd">10</span> dari <strong id="categoriesTotalRows">{{ count($categories) }}</strong> kategori
+                        </div>
+                        <div class="pagination-controls" id="categoriesPaginationControls"></div>
                     </div>
                 </div>
 
@@ -1486,11 +1540,11 @@
                         <div>
                             <h1 class="print-store-title">ICA FROZEN FOOD</h1>
                             <p class="print-store-subtitle">Pusat Makanan Beku Berkualitas, Olahan Daging &amp; Dimsum Pilihan</p>
-                            <p class="print-store-subtitle">Jl. KH Wahid Hasyim, Sananwetan, Kota Blitar | Telp/WA: 0878-5451-3770</p>
+                            <p class="print-store-subtitle">Guntung Payung, Kec. Landasan Ulin, Kota Banjarbaru, Kalimantan Selatan 70721 | Telp/WA: 0812-5100-3636</p>
                         </div>
                         <div class="print-doc-badge">
                             <h2>LAPORAN PENJUALAN RESMI</h2>
-                            <p id="printDocDate">Dicetak pada: {{ date('d/m/Y H:i') }} WIB</p>
+                            <p id="printDocDate">Dicetak pada: {{ date('d/m/Y H:i') }} WITA</p>
                             <p id="printDocPeriod">Periode: 7 Hari Terakhir</p>
                         </div>
                     </div>
@@ -1662,6 +1716,13 @@
                                 <!-- Dinamis via JS -->
                             </tbody>
                         </table>
+                    </div>
+                    <!-- Reports Table Pagination Container -->
+                    <div class="admin-pagination-wrapper" id="reportPaginationWrap">
+                        <div class="pagination-info">
+                            Menampilkan <span id="reportPageStart">1</span>–<span id="reportPageEnd">10</span> dari <strong id="reportTotalRows">0</strong> transaksi
+                        </div>
+                        <div class="pagination-controls" id="reportPaginationControls"></div>
                     </div>
                 </div>
             </section>
@@ -2280,6 +2341,62 @@
         </div>
     </div>
 
+    <!-- Modal Laporan Rincian Hasil Impor Spreadsheet (Data Baru & Data Diperbarui) -->
+    <div id="modalImportResult" class="admin-modal-backdrop">
+        <div class="admin-modal-box" style="max-width: 650px;">
+            <div class="modal-header-row">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 38px; height: 38px; border-radius: 12px; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="modal-title" style="font-size: 1.05rem;">Hasil Impor Spreadsheet</h3>
+                        <p id="importResultSub" style="font-size: 0.75rem; color: #64748B; margin: 0;">Rincian data produk yang baru ditambahkan dan diperbarui.</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-modal-close btn-close-import-result" aria-label="Tutup" title="Tutup">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body-pad" style="max-height: 60vh; overflow-y: auto;">
+                <!-- Summary KPI Chips -->
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div style="flex: 1; background: #F0FDF4; border: 1px solid #BBF7D0; padding: 0.75rem; border-radius: 12px; text-align: center;">
+                        <p style="font-size: 11px; font-weight: 700; color: #166534; margin: 0; text-transform: uppercase;">Produk Baru Ditambahkan</p>
+                        <p id="importSummaryCreatedCount" style="font-size: 1.25rem; font-weight: 800; color: #15803D; margin: 2px 0 0;">0</p>
+                    </div>
+                    <div style="flex: 1; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 0.75rem; border-radius: 12px; text-align: center;">
+                        <p style="font-size: 11px; font-weight: 700; color: #1E40AF; margin: 0; text-transform: uppercase;">Produk Diperbarui</p>
+                        <p id="importSummaryUpdatedCount" style="font-size: 1.25rem; font-weight: 800; color: #2563EB; margin: 2px 0 0;">0</p>
+                    </div>
+                </div>
+
+                <!-- Bagian 1: Produk Baru -->
+                <div id="importCreatedSection" style="margin-bottom: 1.25rem; display: none;">
+                    <h4 style="font-size: 0.8125rem; font-weight: 800; color: #15803D; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Produk Baru yang Berhasil Ditambahkan:</span>
+                    </h4>
+                    <div id="importCreatedList" style="display: flex; flex-direction: column; gap: 0.4rem;"></div>
+                </div>
+
+                <!-- Bagian 2: Produk Diperbarui -->
+                <div id="importUpdatedSection" style="display: none;">
+                    <h4 style="font-size: 0.8125rem; font-weight: 800; color: #2563EB; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Produk yang Berhasil Diperbarui:</span>
+                    </h4>
+                    <div id="importUpdatedList" style="display: flex; flex-direction: column; gap: 0.4rem;"></div>
+                </div>
+            </div>
+            <div class="modal-footer-row">
+                <button type="button" class="btn-primary-blue btn-close-import-result" style="width: 100%; justify-content: center;">
+                    <span>Selesai &amp; Tutup Laporan</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Kasir Walk-in / Tambah Pesanan Offline -->
     <div id="modalOfflineOrder" class="admin-modal-backdrop">
         <div class="admin-modal-box pos-modal-wide">
@@ -2322,7 +2439,11 @@
                             <div class="pos-category-scroll" id="posCategoryScroll">
                                 <button type="button" class="pos-cat-chip active" data-cat="all">
                                     <span>Semua</span>
-                                    <span class="pos-cat-count">{{ count($products) }}</span>
+                                    <span class="pos-cat-count">{{ count($products) + count($bundles) }}</span>
+                                </button>
+                                <button type="button" class="pos-cat-chip" data-cat="paket-hemat" style="background: #EFF6FF; border-color: #BFDBFE;">
+                                    <span style="color: var(--soft-blue); font-weight: 800;">★ Paket Hemat</span>
+                                    <span class="pos-cat-count" style="background: var(--soft-blue); color: #fff;">{{ count($bundles) }}</span>
                                 </button>
                                 @foreach($categories as $cat)
                                     @php
@@ -2397,7 +2518,7 @@
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <div style="flex: 1;">
                                     <label style="font-size: 10px; font-weight: 700; color: #64748B; display: block; margin-bottom: 2px;">Uang Diterima (Rp):</label>
-                                    <input type="number" id="posCashReceived" class="pos-cash-input" placeholder="0">
+                                    <input type="text" inputmode="numeric" id="posCashReceived" class="pos-cash-input" placeholder="0" autocomplete="off">
                                 </div>
                                 <div style="flex: 1; text-align: right;">
                                     <span style="font-size: 10px; font-weight: 700; color: #64748B; display: block; margin-bottom: 2px;">Kembalian:</span>

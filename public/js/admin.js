@@ -121,6 +121,82 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
+  // --- Universal Client-Side Pagination Renderer (Impeccable UI/UX) ---
+  function renderPaginationControls({ container, totalItems, pageSize, currentPage, onPageChange }) {
+    if (!container) return;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+    if (totalItems === 0) {
+      container.innerHTML = '';
+      container.style.display = 'none';
+      return;
+    }
+
+    container.style.display = 'flex';
+    const startItem = (currentPage - 1) * pageSize + 1;
+    const endItem = Math.min(currentPage * pageSize, totalItems);
+
+    let html = `
+      <p class="pagination-info-text">Menampilkan <b>${startItem}-${endItem}</b> dari <b>${totalItems}</b> data</p>
+      <ul class="pagination-controls-list">
+        <li>
+          <button type="button" class="pagination-btn btn-page-prev" ${currentPage <= 1 ? 'disabled' : ''} title="Halaman Sebelumnya">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+        </li>
+    `;
+
+    let pages = [];
+    if (totalPages <= 7) {
+      for (let p = 1; p <= totalPages; p++) pages.push(p);
+    } else {
+      if (currentPage <= 4) {
+        pages = [1, 2, 3, 4, 5, '...', totalPages];
+      } else if (currentPage >= totalPages - 3) {
+        pages = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        pages = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+      }
+    }
+
+    pages.forEach((p) => {
+      if (p === '...') {
+        html += `<li><span class="pagination-ellipsis">&hellip;</span></li>`;
+      } else {
+        const isActive = p === currentPage;
+        html += `<li><button type="button" class="pagination-btn btn-page-num ${isActive ? 'active' : ''}" data-page="${p}">${p}</button></li>`;
+      }
+    });
+
+    html += `
+        <li>
+          <button type="button" class="pagination-btn btn-page-next" ${currentPage >= totalPages ? 'disabled' : ''} title="Halaman Berikutnya">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </li>
+      </ul>
+    `;
+
+    container.innerHTML = html;
+
+    container.querySelectorAll('.btn-page-num').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const p = parseInt(btn.getAttribute('data-page'), 10);
+        if (p && p !== currentPage) onPageChange(p);
+      });
+    });
+
+    const btnPrev = container.querySelector('.btn-page-prev');
+    if (btnPrev && currentPage > 1) {
+      btnPrev.addEventListener('click', () => onPageChange(currentPage - 1));
+    }
+
+    const btnNext = container.querySelector('.btn-page-next');
+    if (btnNext && currentPage < totalPages) {
+      btnNext.addEventListener('click', () => onPageChange(currentPage + 1));
+    }
+  }
+
   // --- 2. Navigasi Sidebar Mobile & Dropdown Profil Admin ---
   const adminSidebar = document.getElementById('adminSidebar');
   const adminSidebarBackdrop = document.getElementById('adminSidebarBackdrop');
@@ -607,11 +683,14 @@ document.addEventListener('DOMContentLoaded', function () {
   const ordersEmptyTitle = document.getElementById('ordersEmptyTitle');
   const ordersEmptyDesc = document.getElementById('ordersEmptyDesc');
   const btnResetOrderFilter = document.getElementById('btnResetOrderFilter');
+  const ordersPaginationWrap = document.getElementById('ordersPaginationWrap');
   let activeOrderStatusFilter = 'Semua';
+  let orderCurrentPage = 1;
+  const orderPageSize = 10;
 
   function filterOrders() {
     const q = (orderSearchInput?.value || '').toLowerCase().trim();
-    let visibleCount = 0;
+    const matchedRows = [];
 
     orderRows.forEach((row) => {
       let status = row.getAttribute('data-status') || '';
@@ -624,15 +703,29 @@ document.addEventListener('DOMContentLoaded', function () {
       const matchSearch = !q || text.includes(q);
 
       if (matchStatus && matchSearch) {
+        matchedRows.push(row);
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const totalItems = matchedRows.length;
+    const totalPages = Math.ceil(totalItems / orderPageSize) || 1;
+    if (orderCurrentPage > totalPages) orderCurrentPage = 1;
+
+    const startIndex = (orderCurrentPage - 1) * orderPageSize;
+    const endIndex = startIndex + orderPageSize;
+
+    matchedRows.forEach((row, idx) => {
+      if (idx >= startIndex && idx < endIndex) {
         row.style.display = '';
-        visibleCount++;
       } else {
         row.style.display = 'none';
       }
     });
 
     if (ordersEmptyFilterRow) {
-      if (visibleCount === 0 && orderRows.length > 0) {
+      if (totalItems === 0 && orderRows.length > 0) {
         ordersEmptyFilterRow.style.display = '';
         if (ordersEmptyTitle && ordersEmptyDesc) {
           if (q && activeOrderStatusFilter !== 'Semua') {
@@ -662,6 +755,18 @@ document.addEventListener('DOMContentLoaded', function () {
         ordersEmptyFilterRow.style.display = 'none';
       }
     }
+
+    renderPaginationControls({
+      container: ordersPaginationWrap,
+      totalItems: totalItems,
+      pageSize: orderPageSize,
+      currentPage: orderCurrentPage,
+      onPageChange: (newPage) => {
+        orderCurrentPage = newPage;
+        filterOrders();
+        document.getElementById('tab-orders')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
   orderFilterBtns.forEach((btn) => {
@@ -669,11 +774,15 @@ document.addEventListener('DOMContentLoaded', function () {
       orderFilterBtns.forEach((b) => b.classList.remove('active'));
       this.classList.add('active');
       activeOrderStatusFilter = this.getAttribute('data-status') || 'Semua';
+      orderCurrentPage = 1;
       filterOrders();
     });
   });
 
-  orderSearchInput?.addEventListener('input', filterOrders);
+  orderSearchInput?.addEventListener('input', () => {
+    orderCurrentPage = 1;
+    filterOrders();
+  });
 
   btnResetOrderFilter?.addEventListener('click', function () {
     if (orderSearchInput) orderSearchInput.value = '';
@@ -685,8 +794,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
     activeOrderStatusFilter = 'Semua';
+    orderCurrentPage = 1;
     filterOrders();
   });
+
+  // Inisialisasi awal tabel pesanan & pagination
+  filterOrders();
 
   // Handle Action Buttons in Orders Table -> Langsung tersimpan di database
   document.addEventListener('click', async function (e) {
@@ -986,55 +1099,106 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- 6. Manajemen Inventaris Produk & Filter Pencarian (Tab Inventory) ---
   const inventorySearchInput = document.getElementById('inventorySearchInput');
+  const inventoryCategoryFilter = document.getElementById('inventoryCategoryFilter');
   const prodFilterBtns = document.querySelectorAll('.prod-filter-btn');
   const inventoryRows = document.querySelectorAll('#inventoryTableBody tr[data-prod-row]');
   const inventoryEmptyFilterRow = document.getElementById('inventoryEmptyFilterRow');
   const inventoryEmptyTitle = document.getElementById('inventoryEmptyTitle');
   const inventoryEmptyDesc = document.getElementById('inventoryEmptyDesc');
   const btnResetInventoryFilter = document.getElementById('btnResetInventoryFilter');
+  const inventoryPaginationWrap = document.getElementById('inventoryPaginationWrap');
   let activeInventoryFilter = 'all';
+  let inventoryCurrentPage = 1;
+  const inventoryPageSize = 10;
 
   function filterInventory() {
     const q = (inventorySearchInput?.value || '').toLowerCase().trim();
-    let visibleCount = 0;
+    const selCat = (inventoryCategoryFilter?.value || 'all').toLowerCase().trim();
+    const matchedRows = [];
 
     inventoryRows.forEach((row) => {
       const stock = parseInt(row.getAttribute('data-stock') || '0', 10);
+      const rowCat = (row.getAttribute('data-category') || '').toLowerCase().trim();
       const text = row.textContent.toLowerCase();
 
-      const matchFilter = activeInventoryFilter === 'all' || stock <= 5;
+      // Category filter match
+      const matchCat = selCat === 'all' || rowCat === selCat;
+
+      // Stock status filter match
+      let matchFilter = true;
+      if (activeInventoryFilter === 'in_stock') {
+        matchFilter = stock > 5;
+      } else if (activeInventoryFilter === 'low') {
+        matchFilter = stock <= 5 && stock > 0;
+      } else if (activeInventoryFilter === 'zero') {
+        matchFilter = stock <= 0;
+      }
+
+      // Keyword search match
       const matchSearch = !q || text.includes(q);
 
-      if (matchFilter && matchSearch) {
+      if (matchCat && matchFilter && matchSearch) {
+        matchedRows.push(row);
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const totalItems = matchedRows.length;
+    const totalPages = Math.ceil(totalItems / inventoryPageSize) || 1;
+    if (inventoryCurrentPage > totalPages) inventoryCurrentPage = 1;
+
+    const startIndex = (inventoryCurrentPage - 1) * inventoryPageSize;
+    const endIndex = startIndex + inventoryPageSize;
+
+    matchedRows.forEach((row, idx) => {
+      if (idx >= startIndex && idx < endIndex) {
         row.style.display = '';
-        visibleCount++;
       } else {
         row.style.display = 'none';
       }
     });
 
     if (inventoryEmptyFilterRow) {
-      if (visibleCount === 0 && inventoryRows.length > 0) {
+      if (totalItems === 0 && inventoryRows.length > 0) {
         inventoryEmptyFilterRow.style.display = '';
         if (inventoryEmptyTitle && inventoryEmptyDesc) {
           if (q && activeInventoryFilter === 'low') {
             inventoryEmptyTitle.textContent = 'Tidak Ada Produk Stok Menipis';
             inventoryEmptyDesc.textContent = `Tidak ditemukan produk berstok menipis yang sesuai dengan kata kunci "${q}".`;
+          } else if (q && activeInventoryFilter === 'zero') {
+            inventoryEmptyTitle.textContent = 'Tidak Ada Produk Stok Habis';
+            inventoryEmptyDesc.textContent = `Tidak ditemukan produk berstok habis yang sesuai dengan kata kunci "${q}".`;
           } else if (q) {
             inventoryEmptyTitle.textContent = 'Produk Tidak Ditemukan';
-            inventoryEmptyDesc.textContent = `Tidak ada produk yang cocok dengan kata kunci "${q}". Silakan periksa kembali nama produk atau barcode.`;
+            inventoryEmptyDesc.textContent = `Tidak ada produk yang cocok dengan kata kunci "${q}". Silakan periksa kembali nama produk atau SKU.`;
           } else if (activeInventoryFilter === 'low') {
             inventoryEmptyTitle.textContent = 'Semua Stok Aman';
-            inventoryEmptyDesc.textContent = 'Hebat! Saat ini tidak ada produk dengan stok menipis (<= 5).';
+            inventoryEmptyDesc.textContent = 'Hebat! Saat ini tidak ada produk dengan stok menipis (1-5 unit).';
+          } else if (activeInventoryFilter === 'zero') {
+            inventoryEmptyTitle.textContent = 'Tidak Ada Stok Habis';
+            inventoryEmptyDesc.textContent = 'Bagus! Semua produk freezer saat ini memiliki stok.';
           } else {
             inventoryEmptyTitle.textContent = 'Produk Tidak Ditemukan';
-            inventoryEmptyDesc.textContent = 'Tidak ada produk yang memenuhi kriteria pencarian saat ini.';
+            inventoryEmptyDesc.textContent = 'Tidak ada produk yang memenuhi kriteria filter saat ini.';
           }
         }
       } else {
         inventoryEmptyFilterRow.style.display = 'none';
       }
     }
+
+    renderPaginationControls({
+      container: inventoryPaginationWrap,
+      totalItems: totalItems,
+      pageSize: inventoryPageSize,
+      currentPage: inventoryCurrentPage,
+      onPageChange: (newPage) => {
+        inventoryCurrentPage = newPage;
+        filterInventory();
+        document.getElementById('tab-inventory')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
   prodFilterBtns.forEach((btn) => {
@@ -1042,14 +1206,24 @@ document.addEventListener('DOMContentLoaded', function () {
       prodFilterBtns.forEach((b) => b.classList.remove('active'));
       this.classList.add('active');
       activeInventoryFilter = this.getAttribute('data-filter') || 'all';
+      inventoryCurrentPage = 1;
       filterInventory();
     });
   });
 
-  inventorySearchInput?.addEventListener('input', filterInventory);
+  inventoryCategoryFilter?.addEventListener('change', () => {
+    inventoryCurrentPage = 1;
+    filterInventory();
+  });
+
+  inventorySearchInput?.addEventListener('input', () => {
+    inventoryCurrentPage = 1;
+    filterInventory();
+  });
 
   btnResetInventoryFilter?.addEventListener('click', function () {
     if (inventorySearchInput) inventorySearchInput.value = '';
+    if (inventoryCategoryFilter) inventoryCategoryFilter.value = 'all';
     prodFilterBtns.forEach((b) => {
       if (b.getAttribute('data-filter') === 'all') {
         b.classList.add('active');
@@ -1058,8 +1232,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
     activeInventoryFilter = 'all';
+    inventoryCurrentPage = 1;
     filterInventory();
   });
+
+  // Inisialisasi awal tabel produk freezer & pagination
+  filterInventory();
 
   // Stock Steppers (+ / -) -> Langsung tersimpan di database
   document.addEventListener('click', async function (e) {
@@ -1452,39 +1630,102 @@ document.addEventListener('DOMContentLoaded', function () {
   const bundleSearchInput = document.getElementById('bundleSearchInput');
   const bundlesEmptyFilterRow = document.getElementById('bundlesEmptyFilterRow');
   const btnResetBundleFilter = document.getElementById('btnResetBundleFilter');
+  const bundlesPaginationWrap = document.getElementById('bundlesPaginationWrap');
+  const bundleStatusFilterBtns = document.querySelectorAll('.btn-bundle-status-filter');
+  let activeBundleStatus = 'all';
+  let bundleCurrentPage = 1;
+  const bundlePageSize = 10;
 
   function filterBundles() {
     const q = (bundleSearchInput?.value || '').toLowerCase().trim();
     const bundleRows = document.querySelectorAll('.bundle-row-item');
-    let visibleCount = 0;
+    const matchedRows = [];
 
     bundleRows.forEach((row) => {
       const name = (row.getAttribute('data-name') || '').toLowerCase();
       const id = (row.getAttribute('data-id') || '').toLowerCase();
-      if (!q || name.includes(q) || id.includes(q)) {
+      const isActive = row.getAttribute('data-active') === '1';
+
+      let matchStatus = true;
+      if (activeBundleStatus === 'active') matchStatus = isActive;
+      else if (activeBundleStatus === 'inactive') matchStatus = !isActive;
+
+      const matchSearch = !q || name.includes(q) || id.includes(q);
+
+      if (matchStatus && matchSearch) {
+        matchedRows.push(row);
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const totalItems = matchedRows.length;
+    const totalPages = Math.ceil(totalItems / bundlePageSize) || 1;
+    if (bundleCurrentPage > totalPages) bundleCurrentPage = 1;
+
+    const startIndex = (bundleCurrentPage - 1) * bundlePageSize;
+    const endIndex = startIndex + bundlePageSize;
+
+    matchedRows.forEach((row, idx) => {
+      if (idx >= startIndex && idx < endIndex) {
         row.style.display = '';
-        visibleCount++;
       } else {
         row.style.display = 'none';
       }
     });
 
     if (bundlesEmptyFilterRow) {
-      if (visibleCount === 0 && bundleRows.length > 0) {
+      if (totalItems === 0 && bundleRows.length > 0) {
         bundlesEmptyFilterRow.style.display = '';
       } else {
         bundlesEmptyFilterRow.style.display = 'none';
       }
     }
+
+    renderPaginationControls({
+      container: bundlesPaginationWrap,
+      totalItems: totalItems,
+      pageSize: bundlePageSize,
+      currentPage: bundleCurrentPage,
+      onPageChange: (newPage) => {
+        bundleCurrentPage = newPage;
+        filterBundles();
+        document.getElementById('inventorySubtabBundles')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
-  bundleSearchInput?.addEventListener('input', filterBundles);
-  btnResetBundleFilter?.addEventListener('click', function () {
-    if (bundleSearchInput) {
-      bundleSearchInput.value = '';
+  bundleStatusFilterBtns.forEach((btn) => {
+    btn.addEventListener('click', function () {
+      bundleStatusFilterBtns.forEach((b) => b.classList.remove('active'));
+      this.classList.add('active');
+      activeBundleStatus = this.getAttribute('data-status') || 'all';
+      bundleCurrentPage = 1;
       filterBundles();
-    }
+    });
   });
+
+  bundleSearchInput?.addEventListener('input', () => {
+    bundleCurrentPage = 1;
+    filterBundles();
+  });
+
+  btnResetBundleFilter?.addEventListener('click', function () {
+    if (bundleSearchInput) bundleSearchInput.value = '';
+    bundleStatusFilterBtns.forEach((b) => {
+      if (b.getAttribute('data-status') === 'all') {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+    activeBundleStatus = 'all';
+    bundleCurrentPage = 1;
+    filterBundles();
+  });
+
+  // Inisialisasi awal tabel paket hemat & pagination
+  filterBundles();
 
   // Search Produk di Modal Tambah & Edit Paket Hemat
   const searchAddBundleProdInput = document.getElementById('searchAddBundleProdInput');
@@ -2033,49 +2274,86 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnResetCategoryFilter = document.getElementById('btnResetCategoryFilter');
   const categoriesGridEmptyFilterBox = document.getElementById('categoriesGridEmptyFilterBox');
   const btnResetCategoryGridFilter = document.getElementById('btnResetCategoryGridFilter');
+  const categoriesPaginationWrap = document.getElementById('categoriesPaginationWrap');
+  let categoryCurrentPage = 1;
+  const categoryPageSize = 10;
 
   function filterCategories() {
     const q = (categorySearchInput?.value || '').toLowerCase().trim();
     
     // Filter Card Grid
     const categoryCards = document.querySelectorAll('.category-item-card');
-    let visibleCards = 0;
+    const matchedCards = [];
     categoryCards.forEach((card) => {
       const name = (card.getAttribute('data-cat-name') || '').toLowerCase();
       const match = !q || name.includes(q);
-      card.style.display = match ? '' : 'none';
-      if (match) visibleCards++;
+      if (match) matchedCards.push(card);
+      else card.style.display = 'none';
     });
-
-    if (categoriesGridEmptyFilterBox) {
-      categoriesGridEmptyFilterBox.style.display = (visibleCards === 0 && categoryCards.length > 0) ? 'block' : 'none';
-    }
 
     // Filter List Table Rows
     const categoryRows = document.querySelectorAll('#categoriesTableBody tr[data-cat-row]');
-    let visibleRows = 0;
+    const matchedRows = [];
     categoryRows.forEach((row) => {
       const name = (row.getAttribute('data-cat-name') || '').toLowerCase();
       const match = !q || name.includes(q);
-      row.style.display = match ? '' : 'none';
-      if (match) visibleRows++;
+      if (match) matchedRows.push(row);
+      else row.style.display = 'none';
     });
 
-    if (categoriesEmptyFilterRow) {
-      categoriesEmptyFilterRow.style.display = (visibleRows === 0 && categoryRows.length > 0) ? '' : 'none';
+    const totalItems = Math.max(matchedCards.length, matchedRows.length);
+    const totalPages = Math.ceil(totalItems / categoryPageSize) || 1;
+    if (categoryCurrentPage > totalPages) categoryCurrentPage = 1;
+
+    const startIndex = (categoryCurrentPage - 1) * categoryPageSize;
+    const endIndex = startIndex + categoryPageSize;
+
+    matchedCards.forEach((card, idx) => {
+      card.style.display = (idx >= startIndex && idx < endIndex) ? '' : 'none';
+    });
+
+    matchedRows.forEach((row, idx) => {
+      row.style.display = (idx >= startIndex && idx < endIndex) ? '' : 'none';
+    });
+
+    if (categoriesGridEmptyFilterBox) {
+      categoriesGridEmptyFilterBox.style.display = (matchedCards.length === 0 && categoryCards.length > 0) ? 'block' : 'none';
     }
+
+    if (categoriesEmptyFilterRow) {
+      categoriesEmptyFilterRow.style.display = (matchedRows.length === 0 && categoryRows.length > 0) ? '' : 'none';
+    }
+
+    renderPaginationControls({
+      container: categoriesPaginationWrap,
+      totalItems: totalItems,
+      pageSize: categoryPageSize,
+      currentPage: categoryCurrentPage,
+      onPageChange: (newPage) => {
+        categoryCurrentPage = newPage;
+        filterCategories();
+        document.getElementById('tab-categories')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
-  categorySearchInput?.addEventListener('input', filterCategories);
+  categorySearchInput?.addEventListener('input', () => {
+    categoryCurrentPage = 1;
+    filterCategories();
+  });
 
   function resetCategorySearch() {
     if (categorySearchInput) {
       categorySearchInput.value = '';
+      categoryCurrentPage = 1;
       filterCategories();
     }
   }
   btnResetCategoryFilter?.addEventListener('click', resetCategorySearch);
   btnResetCategoryGridFilter?.addEventListener('click', resetCategorySearch);
+
+  // Inisialisasi awal master kategori & pagination
+  filterCategories();
 
   // Tombol "Simpan Perubahan" Kategori -> Bulk Sync ke Database
   document.getElementById('btnSyncCategories')?.addEventListener('click', async function () {
@@ -2252,29 +2530,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const activeCatDecoded = activeCat.replace(/&amp;/g, '&');
     const q = (posSearchTerm || '').trim().toLowerCase();
 
-    let filtered = products.filter((p) => {
-      const pCat = (p.category || '').trim().toLowerCase();
-      const pCatDecoded = pCat.replace(/&amp;/g, '&');
+    // 1. Filter Produk Satuan
+    let filteredProds = [];
+    if (activeCat !== 'paket-hemat') {
+      filteredProds = products.filter((p) => {
+        const pCat = (p.category || '').trim().toLowerCase();
+        const pCatDecoded = pCat.replace(/&amp;/g, '&');
 
-      const matchCat = activeCat === 'all' || 
-                       activeCat === 'semua' || 
-                       pCat === activeCat || 
-                       pCatDecoded === activeCatDecoded;
+        const matchCat = activeCat === 'all' || 
+                         activeCat === 'semua' || 
+                         pCat === activeCat || 
+                         pCatDecoded === activeCatDecoded;
 
-      const pName = (p.name || '').toLowerCase();
-      const pId = (p.id || '').toLowerCase();
-      const matchSearch = !q || pName.includes(q) || pId.includes(q) || pCat.includes(q);
+        const pName = (p.name || '').toLowerCase();
+        const pId = (p.id || '').toLowerCase();
+        const matchSearch = !q || pName.includes(q) || pId.includes(q) || pCat.includes(q);
 
-      return matchCat && matchSearch;
-    });
+        return matchCat && matchSearch;
+      });
+    }
 
-    if (filtered.length === 0) {
+    // 2. Filter Paket Hemat (Bundles)
+    let filteredBundles = [];
+    if (activeCat === 'all' || activeCat === 'semua' || activeCat === 'paket-hemat') {
+      filteredBundles = (bundles || []).filter((b) => {
+        const isActive = b.is_active !== false && b.is_active !== 0 && b.is_active !== '0';
+        if (!isActive) return false;
+        const bName = (b.name || '').toLowerCase();
+        const bId = String(b.id || '').toLowerCase();
+        return !q || bName.includes(q) || bId.includes(q) || 'paket hemat'.includes(q);
+      });
+    }
+
+    if (filteredProds.length === 0 && filteredBundles.length === 0) {
       posProductsGrid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #94A3B8;">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 0.5rem; color: #CBD5E1;">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <p style="font-size: 0.8125rem; font-weight: 700; margin: 0; color: #64748B;">Tidak ada produk yang cocok</p>
+          <p style="font-size: 0.8125rem; font-weight: 700; margin: 0; color: #64748B;">Tidak ada produk atau paket yang cocok</p>
           <p style="font-size: 11px; margin: 4px 0 0.85rem;">Coba kata kunci pencarian atau kategori lain</p>
           <button type="button" id="btnPosResetFilter" class="btn-primary-blue" style="margin: 0 auto; padding: 0.4rem 0.9rem; font-size: 11px; border-radius: 9999px; cursor: pointer;">Tampilkan Semua Produk</button>
         </div>
@@ -2285,7 +2579,10 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    posProductsGrid.innerHTML = filtered.map((p) => {
+    let html = '';
+
+    // Render Produk Satuan Cards
+    filteredProds.forEach((p) => {
       const rawStock = parseInt(p.stock, 10);
       const stock = isNaN(rawStock) ? 0 : Math.max(0, rawStock);
       const inCart = posCart.find((it) => it.id === p.id);
@@ -2303,7 +2600,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const inCartBadge = inCart ? `<span class="pos-card-in-cart-pill">${inCart.qty}</span>` : '';
 
-      return `
+      html += `
         <div class="pos-product-card ${isOut ? 'out-of-stock' : ''}" data-prod-id="${p.id}">
           ${inCartBadge}
           <div class="pos-product-meta-row">
@@ -2317,7 +2614,42 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
       `;
-    }).join('');
+    });
+
+    // Render Paket Hemat Bundles Cards
+    filteredBundles.forEach((b) => {
+      const bInCart = posCart.find((it) => it.id === 'bundle_' + b.id);
+      const bPrice = parseInt(b.bundle_price || b.price || 0, 10);
+
+      // Hitung stok tersedia paket berdasarkan sisa bahan di freezer
+      let bStock = 99;
+      if (b.items && b.items.length > 0) {
+        b.items.forEach(bi => {
+          const prod = products.find(p => p.id === bi.product_id);
+          const pStock = prod ? Math.floor((prod.stock || 0) / (bi.quantity || 1)) : 0;
+          if (pStock < bStock) bStock = pStock;
+        });
+      }
+      const isOut = bStock <= 0;
+      const inCartBadge = bInCart ? `<span class="pos-card-in-cart-pill">${bInCart.qty}</span>` : '';
+
+      html += `
+        <div class="pos-product-card ${isOut ? 'out-of-stock' : ''}" data-bundle-id="${b.id}" data-is-bundle="true" style="border-color: #FCD34D;">
+          ${inCartBadge}
+          <div class="pos-product-meta-row">
+            <span class="pos-bundle-indicator">★ PAKET HEMAT</span>
+            <span class="pos-product-weight">${b.items ? b.items.length + ' Macam Produk' : 'Paket'}</span>
+          </div>
+          <h4 class="pos-product-title" title="${b.name}">${b.name}</h4>
+          <div class="pos-product-price-row">
+            <span class="pos-product-price">Rp ${bPrice.toLocaleString('id-ID')}</span>
+            <span class="pos-stock-badge ${bStock > 5 ? 'in-stock' : (bStock > 0 ? 'low-stock' : 'out-stock')}">Stok: ${bStock}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    posProductsGrid.innerHTML = html;
   }
 
   function renderPosCart() {
@@ -2384,7 +2716,8 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    const received = parseInt(posCashReceived?.value || 0, 10);
+    const rawVal = (posCashReceived?.value || '').replace(/[^0-9]/g, '');
+    const received = parseInt(rawVal || 0, 10);
     if (!total || total === 0) {
       posCashChangeDisplay.textContent = 'Rp 0';
       posCashChangeDisplay.style.color = '#059669';
@@ -2405,8 +2738,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function addToPosCart(prodId) {
-    const prod = products.find((p) => p.id === prodId);
+  function addToPosCart(id) {
+    if (typeof id === 'string' && id.startsWith('bundle_')) {
+      const bId = id.replace('bundle_', '');
+      const bundle = (bundles || []).find((b) => String(b.id) === String(bId));
+      if (!bundle) return;
+
+      let bStock = 99;
+      if (bundle.items && bundle.items.length > 0) {
+        bundle.items.forEach((bi) => {
+          const prod = products.find((p) => p.id === bi.product_id);
+          const pStock = prod ? Math.floor((prod.stock || 0) / (bi.quantity || 1)) : 0;
+          if (pStock < bStock) bStock = pStock;
+        });
+      }
+
+      if (bStock <= 0) {
+        showToast(`Stok bahan untuk paket "${bundle.name}" habis di freezer!`, 'error');
+        return;
+      }
+
+      const existing = posCart.find((it) => it.id === id);
+      if (existing) {
+        if (existing.qty + 1 > bStock) {
+          showToast(`Maksimal ${bStock} paket sesuai sisa stok freezer!`, 'error');
+          return;
+        }
+        existing.qty += 1;
+      } else {
+        posCart.push({
+          id: id,
+          name: bundle.name + ' (Paket Hemat)',
+          price: parseInt(bundle.bundle_price || bundle.price || 0, 10),
+          stock: bStock,
+          qty: 1,
+          is_bundle: true,
+        });
+      }
+
+      renderPosCart();
+      renderPosProducts();
+      return;
+    }
+
+    const prod = products.find((p) => p.id === id);
     if (!prod) return;
 
     const currentStock = parseInt(prod.stock, 10) || 0;
@@ -2415,7 +2790,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    const existing = posCart.find((it) => it.id === prodId);
+    const existing = posCart.find((it) => it.id === id);
     if (existing) {
       if (existing.qty + 1 > currentStock) {
         showToast(`Maksimal ${currentStock} unit sesuai stok freezer!`, 'error');
@@ -2457,8 +2832,13 @@ document.addEventListener('DOMContentLoaded', function () {
   posProductsGrid?.addEventListener('click', (e) => {
     const card = e.target.closest('.pos-product-card');
     if (card && !card.classList.contains('out-of-stock')) {
+      const bundleId = card.getAttribute('data-bundle-id');
       const prodId = card.getAttribute('data-prod-id');
-      if (prodId) addToPosCart(prodId);
+      if (bundleId) {
+        addToPosCart('bundle_' + bundleId);
+      } else if (prodId) {
+        addToPosCart(prodId);
+      }
     }
   });
 
@@ -2551,8 +2931,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Cash Received Input & Quick Cash Buttons
+  // Cash Received Input (Otomatis Titik Pemisah Ribuan) & Quick Cash Buttons
   posCashReceived?.addEventListener('input', () => {
+    const rawVal = (posCashReceived.value || '').replace(/[^0-9]/g, '');
+    const num = parseInt(rawVal, 10);
+    posCashReceived.value = isNaN(num) || num === 0 ? '' : num.toLocaleString('id-ID');
     const total = posCart.reduce((sum, it) => sum + (it.price * it.qty), 0);
     calculatePosChange(total);
   });
@@ -2562,9 +2945,10 @@ document.addEventListener('DOMContentLoaded', function () {
       const total = posCart.reduce((sum, it) => sum + (it.price * it.qty), 0);
       const val = this.getAttribute('data-cash');
       if (val === 'exact') {
-        if (posCashReceived) posCashReceived.value = total;
+        if (posCashReceived) posCashReceived.value = total > 0 ? total.toLocaleString('id-ID') : '';
       } else {
-        if (posCashReceived) posCashReceived.value = parseInt(val, 10);
+        const num = parseInt(val, 10);
+        if (posCashReceived) posCashReceived.value = !isNaN(num) && num > 0 ? num.toLocaleString('id-ID') : '';
       }
       calculatePosChange(total);
     });
@@ -2611,7 +2995,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const total = posCart.reduce((sum, it) => sum + (it.price * it.qty), 0);
-    const cashVal = parseInt(posCashReceived?.value || 0, 10);
+    const rawCash = (posCashReceived?.value || '').replace(/[^0-9]/g, '');
+    const cashVal = parseInt(rawCash || 0, 10);
 
     if (posActivePayMethod === 'Tunai (Cash)' && cashVal > 0 && cashVal < total) {
       showToast(`Uang tunai yang diterima kurang Rp ${(total - cashVal).toLocaleString('id-ID')}!`, 'error');
@@ -2820,11 +3205,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const data = await res.json();
         if (res.ok && data.success) {
-          showToast(data.message || 'Impor data produk berhasil!');
           modalImportExcel.classList.remove('open');
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
+
+          const modalImportResult = document.getElementById('modalImportResult');
+          const createdCountEl = document.getElementById('importSummaryCreatedCount');
+          const updatedCountEl = document.getElementById('importSummaryUpdatedCount');
+          const createdSection = document.getElementById('importCreatedSection');
+          const createdList = document.getElementById('importCreatedList');
+          const updatedSection = document.getElementById('importUpdatedSection');
+          const updatedList = document.getElementById('importUpdatedList');
+
+          if (modalImportResult && (data.created_items || data.updated_items)) {
+            if (createdCountEl) createdCountEl.textContent = data.created_count || 0;
+            if (updatedCountEl) updatedCountEl.textContent = data.updated_count || 0;
+
+            if (data.created_items && data.created_items.length > 0) {
+              createdSection.style.display = 'block';
+              createdList.innerHTML = data.created_items.map((it) => `
+                <div class="import-result-item-card">
+                  <div>
+                    <p class="import-item-title">${it.name}</p>
+                    <div class="import-item-meta">
+                      <span>SKU: <b>${it.sku}</b></span>
+                      <span>Kategori: ${it.category}</span>
+                      <span>Stok Awal: <b>${it.stock} unit</b></span>
+                    </div>
+                  </div>
+                  <span class="import-pill-badge import-pill-new">+ Baru (Rp ${(it.price || 0).toLocaleString('id-ID')})</span>
+                </div>
+              `).join('');
+            } else {
+              createdSection.style.display = 'none';
+            }
+
+            if (data.updated_items && data.updated_items.length > 0) {
+              updatedSection.style.display = 'block';
+              updatedList.innerHTML = data.updated_items.map((it) => `
+                <div class="import-result-item-card">
+                  <div>
+                    <p class="import-item-title">${it.name}</p>
+                    <div class="import-item-meta">
+                      <span>SKU: <b>${it.sku}</b></span>
+                      <span>Stok: ${it.old_stock} &rarr; <b>${it.stock} unit</b></span>
+                    </div>
+                  </div>
+                  <span class="import-pill-badge import-pill-update">Update (Rp ${(it.price || 0).toLocaleString('id-ID')})</span>
+                </div>
+              `).join('');
+            } else {
+              updatedSection.style.display = 'none';
+            }
+
+            modalImportResult.classList.add('open');
+          } else {
+            showToast(data.message || 'Impor data produk berhasil!');
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }
         } else {
           showToast(data.message || 'Gagal mengimpor data produk.', 'error');
           btnSubmitImport.disabled = false;
@@ -2843,6 +3281,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  // Tutup Modal Laporan Hasil Impor & Reload Dashboard
+  document.querySelectorAll('.btn-close-import-result').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.getElementById('modalImportResult')?.classList.remove('open');
+      window.location.reload();
+    });
+  });
 
   // ==========================================
   // 11. MODUL LAPORAN PENJUALAN & ANALISIS TOKO (CHART.JS)
@@ -3067,34 +3513,33 @@ document.addEventListener('DOMContentLoaded', function () {
         chartLabels.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
       }
     } else {
-      // Semua waktu
+      // Semua waktu: Kelompokkan per Bulan (YYYY-MM) agar visualisasi tren jangka panjang rapi dan informatif
       const sorted = [...successfulOrders].sort((a, b) => new Date(a.order_date || a.created_at) - new Date(b.order_date || b.created_at));
       if (sorted.length > 0) {
         sorted.forEach((o) => {
           const d = new Date(o.order_date || o.created_at);
           const y = d.getFullYear();
           const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          const key = `${y}-${m}-${day}`;
+          const key = `${y}-${m}`;
           if (!dailyMap.hasOwnProperty(key)) {
             dailyMap[key] = 0;
-            chartLabels.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+            chartLabels.push(d.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }));
           }
         });
       } else {
-        const key = now.toISOString().split('T')[0];
+        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         dailyMap[key] = 0;
-        chartLabels.push(now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+        chartLabels.push(now.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }));
       }
     }
 
-    // Populate daily revenues
+    // Populate daily / monthly revenues
     successfulOrders.forEach((o) => {
       const d = new Date(o.order_date || o.created_at);
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
-      const key = `${y}-${m}-${day}`;
+      const key = activeReportRange === 'all' ? `${y}-${m}` : `${y}-${m}-${day}`;
       if (dailyMap.hasOwnProperty(key)) {
         dailyMap[key] += parseInt(o.total, 10) || 0;
       }
@@ -3124,7 +3569,7 @@ document.addEventListener('DOMContentLoaded', function () {
         data: {
           labels: chartLabels,
           datasets: [{
-            label: 'Omzet Harian',
+            label: activeReportRange === 'all' ? 'Omzet Bulanan' : 'Omzet Harian',
             data: chartData,
             borderColor: '#677D9E',
             backgroundColor: gradient,
@@ -3280,9 +3725,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    // 5. Transactions Table for Period
+    // 5. Transactions Table for Period with Pagination
     if (tableCountBadge) tableCountBadge.textContent = `${periodOrders.length} Transaksi`;
 
+    const reportPaginationWrap = document.getElementById('reportPaginationWrap');
     if (tableBodyEl) {
       if (periodOrders.length === 0) {
         tableBodyEl.innerHTML = `
@@ -3292,9 +3738,17 @@ document.addEventListener('DOMContentLoaded', function () {
             </td>
           </tr>
         `;
+        if (reportPaginationWrap) reportPaginationWrap.style.display = 'none';
       } else {
+        const totalItems = periodOrders.length;
+        const totalPages = Math.ceil(totalItems / reportPageSize) || 1;
+        if (reportCurrentPage > totalPages) reportCurrentPage = 1;
+
+        const startIndex = (reportCurrentPage - 1) * reportPageSize;
+        const pageItems = periodOrders.slice(startIndex, startIndex + reportPageSize);
+
         let rows = '';
-        periodOrders.slice(0, 15).forEach((o) => {
+        pageItems.forEach((o) => {
           let badgeClass = 'menunggu-pembayaran';
           let badgeLabel = 'Menunggu Pembayaran';
           if (o.status === 'Selesai') {
@@ -3323,9 +3777,23 @@ document.addEventListener('DOMContentLoaded', function () {
           `;
         });
         tableBodyEl.innerHTML = rows;
+
+        renderPaginationControls({
+          container: reportPaginationWrap,
+          totalItems: totalItems,
+          pageSize: reportPageSize,
+          currentPage: reportCurrentPage,
+          onPageChange: (newPage) => {
+            reportCurrentPage = newPage;
+            updateSalesReport();
+          }
+        });
       }
     }
   }
+
+  let reportCurrentPage = 1;
+  const reportPageSize = 10;
 
   // Setup range buttons listener
   document.querySelectorAll('.report-range-btn').forEach((btn) => {
@@ -3333,6 +3801,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.report-range-btn').forEach((b) => b.classList.remove('active'));
       this.classList.add('active');
       activeReportRange = this.getAttribute('data-range') || '7';
+      reportCurrentPage = 1;
       updateSalesReport();
     });
   });

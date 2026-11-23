@@ -4703,10 +4703,12 @@ body.admin-modal-open {
   .admin-toolbar-card,
   .panel-header-actions,
   .export-dropdown-wrapper,
+  .admin-pagination-wrapper,
   #tab-dashboard,
   #tab-inventory,
   #tab-orders,
   #tab-bundles,
+  #tab-categories,
   #tab-qris,
   #tab-profile,
   .panel-header-desc,
@@ -4839,6 +4841,21 @@ body.admin-modal-open {
      KASUS B: CETAK LAPORAN PENJUALAN RESMI (Format A4 Dokumen)
      ================================================================ */
   body.is-printing-report #modalReceipt {
+    display: none !important;
+  }
+
+  body.is-printing-report #tab-reports {
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.is-printing-report #tab-reports > *:not(#printableSalesReportDoc) {
+    display: none !important;
+  }
+
+  body:not(.is-printing-report) #tab-reports {
     display: none !important;
   }
 
@@ -4984,5 +5001,163 @@ body.admin-modal-open {
   color: var(--navy);
   border-color: var(--soft-blue);
 }
+
+/* ================================================================
+   12. UNIVERSAL ADMIN PAGINATION STYLES (Impeccable UI/UX)
+   ================================================================ */
+.admin-pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.pagination-info-text {
+  font-size: 0.8125rem;
+  color: #64748B;
+  font-weight: 500;
+  margin: 0;
+}
+
+.pagination-info-text b {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.pagination-controls-list {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 9px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.pagination-btn.active {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+.pagination-ellipsis {
+  min-width: 28px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 0.875rem;
+  user-select: none;
+}
+
+/* ================================================================
+   13. STYLES FOR IMPORT SPREADSHEET RESULT MODAL
+   ================================================================ */
+.import-result-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  transition: all 0.15s ease;
+}
+
+.import-result-item-card:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.import-item-title {
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 2px 0;
+}
+
+.import-item-meta {
+  font-size: 0.6875rem;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.import-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.import-pill-new {
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.import-pill-update {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+/* ================================================================
+   14. POS BUNDLE CARDS (PAKET HEMAT DI KASIR)
+   ================================================================ */
+.pos-bundle-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
 
 

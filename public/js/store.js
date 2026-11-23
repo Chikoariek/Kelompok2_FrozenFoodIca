@@ -1677,6 +1677,38 @@ document.addEventListener('DOMContentLoaded', function () {
     if (drawerIceFeeAmount) drawerIceFeeAmount.textContent = isKurir ? 'Rp 5.000' : 'Gratis';
     if (drawerGrandTotalAmount) drawerGrandTotalAmount.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
 
+    // Notifikasi & status tombol checkout jika toko sedang tutup
+    const isStoreOpen = !window.__STORE_STATUS__ || window.__STORE_STATUS__.is_open !== false;
+    let drawerClosedNotice = document.getElementById('drawerClosedNotice');
+    if (!isStoreOpen) {
+      if (!drawerClosedNotice && cartFooterSection) {
+        drawerClosedNotice = document.createElement('div');
+        drawerClosedNotice.id = 'drawerClosedNotice';
+        drawerClosedNotice.className = 'drawer-store-closed-banner';
+        drawerClosedNotice.innerHTML = `
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Toko sedang TUTUP sementara. Checkout dinonaktifkan hingga toko buka kembali (08.00 – 21.00 WITA).</span>
+        `;
+        cartFooterSection.insertBefore(drawerClosedNotice, cartFooterSection.firstChild);
+      }
+      if (btnSubmitOrder) {
+        btnSubmitOrder.disabled = true;
+        btnSubmitOrder.classList.add('disabled-store-closed');
+      }
+      if (btnSubmitOrderText) {
+        btnSubmitOrderText.textContent = 'Toko Sedang Tutup';
+      }
+    } else {
+      if (drawerClosedNotice) drawerClosedNotice.remove();
+      if (btnSubmitOrder) {
+        btnSubmitOrder.disabled = false;
+        btnSubmitOrder.classList.remove('disabled-store-closed');
+      }
+      if (btnSubmitOrderText) {
+        btnSubmitOrderText.textContent = 'Lanjut ke Pembayaran';
+      }
+    }
+
     if (!cartItemsWrap) return;
 
     let itemsHtml = `

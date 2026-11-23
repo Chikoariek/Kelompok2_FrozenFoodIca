@@ -124,6 +124,96 @@ img {
   }
 }
 
+/* 4.9. ADMIN PREVIEW TOPBAR & RETURN CONTROLS */
+.admin-preview-topbar {
+  background: #0F172A;
+  color: #F8FAFC;
+  padding: 0.45rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.75rem;
+  position: relative;
+  z-index: 50;
+}
+.admin-preview-inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.admin-preview-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #E2E8F0;
+}
+.admin-preview-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+  flex-shrink: 0;
+}
+.admin-preview-hint {
+  color: #94A3B8;
+  font-size: 0.7rem;
+}
+.btn-return-admin-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--soft-blue);
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.btn-return-admin-top:hover {
+  background: var(--navy);
+  transform: translateY(-1px);
+}
+
+/* Floating Admin Return Button */
+.floating-admin-return-btn {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 1.25rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 9999px;
+  background: #0F172A;
+  color: #FFFFFF !important;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.floating-admin-return-btn:hover {
+  background: var(--soft-blue);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 14px 30px -4px rgba(37, 99, 235, 0.45);
+}
+.floating-admin-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+}
+
 /* 5. TOP ANNOUNCEMENT BANNER */
 .top-announcement-bar {
   background-color: var(--soft-blue);
@@ -137,6 +227,11 @@ img {
   justify-content: center;
   gap: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+}
+.top-announcement-bar.store-closed {
+  background-color: #B91C1C;
+  color: #FEE2E2;
 }
 
 .top-announcement-badge {
@@ -147,6 +242,96 @@ img {
   border-radius: var(--radius-full);
   font-weight: 600;
   letter-spacing: 0.01em;
+}
+
+/* 5.1. PROMINENT STORE CLOSED HERO ALERT BANNER */
+.store-closed-hero-alert {
+  padding: 1rem 1rem 0;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+.store-closed-alert-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: linear-gradient(135deg, #FEF2F2 0%, #FFF5F5 100%);
+  border: 1.5px solid #FECACA;
+  border-radius: 16px;
+  padding: 1.1rem 1.4rem;
+  box-shadow: 0 4px 15px -3px rgba(220, 38, 38, 0.08);
+}
+.store-closed-alert-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.store-closed-alert-text {
+  flex: 1;
+}
+.store-closed-alert-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+.badge-closed-pill {
+  display: inline-block;
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.store-closed-hours-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #991B1B;
+}
+.store-closed-alert-heading {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #7F1D1D;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.3;
+}
+.store-closed-alert-sub {
+  font-size: 0.78125rem;
+  color: #991B1B;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Drawer Store Closed Warning Strip */
+.drawer-store-closed-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.75rem;
+  color: #B91C1C;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.btn-checkout-submit.disabled-store-closed,
+.btn-checkout-submit:disabled {
+  background: #94A3B8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.75;
+  box-shadow: none !important;
 }
 
 /* 6. FLOATING NAVBAR (OPTI 3: REFINED LINE-TO-CAPSULE) */
