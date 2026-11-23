@@ -1078,6 +1078,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     modalReceipt?.classList.add('open');
   };
+  window.openReceiptModal = window.openOrderReceipt;
 
   window.printThermalReceipt = function () {
     document.body.classList.remove('is-printing-report');
@@ -3064,9 +3065,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (posCashReceived) posCashReceived.value = '';
 
         // Automatically open thermal receipt ready to print
-        if (data.order?.id && typeof window.openReceiptModal === 'function') {
+        const openReceiptFn = window.openReceiptModal || window.openOrderReceipt;
+        if (data.order?.id && typeof openReceiptFn === 'function') {
           setTimeout(() => {
-            window.openReceiptModal(data.order.id);
+            openReceiptFn(data.order.id);
           }, 250);
         } else {
           setTimeout(() => window.location.reload(), 800);

@@ -1237,6 +1237,55 @@ class AdminDataController extends Controller
         } else {
             $items = is_array($rawItems) ? $rawItems : [];
         }
+        $channel = $request->input('channel') ?: 'Online Store';
+        $isAdmin = Auth::check() && (Auth::user()->isAdmin() || Auth::user()->is_admin || Auth::user()->role === 'admin');
+
+        // Validasi Toko Tutup Server-Side: Cegah pesanan online baru jika toko sedang tutup
+        if (stripos($channel, 'pos') === false && !$isAdmin) {
+            $storeStatus = self::getStoreStatusArray();
+            if (!$storeStatus['is_open']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mohon maaf, operasional toko sedang TUTUP SEMENTARA saat ini. Pemesanan tidak dapat diproses sampai toko buka kembali (08.00 – 21.00 WITA).',
+                ], 422);
+            }
+        }
+
+        // Validasi Ketersediaan Stok Sebelum Pembuatan Pesanan
+        if (is_array($items) && count($items) > 0) {
+            foreach ($items as $item) {
+                if (!empty($item['id'])) {
+                    $qty = (int) ($item['qty'] ?? 1);
+                    if (str_starts_with((string)$item['id'], 'bundle_') || !empty($item['is_bundle'])) {
+                        $bundleId = str_replace('bundle_', '', (string)$item['id']);
+                        $bundle = Bundle::with('items.product')->find($bundleId);
+                        if ($bundle && $bundle->items) {
+                            foreach ($bundle->items as $bItem) {
+                                $bProd = $bItem->product ?: Product::find($bItem->product_id);
+                                $needed = $bItem->quantity * $qty;
+                                if (!$bProd || $bProd->stock < $needed) {
+                                    $pName = $bProd ? $bProd->name : 'Produk';
+                                    return response()->json([
+                                        'success' => false,
+                                        'message' => "Stok untuk produk '{$pName}' dalam paket hemat tidak mencukupi (tersedia: " . ($bProd ? $bProd->stock : 0) . ").",
+                                    ], 422);
+                                }
+                            }
+                        }
+                    } else {
+                        $prod = Product::find($item['id']);
+                        if (!$prod || $prod->stock < $qty) {
+                            $pName = $prod ? $prod->name : 'Produk';
+                            return response()->json([
+                                'success' => false,
+                                'message' => "Stok untuk produk '{$pName}' tidak mencukupi (tersedia: " . ($prod ? $prod->stock : 0) . ").",
+                            ], 422);
+                        }
+                    }
+                }
+            }
+        }
+
         // Validasi & Rekalkulasi Harga Server-Side (Cegah Price / Parameter Tampering)
         $calculatedSubtotal = 0;
         $validatedItems = [];
@@ -1414,7 +1463,66 @@ class AdminDataController extends Controller
             return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan'], 404);
         }
 
-        $order->status = $validated['status'];
+        $oldStatus = $order->status;
+        $newStatus = $validated['status'];
+
+        // Restorasi stok otomatis jika pesanan dibatalkan
+        if ($newStatus === 'Dibatalkan' && $oldStatus !== 'Dibatalkan') {
+            $items = is_array($order->items) ? $order->items : (json_decode($order->items, true) ?: []);
+            foreach ($items as $item) {
+                if (!empty($item['id'])) {
+                    $qty = (int) ($item['qty'] ?? 1);
+                    if (str_starts_with((string)$item['id'], 'bundle_') || !empty($item['is_bundle'])) {
+                        $bundleId = str_replace('bundle_', '', (string)$item['id']);
+                        $bundle = Bundle::with('items')->find($bundleId);
+                        if ($bundle && $bundle->items) {
+                            foreach ($bundle->items as $bItem) {
+                                $bProd = Product::find($bItem->product_id);
+                                if ($bProd) {
+                                    $bProd->stock += ($bItem->quantity * $qty);
+                                    $bProd->save();
+                                }
+                            }
+                        }
+                    } else {
+                        $prod = Product::find($item['id']);
+                        if ($prod) {
+                            $prod->stock += $qty;
+                            $prod->save();
+                        }
+                    }
+                }
+            }
+        } elseif ($oldStatus === 'Dibatalkan' && $newStatus !== 'Dibatalkan') {
+            // Potong kembali stok jika status pesanan yang sebelumnya batal diaktifkan kembali
+            $items = is_array($order->items) ? $order->items : (json_decode($order->items, true) ?: []);
+            foreach ($items as $item) {
+                if (!empty($item['id'])) {
+                    $qty = (int) ($item['qty'] ?? 1);
+                    if (str_starts_with((string)$item['id'], 'bundle_') || !empty($item['is_bundle'])) {
+                        $bundleId = str_replace('bundle_', '', (string)$item['id']);
+                        $bundle = Bundle::with('items')->find($bundleId);
+                        if ($bundle && $bundle->items) {
+                            foreach ($bundle->items as $bItem) {
+                                $bProd = Product::find($bItem->product_id);
+                                if ($bProd) {
+                                    $bProd->stock = max(0, $bProd->stock - ($bItem->quantity * $qty));
+                                    $bProd->save();
+                                }
+                            }
+                        }
+                    } else {
+                        $prod = Product::find($item['id']);
+                        if ($prod) {
+                            $prod->stock = max(0, $prod->stock - $qty);
+                            $prod->save();
+                        }
+                    }
+                }
+            }
+        }
+
+        $order->status = $newStatus;
         if ($request->has('is_paid')) {
             $order->is_paid = $request->boolean('is_paid');
         } elseif ($validated['status'] === 'Diproses' || $validated['status'] === 'Selesai') {

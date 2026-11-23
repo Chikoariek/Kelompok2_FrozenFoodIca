@@ -74,7 +74,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            <span>Operasional Toko Sedang <strong>TUTUP SEMENTARA</strong> (Jam Buka: 08.00 – 21.00 WITA) &bull; Anda tetap dapat melihat menu &amp; menyimpan ke keranjang</span>
+            <span>Operasional Toko Sedang <strong>TUTUP SEMENTARA</strong> saat ini (Jam Buka: 08.00 – 21.00 WITA).</span>
             <span class="top-announcement-badge closed" style="background: rgba(239, 68, 68, 0.25); color: #FEE2E2;">Toko Tutup</span>
         @endif
     </div>

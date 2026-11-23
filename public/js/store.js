@@ -1552,15 +1552,15 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   function addToCart(product, qty = 1, showNotif = true) {
-    // Validasi Tamu: Wajib login sebelum dapat membeli produk
-    if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {
-      window.promptGuestLogin('Silakan masuk ke akun Anda terlebih dahulu untuk menambahkan produk ke keranjang belanja.');
+    // Validasi Toko Tutup: Blokir penambahan produk ke keranjang sejak awal
+    if (window.__STORE_STATUS__ && window.__STORE_STATUS__.is_open === false) {
+      window.showToast('Mohon maaf, operasional toko sedang TUTUP SEMENTARA saat ini. Pemesanan dibuka kembali pada jam 08.00 – 21.00 WITA.', 'error');
       return false;
     }
 
-    // Validasi Toko Tutup: Jangan masukkan ke keranjang, langsung beri peringatan informatif
-    if (window.__STORE_STATUS__ && window.__STORE_STATUS__.is_open === false) {
-      window.showToast('Mohon maaf, toko sedang TUTUP saat ini. Pemesanan tidak dapat dilakukan sampai toko buka kembali (08.00 – 21.00 WITA).', 'error');
+    // Validasi Tamu: Wajib login sebelum dapat membeli produk
+    if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {
+      window.promptGuestLogin('Silakan masuk ke akun Anda terlebih dahulu untuk menambahkan produk ke keranjang belanja.');
       return false;
     }
 
@@ -1751,15 +1751,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   window.openCartDrawer = function () {
+    // Validasi Toko Tutup: Blokir akses keranjang sejak awal saat toko tutup
+    if (window.__STORE_STATUS__ && window.__STORE_STATUS__.is_open === false) {
+      window.showToast('Mohon maaf, operasional toko sedang TUTUP SEMENTARA saat ini. Keranjang belanja & pemesanan dibuka kembali pada jam 08.00 – 21.00 WITA.', 'error');
+      return;
+    }
+
     // Validasi Tamu: Wajib login sebelum dapat mengakses keranjang (disamakan dengan saat klik icon keranjang di katalog)
     if (!window.__CURRENT_USER__ || !window.__IS_LOGGED_IN__) {
       window.promptGuestLogin('Silakan masuk ke akun Anda terlebih dahulu untuk membuka keranjang belanja.');
       return;
-    }
-
-    // Notifikasi jika toko sedang tutup saat membuka keranjang
-    if (window.__STORE_STATUS__ && window.__STORE_STATUS__.is_open === false) {
-      window.showToast('Pemberitahuan: Toko sedang TUTUP saat ini. Anda tetap dapat memilih produk, dan pesanan akan diproses saat toko buka.', 'error');
     }
 
     renderCart();
@@ -2422,12 +2423,26 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const data = await res.json();
-        const savedOrder = (res.ok && data.success && data.order) ? data.order : {
-          ...activePendingOrder,
-          is_paid: false,
-          status: isCash ? 'Menunggu Bayar' : 'Menunggu Konfirmasi Admin',
-          order_date: new Date().toLocaleString('id-ID'),
-        };
+        if (!res.ok || !data.success) {
+          window.showToast(data.message || 'Gagal menyimpan pesanan.', 'error');
+          if (paymentDynamicContent) paymentDynamicContent.style.display = 'block';
+          if (paymentModalFooter) paymentModalFooter.style.display = 'flex';
+          if (paymentSuccessNotice) paymentSuccessNotice.style.display = 'none';
+          if (paymentVerifyingBox) paymentVerifyingBox.style.display = 'none';
+          btnConfirmPayment.disabled = false;
+          return;
+        }
+
+        const savedOrder = data.order || activePendingOrder;
+
+        // Simpan ID pesanan baru ke localStorage agar muncul di Pesanan Saya
+        try {
+          let myIds = JSON.parse(localStorage.getItem('ica_my_order_ids') || '[]');
+          if (savedOrder && savedOrder.id && !myIds.includes(savedOrder.id)) {
+            myIds.unshift(savedOrder.id);
+            localStorage.setItem('ica_my_order_ids', JSON.stringify(myIds));
+          }
+        } catch (e) {}
 
         // Brief simulated check for UX polish
         await new Promise((r) => setTimeout(r, 1200));
@@ -2617,7 +2632,7 @@ Terima kasih atas kunjungan Anda!
 
     // Validasi Toko Tutup: Jangan masukkan ke keranjang, langsung beri peringatan
     if (window.__STORE_STATUS__ && window.__STORE_STATUS__.is_open === false) {
-      window.showToast('Mohon maaf, toko sedang TUTUP saat ini. Pemesanan paket hemat tidak dapat dilakukan sampai toko buka kembali (08.00 – 21.00 WITA).', 'error');
+      window.showToast('Mohon maaf, operasional toko sedang TUTUP SEMENTARA saat ini. Pemesanan paket hemat dibuka kembali pada jam 08.00 – 21.00 WITA.', 'error');
       return;
     }
 
@@ -2721,7 +2736,7 @@ Terima kasih atas kunjungan Anda!
             <p style="font-size: 0.8125rem; max-width: 280px; margin: 0 auto 1.35rem auto; color: var(--text-gray-500); line-height: 1.55;">
               Pesanan yang Anda buat melalui website akan otomatis tercatat dan dapat Anda pantau statusnya di sini.
             </p>
-            <button type="button" class="btn-cta-blue" style="padding: 0.65rem 1.4rem; font-size: 0.8125rem; border-radius: 12px; display: inline-flex; margin: 0 auto; align-items: center; gap: 0.45rem;" onclick="window.closeCustomerOrdersModal(); document.getElementById('katalogSection')?.scrollIntoView({ behavior: 'smooth' });">
+            <button type="button" class="btn-cta-blue" style="padding: 0.65rem 1.4rem; font-size: 0.8125rem; border-radius: 12px; display: inline-flex; margin: 0 auto; align-items: center; gap: 0.45rem;" onclick="window.closeCustomerOrdersModal(); (document.getElementById('katalog-section') || document.getElementById('katalogSection'))?.scrollIntoView({ behavior: 'smooth' });">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
               <span>Mulai Belanja Sekarang</span>
             </button>
