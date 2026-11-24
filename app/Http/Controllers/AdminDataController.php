@@ -168,6 +168,11 @@ class AdminDataController extends Controller
             'description' => 'nullable|string',
             'image'       => 'nullable',
             'image_file'  => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+        ], [
+            'stock.min'      => 'Jumlah stok tidak boleh kurang dari 0.',
+            'stock.integer'  => 'Jumlah stok harus berupa bilangan bulat valid.',
+            'stock.required' => 'Jumlah stok wajib diisi.',
+            'price.min'      => 'Harga produk tidak boleh kurang dari 0.',
         ]);
 
         $id = $request->input('id') ?: ('PRD-' . time());
@@ -233,10 +238,24 @@ class AdminDataController extends Controller
         }
 
         if ($request->has('stock')) {
-            $product->stock = max(0, (int) $request->input('stock'));
+            $newStock = (int) $request->input('stock');
+            if ($newStock < 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jumlah stok tidak boleh kurang dari 0.',
+                ], 422);
+            }
+            $product->stock = $newStock;
         } elseif ($request->has('delta') || $request->has('diff')) {
             $change = (int) ($request->input('delta') ?? $request->input('diff') ?? 0);
-            $product->stock = max(0, $product->stock + $change);
+            $newStock = $product->stock + $change;
+            if ($newStock < 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jumlah stok tidak boleh kurang dari 0.',
+                ], 422);
+            }
+            $product->stock = $newStock;
         }
         $product->save();
 
@@ -416,6 +435,16 @@ class AdminDataController extends Controller
         $validated = $request->validate([
             'products' => 'required|array',
         ]);
+
+        // Validasi stok pada seluruh produk sebelum disimpan
+        foreach ($validated['products'] as $prod) {
+            if (isset($prod['stock']) && (int)$prod['stock'] < 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jumlah stok tidak boleh kurang dari 0.',
+                ], 422);
+            }
+        }
 
         DB::transaction(function () use ($validated) {
             foreach ($validated['products'] as $prod) {
@@ -787,8 +816,12 @@ class AdminDataController extends Controller
             $extension = strtolower($file->getClientOriginalExtension());
             $path = $file->getRealPath();
 
-            if ($extension === 'xlsx') {
+            if (in_array($extension, ['xlsx', 'xls'])) {
                 $rows = $this->parseXlsxFile($path);
+                // Fallback: Jika file berekstensi .xlsx/.xls namun berisi teks/CSV
+                if (empty($rows)) {
+                    $rows = $this->parseCsvFile($path);
+                }
             } elseif (in_array($extension, ['csv', 'txt'])) {
                 $rows = $this->parseCsvFile($path);
             } else {
@@ -813,29 +846,36 @@ class AdminDataController extends Controller
             ], 422);
         }
 
-        // Header mapping
+        // Header mapping & pembersihan karakter tersembunyi UTF-8 BOM (\xEF\xBB\xBF)
         $headerRow = array_map(function ($h) {
-            return strtolower(trim((string) $h));
+            $clean = preg_replace('/^\xEF\xBB\xBF/', '', (string) $h);
+            $clean = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $clean);
+            return strtolower(trim($clean));
         }, $rows[0]);
 
         $colMap = [
-            'sku' => -1,
-            'name' => -1,
-            'category' => -1,
-            'price' => -1,
-            'stock' => -1,
-            'weight' => -1,
+            'sku'         => -1,
+            'name'        => -1,
+            'category'    => -1,
+            'price'       => -1,
+            'stock'       => -1,
+            'weight'      => -1,
             'description' => -1,
         ];
 
         foreach ($headerRow as $idx => $headerText) {
-            $clean = preg_replace('/[^a-z0-9_ ]/', '', $headerText);
+            $cleanBOM = preg_replace('/^\xEF\xBB\xBF/', '', (string) $headerText);
+            $cleanBOM = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $cleanBOM);
+            $clean = preg_replace('/[^a-z0-9_ ]/', '', strtolower(trim($cleanBOM)));
 
             if ($colMap['sku'] === -1 && (
                 str_contains($clean, 'sku') || 
                 str_contains($clean, 'kode') || 
                 str_contains($clean, 'barcode') || 
-                $clean === 'id'
+                $clean === 'id' ||
+                str_contains($clean, 'kodeproduk') ||
+                str_contains($clean, 'kodebarang') ||
+                str_contains($clean, 'product id')
             )) {
                 $colMap['sku'] = $idx;
             } elseif ($colMap['name'] === -1 && (
@@ -843,7 +883,8 @@ class AdminDataController extends Controller
                 str_contains($clean, 'name') || 
                 str_contains($clean, 'produk') || 
                 str_contains($clean, 'barang') || 
-                str_contains($clean, 'item')
+                str_contains($clean, 'item') ||
+                str_contains($clean, 'product')
             )) {
                 $colMap['name'] = $idx;
             } elseif ($colMap['category'] === -1 && (
@@ -863,7 +904,8 @@ class AdminDataController extends Controller
                 str_contains($clean, 'stok') || 
                 str_contains($clean, 'stock') || 
                 str_contains($clean, 'qty') || 
-                str_contains($clean, 'jumlah')
+                str_contains($clean, 'jumlah') ||
+                str_contains($clean, 'quantity')
             )) {
                 $colMap['stock'] = $idx;
             } elseif ($colMap['weight'] === -1 && (
@@ -887,7 +929,7 @@ class AdminDataController extends Controller
             $colMap['name'] = isset($headerRow[1]) ? 1 : 0;
         }
 
-        // Pra-validasi integritas data baris per baris sebelum eksekusi ke database
+        // Pra-validasi integritas seluruh data baris per baris sebelum eksekusi ke database (Atomic Protection)
         $validationErrors = [];
         for ($i = 1; $i < count($rows); $i++) {
             $row = $rows[$i];
@@ -910,35 +952,40 @@ class AdminDataController extends Controller
                 continue;
             }
 
-            // Validasi Stok (tidak boleh negatif atau non-numerik tak valid)
-            if ($colMap['stock'] !== -1 && isset($row[$colMap['stock']])) {
-                $stockRaw = trim((string)$row[$colMap['stock']]);
-                if ($stockRaw !== '') {
+            // Validasi Stok Ketat: tidak boleh negatif atau non-numerik tak valid
+            if ($colMap['stock'] !== -1) {
+                $stockRaw = isset($row[$colMap['stock']]) ? trim((string)$row[$colMap['stock']]) : '';
+                if ($stockRaw === '') {
+                    $validationErrors[] = "Baris {$rowNum} ('{$name}'): Kolom jumlah stok tidak boleh kosong.";
+                } else {
                     if (str_starts_with($stockRaw, '-') || (is_numeric($stockRaw) && (float)$stockRaw < 0)) {
-                        $validationErrors[] = "Baris {$rowNum} ('{$name}'): Jumlah stok tidak boleh bernilai negatif ({$stockRaw}).";
-                    } elseif (!is_numeric(preg_replace('/[^0-9\-]/', '', $stockRaw))) {
+                        $validationErrors[] = "Baris {$rowNum} ('{$name}'): Jumlah stok tidak boleh kurang dari 0.";
+                    } elseif (!is_numeric($stockRaw) || floor((float)$stockRaw) != (float)$stockRaw) {
                         $validationErrors[] = "Baris {$rowNum} ('{$name}'): Jumlah stok harus berupa bilangan bulat valid ('{$stockRaw}').";
                     }
                 }
             }
 
             // Validasi Harga Jual (tidak boleh bernilai negatif)
-            if ($colMap['price'] !== -1 && isset($row[$colMap['price']])) {
-                $priceRaw = trim((string)$row[$colMap['price']]);
+            if ($colMap['price'] !== -1) {
+                $priceRaw = isset($row[$colMap['price']]) ? trim((string)$row[$colMap['price']]) : '';
                 if ($priceRaw !== '') {
                     $cleanPrice = str_ireplace(['rp', ' ', '.'], '', $priceRaw);
                     $cleanPrice = str_replace(',', '.', $cleanPrice);
                     if (str_starts_with($priceRaw, '-') || (is_numeric($cleanPrice) && (float)$cleanPrice < 0)) {
                         $validationErrors[] = "Baris {$rowNum} ('{$name}'): Harga jual produk tidak boleh bernilai negatif ({$priceRaw}).";
+                    } elseif (!is_numeric($cleanPrice)) {
+                        $validationErrors[] = "Baris {$rowNum} ('{$name}'): Harga jual harus berupa angka valid ('{$priceRaw}').";
                     }
                 }
             }
         }
 
+        // Jika terdapat 1 baris saja yang error, batalkan seluruh proses impor (Atomic protection)
         if (!empty($validationErrors)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Proses impor dibatalkan. Ditemukan ' . count($validationErrors) . ' data yang tidak sesuai dengan ketentuan validasi.',
+                'message' => 'Proses impor dibatalkan. Ditemukan ' . count($validationErrors) . ' kesalahan validasi data:',
                 'errors' => $validationErrors,
             ], 422);
         }
@@ -948,88 +995,101 @@ class AdminDataController extends Controller
         $created = 0;
         $createdItems = [];
         $updatedItems = [];
-        $updateExisting = $request->boolean('update_existing', true);
 
-        DB::transaction(function () use ($rows, $colMap, $updateExisting, &$imported, &$updated, &$created, &$createdItems, &$updatedItems) {
-            for ($i = 1; $i < count($rows); $i++) {
-                $row = $rows[$i];
-                if (empty($row) || !is_array($row)) continue;
+        try {
+            DB::transaction(function () use ($rows, $colMap, &$imported, &$updated, &$created, &$createdItems, &$updatedItems) {
+                for ($i = 1; $i < count($rows); $i++) {
+                    $row = $rows[$i];
+                    if (empty($row) || !is_array($row)) continue;
 
-                $name = $colMap['name'] !== -1 ? trim((string)($row[$colMap['name']] ?? '')) : '';
-                if ($name === '') continue;
+                    $name = $colMap['name'] !== -1 ? trim((string)($row[$colMap['name']] ?? '')) : '';
+                    if ($name === '') continue;
 
-                $sku = $colMap['sku'] !== -1 ? trim((string)($row[$colMap['sku']] ?? '')) : '';
-                if ($sku === '') {
-                    $sku = 'PRD-' . time() . '-' . $i;
-                }
+                    $sku = $colMap['sku'] !== -1 ? trim((string)($row[$colMap['sku']] ?? '')) : '';
+                    if ($sku === '') {
+                        $sku = 'PRD-' . time() . '-' . $i;
+                    }
 
-                $category = $colMap['category'] !== -1 ? trim((string)($row[$colMap['category']] ?? '')) : 'Frozen Food';
-                if ($category === '') $category = 'Frozen Food';
+                    $category = $colMap['category'] !== -1 ? trim((string)($row[$colMap['category']] ?? '')) : 'Frozen Food';
+                    if ($category === '') $category = 'Frozen Food';
 
-                Category::firstOrCreate(['name' => $category]);
+                    Category::firstOrCreate(['name' => $category]);
 
-                $priceRaw = $colMap['price'] !== -1 ? (string)($row[$colMap['price']] ?? '0') : '0';
-                $price = (int) preg_replace('/[^0-9]/', '', $priceRaw);
+                    $priceRaw = $colMap['price'] !== -1 ? (string)($row[$colMap['price']] ?? '0') : '0';
+                    $cleanPrice = str_ireplace(['rp', ' ', '.'], '', trim($priceRaw));
+                    $cleanPrice = str_replace(',', '.', $cleanPrice);
+                    $price = max(0, (int) round((float) $cleanPrice));
 
-                $stockRaw = $colMap['stock'] !== -1 ? (string)($row[$colMap['stock']] ?? '0') : '0';
-                $stock = (int) preg_replace('/[^0-9]/', '', $stockRaw);
+                    $stockRaw = $colMap['stock'] !== -1 ? trim((string)($row[$colMap['stock']] ?? '0')) : '0';
+                    $stockVal = (int) $stockRaw;
+                    if ($stockVal < 0) {
+                        throw new \Exception("Baris " . ($i + 1) . " ('{$name}'): Jumlah stok tidak boleh kurang dari 0.");
+                    }
 
-                $weight = $colMap['weight'] !== -1 ? trim((string)($row[$colMap['weight']] ?? '500g')) : '500g';
-                if ($weight === '') $weight = '500g';
+                    $weight = $colMap['weight'] !== -1 ? trim((string)($row[$colMap['weight']] ?? '500g')) : '500g';
+                    if ($weight === '') $weight = '500g';
 
-                $desc = $colMap['description'] !== -1 ? trim((string)($row[$colMap['description']] ?? '')) : '';
+                    $desc = $colMap['description'] !== -1 ? trim((string)($row[$colMap['description']] ?? '')) : '';
 
-                $existing = Product::find($sku);
-                if ($existing) {
-                    if ($updateExisting) {
+                    // Logika Upsert berdasarkan Kode SKU:
+                    // • SKU Baru: Simpan sebagai produk baru (Insert).
+                    // • SKU Sudah Ada: Timpa (Update/Overwrite) data produk dan jumlah stok lama dengan data baru dari file.
+                    $existing = Product::find($sku);
+                    if ($existing) {
                         $oldPrice = $existing->price;
                         $oldStock = $existing->stock;
                         $newPrice = $price > 0 ? $price : $existing->price;
 
                         $existing->update([
-                            'name' => $name,
-                            'category' => $category,
-                            'price' => $newPrice,
-                            'stock' => $stock,
-                            'weight' => $weight,
+                            'name'        => $name,
+                            'category'    => $category,
+                            'price'       => $newPrice,
+                            'stock'       => $stockVal, // Timpa (overwrite) jumlah stok lama
+                            'weight'      => $weight,
                             'description' => $desc ?: $existing->description,
                         ]);
                         $updated++;
                         $imported++;
                         $updatedItems[] = [
-                            'sku' => $sku,
-                            'name' => $name,
-                            'category' => $category,
-                            'price' => $newPrice,
+                            'sku'       => $sku,
+                            'name'      => $name,
+                            'category'  => $category,
+                            'price'     => $newPrice,
                             'old_price' => $oldPrice,
-                            'stock' => $stock,
+                            'stock'     => $stockVal,
                             'old_stock' => $oldStock,
                         ];
+                    } else {
+                        Product::create([
+                            'id'          => $sku,
+                            'name'        => $name,
+                            'category'    => $category,
+                            'price'       => $price,
+                            'stock'       => $stockVal,
+                            'weight'      => $weight,
+                            'description' => $desc,
+                            'image'       => '/images/products/nugget.png',
+                            'tags'        => ['Kasir Pintar'],
+                        ]);
+                        $created++;
+                        $imported++;
+                        $createdItems[] = [
+                            'sku'      => $sku,
+                            'name'     => $name,
+                            'category' => $category,
+                            'price'    => $price,
+                            'stock'    => $stockVal,
+                        ];
                     }
-                } else {
-                    Product::create([
-                        'id' => $sku,
-                        'name' => $name,
-                        'category' => $category,
-                        'price' => $price,
-                        'stock' => $stock,
-                        'weight' => $weight,
-                        'description' => $desc,
-                        'image' => '/images/products/nugget.png',
-                        'tags' => ['Kasir Pintar'],
-                    ]);
-                    $created++;
-                    $imported++;
-                    $createdItems[] = [
-                        'sku' => $sku,
-                        'name' => $name,
-                        'category' => $category,
-                        'price' => $price,
-                        'stock' => $stock,
-                    ];
                 }
-            }
-        });
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proses impor dibatalkan: ' . $e->getMessage(),
+                'errors' => [$e->getMessage()],
+            ], 422);
+        }
 
         return response()->json([
             'success' => true,
@@ -1045,29 +1105,67 @@ class AdminDataController extends Controller
     }
 
     /**
-     * Parsing file CSV menjadi array baris data
+     * Parsing file CSV menjadi array baris data (dengan pembersihan UTF-8 BOM otomatis)
      */
     private function parseCsvFile(string $filePath): array
     {
         $rows = [];
-        if (($handle = fopen($filePath, 'r')) !== false) {
-            $firstLine = fgets($handle);
-            rewind($handle);
-            $delimiter = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
-
-            while (($data = fgetcsv($handle, 10000, $delimiter)) !== false) {
-                if (empty($rows) && isset($data[0])) {
-                    $data[0] = preg_replace('/^\xEF\xBB\xBF/', '', $data[0]);
-                }
-                $rows[] = array_map('trim', $data);
-            }
-            fclose($handle);
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            return [];
         }
+
+        // 1. Bersihkan UTF-8 BOM (\xEF\xBB\xBF) jika ada di awal file
+        if (str_starts_with($content, "\xEF\xBB\xBF")) {
+            $content = substr($content, 3);
+        }
+
+        // 2. Deteksi delimiter dari baris pertama (koma, titik koma, atau tab)
+        $lines = preg_split('/\r\n|\r|\n/', $content);
+        $firstLine = $lines[0] ?? '';
+        $semicolonCount = substr_count($firstLine, ';');
+        $commaCount = substr_count($firstLine, ',');
+        $tabCount = substr_count($firstLine, "\t");
+
+        $delimiter = ',';
+        if ($semicolonCount > $commaCount && $semicolonCount > $tabCount) {
+            $delimiter = ';';
+        } elseif ($tabCount > $commaCount && $tabCount > $semicolonCount) {
+            $delimiter = "\t";
+        }
+
+        $stream = fopen('php://memory', 'r+');
+        fwrite($stream, $content);
+        rewind($stream);
+
+        while (($data = fgetcsv($stream, 0, $delimiter)) !== false) {
+            if ($data === [null] || empty($data)) continue;
+
+            $cleanedRow = array_map(function ($val) {
+                $val = preg_replace('/^\xEF\xBB\xBF/', '', (string) $val);
+                $val = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $val);
+                return trim($val);
+            }, $data);
+
+            // Lewati jika seluruh kolom dalam baris kosong
+            $hasContent = false;
+            foreach ($cleanedRow as $c) {
+                if ($c !== '') {
+                    $hasContent = true;
+                    break;
+                }
+            }
+            if ($hasContent) {
+                $rows[] = $cleanedRow;
+            }
+        }
+        fclose($stream);
+
         return $rows;
     }
 
     /**
-     * Parsing file Excel .xlsx murni PHP (ZipArchive & SimpleXML) tanpa library pihak ketiga
+     * Parsing file Excel .xlsx murni PHP (ZipArchive & SimpleXML) dengan pembersihan BOM
      */
     private function parseXlsxFile(string $filePath): array
     {
@@ -1090,16 +1188,22 @@ class AdminDataController extends Controller
                             $text .= (string) $run->t;
                         }
                     }
-                    $sharedStrings[] = $text;
+                    $text = preg_replace('/^\xEF\xBB\xBF/', '', $text);
+                    $text = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $text);
+                    $sharedStrings[] = trim($text);
                 }
             }
         }
 
+        // Cari worksheet sheet1.xml atau sheet xml pertama yang ada
         $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
         if ($sheetXml === false) {
-            for ($i = 1; $i <= 5; $i++) {
-                $sheetXml = $zip->getFromName("xl/worksheets/sheet{$i}.xml");
-                if ($sheetXml !== false) break;
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $stat = $zip->statIndex($i);
+                if ($stat && str_starts_with($stat['name'], 'xl/worksheets/sheet') && str_ends_with($stat['name'], '.xml')) {
+                    $sheetXml = $zip->getFromIndex($i);
+                    if ($sheetXml !== false) break;
+                }
             }
         }
 
@@ -1143,10 +1247,22 @@ class AdminDataController extends Controller
                         $val = (string) $cell->is->t;
                     }
 
+                    $val = preg_replace('/^\xEF\xBB\xBF/', '', $val);
+                    $val = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $val);
                     $rowArr[] = trim($val);
                     $currentCol++;
                 }
-                $rows[] = $rowArr;
+
+                $hasContent = false;
+                foreach ($rowArr as $c) {
+                    if ($c !== '') {
+                        $hasContent = true;
+                        break;
+                    }
+                }
+                if ($hasContent) {
+                    $rows[] = $rowArr;
+                }
             }
         }
 

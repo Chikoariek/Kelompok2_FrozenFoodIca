@@ -1325,7 +1325,16 @@ document.addEventListener('DOMContentLoaded', function () {
       const prod = products.find((p) => p.id === id);
 
       if (prod) {
-        const nextStock = Math.max(0, (prod.stock || 0) + diff);
+        if (btnDec && (prod.stock || 0) <= 0) {
+          showToast('Jumlah stok tidak boleh kurang dari 0.', 'error');
+          return;
+        }
+        const nextStock = (prod.stock || 0) + diff;
+        if (nextStock < 0) {
+          showToast('Jumlah stok tidak boleh kurang dari 0.', 'error');
+          return;
+        }
+        const prevStock = prod.stock || 0;
         prod.stock = nextStock;
 
         // Update stepper UI target immediately
@@ -1362,7 +1371,12 @@ document.addEventListener('DOMContentLoaded', function () {
           if (res.ok && resData.success) {
             showToast(`Stok "${prod.name}" berhasil diperbarui: ${nextStock} unit`);
           } else {
-            showToast(resData?.message || 'Gagal memperbarui stok di server', 'error');
+            // Revert state jika server menolak
+            prod.stock = prevStock;
+            document.querySelectorAll(`.stock-val-target[data-id="${id}"]`).forEach((el) => {
+              el.textContent = prevStock;
+            });
+            showToast(resData?.message || 'Jumlah stok tidak boleh kurang dari 0.', 'error');
           }
         } catch (err) {
           console.warn('Background stock sync failed', err);
@@ -1473,6 +1487,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!name || price <= 0) {
       showToast('Nama dan harga valid harus diisi!', 'error');
+      return;
+    }
+
+    if (isNaN(stock) || stock < 0) {
+      showToast('Jumlah stok tidak boleh kurang dari 0.', 'error');
       return;
     }
 
@@ -1596,6 +1615,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const weight = editProdWeight?.value.trim();
     const image = editProdImage?.value.trim();
     const desc = editProdDesc?.value.trim();
+
+    if (!name || price <= 0) {
+      showToast('Nama dan harga valid harus diisi!', 'error');
+      return;
+    }
+
+    if (isNaN(stock) || stock < 0) {
+      showToast('Jumlah stok tidak boleh kurang dari 0.', 'error');
+      return;
+    }
 
     const formData = new FormData();
     formData.append('id', id);
