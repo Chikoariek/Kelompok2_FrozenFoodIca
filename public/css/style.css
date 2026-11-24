@@ -219,7 +219,7 @@ img {
   background-color: var(--soft-blue);
   color: #FFFFFF;
   font-size: 0.75rem;
-  padding: 0.5rem 1rem;
+  padding: 0.45rem 1rem;
   font-weight: 500;
   text-align: center;
   display: flex;
@@ -228,10 +228,28 @@ img {
   gap: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   transition: background-color 0.2s ease;
+  line-height: 1.4;
+  box-sizing: border-box;
 }
 .top-announcement-bar.store-closed {
   background-color: #B91C1C;
   color: #FEE2E2;
+}
+
+.top-announcement-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.5rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.top-announcement-content svg,
+.top-announcement-content .motor-delivery-icon {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .top-announcement-badge {
@@ -242,6 +260,15 @@ img {
   border-radius: var(--radius-full);
   font-weight: 600;
   letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .top-announcement-bar {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
 }
 
 /* 5.1. PROMINENT STORE CLOSED HERO ALERT BANNER */
@@ -1445,12 +1472,20 @@ img {
 /* Mobile Search Field Below Navbar (Expandable via icon) */
 .mobile-search-row {
   display: none;
-  padding: 0 1rem 0.75rem;
+  padding: 0.5rem 1rem 0.75rem;
 }
 
 .mobile-search-row.open {
-  display: block;
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
   animation: slideDownMobileSearch 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mobile-search-row .search-input-box {
+  position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 @keyframes slideDownMobileSearch {
@@ -1468,21 +1503,21 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--radius-full);
-  color: var(--text-gray-400);
-  background: transparent;
-  border: none;
+  color: var(--navy);
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
   cursor: pointer;
   transition: all 0.15s ease;
-  margin-right: 0.25rem;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .btn-close-mobile-search:hover {
   color: var(--navy);
-  background-color: #F1F5F9;
+  background-color: #E2E8F0;
 }
 
 @media (min-width: 768px) {

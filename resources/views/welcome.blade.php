@@ -67,15 +67,19 @@
     <!-- 1. Banner Info Pengantaran Kurir & Jam Operasional Toko (Dinamis Sesuai Status Buka / Tutup Toko) -->
     <div class="top-announcement-bar {{ $isStoreOpen ? 'store-open' : 'store-closed' }}" id="topAnnouncementBar">
         @if($isStoreOpen)
-            <span class="motor-delivery-icon" style="width: 1rem; height: 1rem; color: #6EE7B7;"></span>
-            <span>Pesan Sekarang, Melayani pengantaran via kurir area Banjarbaru &amp; sekitarnya!</span>
-            <span class="top-announcement-badge open">Buka (08.00 – 21.00 WITA)</span>
+            <div class="top-announcement-content">
+                <span class="motor-delivery-icon" style="width: 1rem; height: 1rem; color: #6EE7B7; flex-shrink: 0;"></span>
+                <span>Pesan Sekarang, Melayani pengantaran via kurir area Banjarbaru &amp; sekitarnya!</span>
+                <span class="top-announcement-badge open" style="flex-shrink: 0;">Buka (08.00 – 21.00 WITA)</span>
+            </div>
         @else
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span>Operasional Toko Sedang <strong>TUTUP SEMENTARA</strong> saat ini (Jam Buka: 08.00 – 21.00 WITA).</span>
-            <span class="top-announcement-badge closed" style="background: rgba(239, 68, 68, 0.25); color: #FEE2E2;">Toko Tutup</span>
+            <div class="top-announcement-content">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1.2" fill="currentColor" stroke="none"/>
+                </svg>
+                <span>Operasional Toko Sedang <strong>TUTUP SEMENTARA</strong> saat ini (Jam Buka: 08.00 – 21.00 WITA).</span>
+                <span class="top-announcement-badge closed" style="background: rgba(239, 68, 68, 0.25); color: #FEE2E2; flex-shrink: 0;">Toko Tutup</span>
+            </div>
         @endif
     </div>
 
@@ -296,15 +300,15 @@
                                 <line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
                         </button>
-                        <button id="btnCloseMobileSearch" class="btn-close-mobile-search" type="button"
-                            title="Tutup pencarian" aria-label="Tutup pencarian">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18" />
-                                <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                        </button>
                     </div>
+                    <button id="btnCloseMobileSearch" class="btn-close-mobile-search" type="button"
+                        title="Tutup pencarian" aria-label="Tutup pencarian">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
                 </div>
 
             </div>
@@ -769,11 +773,11 @@
                                     @elseif($prod->stock <= 5)
                                         <span class="badge-low-tag">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="2.5">
+                                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path
                                                     d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
                                                 <line x1="12" y1="9" x2="12" y2="13" />
-                                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                                                <circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none" />
                                             </svg>
                                             Tersisa sedikit lagi
                                         </span>

@@ -1505,13 +1505,14 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .toolbar-v-divider {
   width: 1px;
-  height: 22px;
+  height: 20px;
   background-color: #E2E8F0;
   margin: 0 0.15rem;
   flex-shrink: 0;
@@ -1523,9 +1524,11 @@ a {
   gap: 0.45rem;
   overflow-x: auto;
   white-space: nowrap;
+  flex-wrap: nowrap !important;
+  flex-shrink: 1;
+  min-width: 0;
   padding: 0;
   margin: 0;
-  min-width: 0;
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important; /* IE / Edge */
   -webkit-overflow-scrolling: touch;
@@ -1621,24 +1624,29 @@ a {
 .toolbar-search-wrap {
   position: relative;
   width: 100%;
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
   .toolbar-search-wrap {
-    width: 20rem;
+    width: 14.5rem;
+    max-width: 15rem;
+    margin-left: auto;
   }
 }
 
 .toolbar-search-input {
   width: 100%;
-  padding: 0.625rem 1rem 0.625rem 2.5rem;
+  height: 34px;
+  padding: 0 1rem 0 2.25rem;
   background: #F9FAFB;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--navy);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl, 9999px);
   border: 1px solid #E5E7EB;
   outline: none;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .toolbar-search-input:focus {
@@ -2749,15 +2757,29 @@ body.admin-modal-open {
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
+    overflow: visible !important;
+  }
+
+  .inventory-toolbar-left {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .inventory-toolbar-left::-webkit-scrollbar {
+    display: none !important;
   }
 
   .toolbar-filters-group {
-    width: 100% !important;
+    width: auto !important;
     max-width: 100% !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     min-width: 0 !important;
+    flex-shrink: 0 !important;
   }
 
   .toolbar-search-wrap {

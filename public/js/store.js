@@ -1083,7 +1083,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (mobileDrawerMenu) {
           mobileDrawerMenu.style.display = 'none';
         }
-        mobileSearchRow.style.display = 'block';
+        mobileSearchRow.style.display = 'flex';
         mobileSearchRow.classList.add('open');
         btnMobileSearchToggle.classList.add('active');
         if (mobileSearchInput) {
@@ -1686,7 +1686,7 @@ document.addEventListener('DOMContentLoaded', function () {
         drawerClosedNotice.id = 'drawerClosedNotice';
         drawerClosedNotice.className = 'drawer-store-closed-banner';
         drawerClosedNotice.innerHTML = `
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1.2" fill="currentColor" stroke="none"/></svg>
           <span>Toko sedang TUTUP sementara. Checkout dinonaktifkan hingga toko buka kembali (08.00 – 21.00 WITA).</span>
         `;
         cartFooterSection.insertBefore(drawerClosedNotice, cartFooterSection.firstChild);

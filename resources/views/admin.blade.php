@@ -1004,7 +1004,7 @@
                                 Semua ({{ count($products) }})
                             </button>
                             <button class="filter-btn-pill prod-filter-btn" data-filter="zero" type="button">
-                                Habis (0)
+                                Habis
                             </button>
                             <button class="filter-btn-pill prod-filter-btn" data-filter="in_stock" type="button">
                                 Tersedia
