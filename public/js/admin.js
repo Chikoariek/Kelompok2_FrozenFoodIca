@@ -415,7 +415,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // Quick cross-tab links
   document.getElementById('btnOverviewSeeAllOrders')?.addEventListener('click', () => switchTab('orders'));
   document.getElementById('btnOverviewSeeInventory')?.addEventListener('click', () => switchTab('inventory'));
-  document.getElementById('btnOverviewSeeReports')?.addEventListener('click', () => switchTab('reports'));
+  document.getElementById('btnOverviewSeeReports')?.addEventListener('click', () => {
+    switchTab('reports');
+    const scrollBody = document.querySelector('.admin-scroll-body') || window;
+    if (scrollBody.scrollTo) {
+      scrollBody.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      scrollBody.scrollTop = 0;
+    }
+  });
   document.getElementById('btnSwitchToProfile')?.addEventListener('click', () => {
     closeProfileDropdown();
     switchTab('profile');
@@ -830,8 +838,11 @@ document.addEventListener('DOMContentLoaded', function () {
           const ord = orders.find((o) => o.id === orderId);
           if (ord) {
             ord.status = 'Diproses';
+            ord.is_paid = true;
             ord.isPaid = true;
           }
+          if (typeof updateDashboardSalesChart === 'function') updateDashboardSalesChart();
+          if (typeof updateSalesReport === 'function') updateSalesReport();
 
           // Update row UI
           const row = document.querySelector(`tr[data-order-row="${orderId}"]`);
@@ -908,8 +919,11 @@ document.addEventListener('DOMContentLoaded', function () {
           const ord = orders.find((o) => o.id === orderId);
           if (ord) {
             ord.status = 'Selesai';
+            ord.is_paid = true;
             ord.isPaid = true;
           }
+          if (typeof updateDashboardSalesChart === 'function') updateDashboardSalesChart();
+          if (typeof updateSalesReport === 'function') updateSalesReport();
 
           // Update row UI
           const row = document.querySelector(`tr[data-order-row="${orderId}"]`);
@@ -3418,6 +3432,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let salesChartInstance = null;
   let dashboardSalesChartInstance = null;
   let activeReportRange = '7'; // '7', '30', 'month', 'all'
+  let lastReportPeriodOrders = [];
 
   // Diagram Ringkas Omzet 7 Hari Terakhir di Tab Dashboard Overview
   function updateDashboardSalesChart() {
@@ -3443,13 +3458,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const validOrders = (orders || []).filter((o) => {
       if (o.status === 'Dibatalkan') return false;
-      if (o.status !== 'Selesai' && !o.is_paid) return false;
+      if (o.status !== 'Selesai' && !o.is_paid && !o.isPaid) return false;
       const oDate = new Date(o.order_date || o.created_at || now);
       return oDate >= startDate;
     });
 
     validOrders.forEach((o) => {
       const d = new Date(o.order_date || o.created_at);
+      if (isNaN(d.getTime())) return;
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
@@ -3588,15 +3604,18 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    // Filter valid orders: not 'Dibatalkan'
+    // Filter seluruh pesanan pada rentang tanggal untuk tabel riwayat transaksi
     const periodOrders = orders.filter((o) => {
-      if (o.status === 'Dibatalkan') return false;
       const oDate = new Date(o.order_date || o.created_at || now);
       if (startDate && oDate < startDate) return false;
       return true;
     });
 
-    const successfulOrders = periodOrders.filter((o) => o.status === 'Selesai' || o.is_paid);
+    // Simpan referensi seluruh pesanan periode untuk kebutuhan Cetak PDF
+    lastReportPeriodOrders = periodOrders;
+
+    // Omzet & KPI hanya menghitung transaksi berhasil / lunas (bukan yang dibatalkan)
+    const successfulOrders = periodOrders.filter((o) => (o.status === 'Selesai' || o.is_paid || o.isPaid) && o.status !== 'Dibatalkan');
 
     // 1. KPI Stats
     const totalRev = successfulOrders.reduce((sum, o) => sum + (parseInt(o.total, 10) || 0), 0);
@@ -3658,6 +3677,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Populate daily / monthly revenues
     successfulOrders.forEach((o) => {
       const d = new Date(o.order_date || o.created_at);
+      if (isNaN(d.getTime())) return;
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
@@ -3809,7 +3829,8 @@ document.addEventListener('DOMContentLoaded', function () {
           const qty = parseInt(it.qty || 1, 10);
           totalItemsSold += qty;
           const prodObj = products.find((p) => p.name === it.name || p.id === it.id);
-          const catName = prodObj ? prodObj.category : (it.category || 'Lainnya');
+          const bundleObj = !prodObj ? bundles.find((b) => b.name === it.name || ('bundle_' + b.id) === String(it.id)) : null;
+          const catName = prodObj ? prodObj.category : (bundleObj ? 'Paket Hemat' : (it.category || 'Lainnya'));
           catMap[catName] = (catMap[catName] || 0) + qty;
         });
       }
@@ -4021,8 +4042,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const res = await fetch('/api/orders');
       if (!res.ok) return;
       const data = await res.json();
-      const orders = Array.isArray(data) ? data : (data.orders || []);
-      const count = orders.length;
+      const fetchedOrders = Array.isArray(data) ? data : (data.orders || []);
+      const count = fetchedOrders.length;
 
       if (lastKnownOrdersCount !== null && count > lastKnownOrdersCount) {
         window.playOrderAlertChime();
@@ -4031,6 +4052,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         const badge = document.getElementById('orderCountBadge');
         if (badge) badge.textContent = `${count} Pesanan`;
+
+        // Update global orders reference & charts
+        orders = fetchedOrders;
+        if (typeof updateDashboardSalesChart === 'function') updateDashboardSalesChart();
+        if (typeof updateSalesReport === 'function') updateSalesReport();
+      } else if (lastKnownOrdersCount === null) {
+        orders = fetchedOrders;
       }
       const pendingCount = orders.filter(o => o.status === 'Menunggu Bayar' || o.status === 'Menunggu Konfirmasi Admin' || o.status === 'Diproses').length;
       const bottomOrdersBadge = document.getElementById('adminBottomOrdersBadge');
@@ -4136,33 +4164,39 @@ document.addEventListener('DOMContentLoaded', function () {
       if (pPeriod) pPeriod.textContent = repRangeText.replace('Rentang: ', 'Periode: ');
       if (pDate) {
         const now = new Date();
-        pDate.textContent = `Dicetak pada: ${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`;
+        pDate.textContent = `Dicetak pada: ${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WITA`;
       }
 
-      // Salin data tabel dari tabel rincian transaksi periode terpilih (reportTransactionsTableBody)
-      const reportRows = document.querySelectorAll('#reportTransactionsTableBody tr');
+      // Render SELURUH transaksi pada periode terpilih ke dokumen cetak (tidak terpotong paginasi 10 baris web)
       if (pTableBody) {
-        if (reportRows.length > 0) {
-          pTableBody.innerHTML = Array.from(reportRows).map((tr) => {
-            const tds = tr.querySelectorAll('td');
-            if (tds.length < 5) return '';
+        const ordersToPrint = Array.isArray(lastReportPeriodOrders) && lastReportPeriodOrders.length > 0
+          ? lastReportPeriodOrders
+          : (orders || []);
+
+        if (ordersToPrint.length > 0) {
+          pTableBody.innerHTML = ordersToPrint.map((o) => {
+            const dateStr = o.order_date || (o.created_at ? new Date(o.created_at).toLocaleString('id-ID') : '-');
+            const totalVal = (parseInt(o.total, 10) || 0).toLocaleString('id-ID');
             return `
               <tr>
-                <td>${tds[0]?.textContent?.trim() || '-'}</td>
-                <td>${tds[1]?.textContent?.trim() || '-'}</td>
-                <td>${tds[2]?.textContent?.trim() || '-'}</td>
-                <td>${tds[3]?.textContent?.trim() || '-'}</td>
-                <td>${tds[4]?.textContent?.trim() || '-'}</td>
-                <td style="text-align: right; font-weight: 700;">${tds[5]?.textContent?.trim() || '-'}</td>
+                <td style="font-family: monospace; font-weight: 700;">${o.id || '-'}</td>
+                <td>${dateStr}</td>
+                <td style="font-weight: 700;">${o.customer_name || 'Pelanggan'}</td>
+                <td>${o.payment_method || 'QRIS Instan'}</td>
+                <td>${o.status || 'Diproses'}</td>
+                <td style="text-align: right; font-weight: 700;">Rp ${totalVal}</td>
               </tr>
             `;
           }).join('');
         } else {
-          pTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94A3B8; padding: 1.5rem;">Tidak ada transaksi pada periode ini</td></tr>';
+          pTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94A3B8; padding: 1.5rem;">Tidak ada riwayat transaksi pada periode ini</td></tr>';
         }
       }
 
-      window.print();
+      // Berikan jeda kecil agar styling media print selesai diterapkan oleh browser
+      setTimeout(() => {
+        window.print();
+      }, 80);
     });
   }
 
@@ -4286,6 +4320,16 @@ document.addEventListener('DOMContentLoaded', function () {
             viewProofBtn.setAttribute('data-status', action === 'accept' ? 'Diproses' : 'Menunggu Pembayaran');
           }
         }
+
+        // Sinkronisasi memori lokal orders array & perbarui grafik / laporan
+        const ord = orders.find((o) => o.id === activeProofOrderId);
+        if (ord) {
+          ord.status = action === 'accept' ? 'Diproses' : 'Menunggu Pembayaran';
+          ord.is_paid = action === 'accept';
+          ord.isPaid = action === 'accept';
+        }
+        if (typeof updateDashboardSalesChart === 'function') updateDashboardSalesChart();
+        if (typeof updateSalesReport === 'function') updateSalesReport();
       } else {
         alert(data.message || 'Gagal memproses verifikasi');
       }
